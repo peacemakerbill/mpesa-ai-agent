@@ -1,0 +1,73 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:payments;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration/postgresql
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.data.mongo.MongoHealthContributorAutoConfiguration
+  rabbitmq:
+    host: localhost
+  jackson:
+    default-property-inclusion: non_null
+
+internal:
+  key: test-internal-key
+
+mpesa:
+  base-url: http://localhost:9
+  consumer-key: test-consumer-key
+  consumer-secret: test-consumer-secret
+  shortcode: "174379"
+  passkey: test-passkey
+  transaction-type: CustomerPayBillOnline
+  public-base-url: https://example.test
+  callback-secret: test-callback-secret
+  callback-allowed-ips: ""
+  operations:
+    initiator-name: testinitiator
+    initiator-password: ""
+    certificate-path: ""
+    security-credential: test-credential
+
+operations:
+  max-payout: 20000
+  daily-payout-limit: 100000
+  allow-self-approval: false
+
+business:
+  name: Test Shop
+  support-phone: "0700000000"
+
+staff:
+  members:
+    - phone: "0711000001"
+      name: Sam Staff
+      role: STAFF
+    - phone: "0711000002"
+      name: Amina Approver
+      role: APPROVER
+    - phone: "0711000003"
+      name: Admin Ali
+      role: ADMIN
+
+payments:
+  limits:
+    per-transaction: 70000
+    per-day: 150000
+  reconcile:
+    enabled: false
+    interval: PT1M
+    min-age: PT2M
+    give-up-after: PT15M

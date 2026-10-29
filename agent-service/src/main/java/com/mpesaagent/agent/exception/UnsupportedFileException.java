@@ -1,0 +1,12 @@
+package com.mpesaagent.agent.exception;
+
+/** A file we cannot read. The message is written for the customer. */
+public class UnsupportedFileException extends RuntimeException {
+    public UnsupportedFileException(String message) {
+        super(message);
+    }
+
+    public UnsupportedFileException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}

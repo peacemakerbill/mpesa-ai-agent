@@ -1,0 +1,157 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: payments
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d payments"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Only started with: docker compose --profile mysql up    (and DATABASE_TYPE=mysql)
+  mysql:
+    profiles: ["mysql"]
+    image: mysql:8.4
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_bin"]
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: payments
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uapp -papp --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Only started with: docker compose --profile mongodb up    (and DATABASE_TYPE=mongodb)
+  mongo:
+    profiles: ["mongodb"]
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' | grep -q 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # OPTIONAL. Only for a business that wants to collect payments through its own Daraja app.
+  # Start it with: docker compose --profile business up   (and set AGENT_BUSINESS_PAYMENTS=true on agent-service)
+  # Safaricom calls this service (through your public HTTPS URL, see PUBLIC_BASE_URL)
+  payment-service:
+    profiles: ["business"]
+    build: ./payment-service
+    env_file:
+      - path: ./payment-service/.env
+        required: false
+    environment:
+      # Pick the database with DATABASE_TYPE (postgresql, mysql or mongodb) in a .env file next to this compose file
+      DATABASE_TYPE: ${DATABASE_TYPE:-postgresql}
+      POSTGRES_URL: jdbc:postgresql://postgres:5432/payments
+      MYSQL_URL: jdbc:mysql://mysql:3306/payments?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&preserveInstants=true&useSSL=false&allowPublicKeyRetrieval=true
+      MONGODB_URI: mongodb://mongo:27017/payments
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - "8083:8083"
+    restart: on-failure
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+      mysql:
+        condition: service_healthy
+        required: false
+      mongo:
+        condition: service_healthy
+        required: false
+      rabbitmq:
+        condition: service_healthy
+
+  # The phone app, the browser console and the links in the chat talk to this one: sign-in, chat and requests. Put HTTPS in front of port 8084 (COMPANION_PUBLIC_BASE_URL).
+  # It also serves the app link files under /.well-known/. It never holds M-Pesa keys or PINs.
+  companion-api:
+    build: ./companion-api
+    env_file:
+      - path: ./companion-api/.env
+        required: false
+    environment:
+      # Pick the database with DATABASE_TYPE (postgresql, mysql or mongodb) in a .env file next to this compose file
+      DATABASE_TYPE: ${DATABASE_TYPE:-postgresql}
+      POSTGRES_URL: jdbc:postgresql://postgres:5432/companion
+      MYSQL_URL: jdbc:mysql://mysql:3306/companion?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&preserveInstants=true&useSSL=false&allowPublicKeyRetrieval=true
+      MONGODB_URI: mongodb://mongo:27017/companion
+      RABBITMQ_HOST: rabbitmq
+      AGENT_BASE_URL: http://agent-service:8082
+    ports:
+      - "8084:8084"
+    restart: on-failure
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+      mysql:
+        condition: service_healthy
+        required: false
+      mongo:
+        condition: service_healthy
+        required: false
+      rabbitmq:
+        condition: service_healthy
+
+  # Not meant to be public. Keeps the chat and the conversation with the model. Only companion-api talks to it.
+  agent-service:
+    build: ./agent-service
+    env_file:
+      - path: ./agent-service/.env
+        required: false
+    environment:
+      PAYMENT_BASE_URL: http://payment-service:8083
+      COMPANION_BASE_URL: http://companion-api:8084
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - "127.0.0.1:8082:8082"
+    depends_on:
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      companion-api:
+        condition: service_started
+
+volumes:
+  pgdata:
+  mysqldata:
+  mongodata:

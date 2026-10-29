@@ -1,0 +1,4543 @@
+{
+  "info": {
+    "_postman_id": "717433f7-7e8f-4461-ab12-693b85384bf0",
+    "name": "M-Pesa chat assistant",
+    "description": "# Chat assistant for your own M-Pesa: every HTTP endpoint\n\nThree services. Import this collection and the environment, then set the values in the environment.\n\n**Ports:** agent 8082, payment 8083 (optional), companion 8084.\n\n**Quick start (wallet flow, no Daraja needed):** open `2. companion-api / A. Walkthrough` and run it in order with the collection runner.\nStep 1 asks for a sign-in code (start companion-api with `CODE_DELIVERY=dev` so the answer carries it, never do that on a shared server), step 2 signs the \"phone\" in,\nstep 3 prepares a request, steps 6 to 8 approve, hand off and report. Then try `C2. Chat`.\n\n**Auth:** internal endpoints send `X-Internal-Key` ({{internalKey}}, the same value in every service `.env`). App endpoints send the device token\n(saved automatically by the sign-in request). Callbacks have no key, the secret token is in the path.\n\n**Notes:** requests that need Daraja or real media ids will only fully work against real credentials. Do not put real secrets in a shared collection.\nThe environment holds addresses, keys and phone numbers. Ids, tokens and codes are filled in by test scripts and live in the collection variables (edit actionId, paymentId, operationId or originatorConversationId there by hand when you want to use a real one). Nothing here was run against the services when it was written.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. agent-service (port 8082)",
+      "description": "Customer messages arrive at /internal/inbound. 202 means accepted. Duplicates (same messageId) are accepted and ignored. Replies appear in the customer's chat.",
+      "item": [
+        {
+          "name": "Customer text: send money",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "Delivers a message to the agent as if the customer had typed it. The reply is added to that customer's chat (read it with \"Read the chat\" below).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"TEXT\",\n  \"text\": \"send 500 to 0712345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Customer text: greeting (menu)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"TEXT\",\n  \"text\": \"hi\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Customer text: pay Paybill",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"TEXT\",\n  \"text\": \"pay 1200 to paybill 888880 account 123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Customer text: Swahili",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"TEXT\",\n  \"text\": \"nataka kununua airtime ya 50\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Customer text: show my requests",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"TEXT\",\n  \"text\": \"show my requests\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Customer text: find a contact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "With no number given, the assistant adds a CONTACT_LOOKUP message. The app answers it with a CONTACTS message.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"TEXT\",\n  \"text\": \"send 200 to Mama\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Voice note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"AUDIO\",\n  \"mediaId\": \"MEDIA_ID_AUDIO\",\n  \"mimeType\": \"audio/webm\",\n  \"voiceNote\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"IMAGE\",\n  \"mediaId\": \"MEDIA_ID_IMAGE\",\n  \"mimeType\": \"image/jpeg\",\n  \"caption\": \"pay this till\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"DOCUMENT\",\n  \"mediaId\": \"MEDIA_ID_DOC\",\n  \"mimeType\": \"application/pdf\",\n  \"fileName\": \"invoice.pdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Shared contact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"CONTACTS\",\n  \"contactsSummary\": \"Mama 0712345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Shared location",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"LOCATION\",\n  \"latitude\": -1.2921,\n  \"longitude\": 36.8219,\n  \"locationLabel\": \"Nairobi\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Menu list choice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"LIST_REPLY\",\n  \"actionId\": \"MENU:till\",\n  \"actionTitle\": \"Pay a Till\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel button tap",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "Cancels a wallet request. Needs a real actionId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"from\": \"{{customerPhone}}\",\n  \"senderName\": \"Test Customer\",\n  \"timestamp\": 0,\n  \"kind\": \"BUTTON_REPLY\",\n  \"actionId\": \"WCAN:{{actionId}}\",\n  \"actionTitle\": \"Cancel\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                  "pm.collectionVariables.set('nowSeconds', String(Math.floor(Date.now() / 1000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202', function () { pm.expect(pm.response.code).to.be.oneOf([202]); });",
+                  "// The agent answers on its own threads. Read the reply with \"Read the chat\" below, or in the Chat tab of the console."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bad message (expects 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{agentUrl}}/internal/inbound",
+              "host": [
+                "{{agentUrl}}"
+              ],
+              "path": [
+                "internal",
+                "inbound"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"\",\n  \"kind\": \"TEXT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.expect(pm.response.code).to.be.oneOf([400]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Customer chat (kept by the agent)",
+          "description": "The chat belongs to the phone number in the path. The apps never call these directly: companion-api takes the number from the sign-in token.",
+          "item": [
+            {
+              "name": "Read the chat",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentUrl}}/internal/chat/{{customerPhone}}/messages?after=0&limit=100",
+                  "host": [
+                    "{{agentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "chat",
+                    "{{customerPhone}}",
+                    "messages"
+                  ],
+                  "query": [
+                    {
+                      "key": "after",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "100"
+                    }
+                  ]
+                },
+                "description": "Messages with number above `after`, oldest first, plus `typing` and `lastId`."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Send a chat message as the customer",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentUrl}}/internal/chat/{{customerPhone}}/send",
+                  "host": [
+                    "{{agentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "chat",
+                    "{{customerPhone}}",
+                    "send"
+                  ]
+                },
+                "description": "What companion-api relays for the app. kind can be TEXT, BUTTON_REPLY, LIST_REPLY, CONTACTS, LOCATION, IMAGE, DOCUMENT, AUDIO or VIDEO.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientMessageId\": \"{{messageId}}\",\n  \"kind\": \"TEXT\",\n  \"text\": \"hi\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 202', function () { pm.expect(pm.response.code).to.be.oneOf([200, 202]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Clear the chat",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{agentUrl}}/internal/chat/{{customerPhone}}/messages",
+                  "host": [
+                    "{{agentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "chat",
+                    "{{customerPhone}}",
+                    "messages"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 204', function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "value": "X-Internal-Key",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "value": "{{internalKey}}",
+            "type": "string"
+          },
+          {
+            "key": "in",
+            "value": "header",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "2. companion-api (port 8084)",
+      "description": "Wallet requests for the customer's own M-Pesa. Internal endpoints use X-Internal-Key, app endpoints use the device token.",
+      "item": [
+        {
+          "name": "A. Walkthrough: run these in order",
+          "description": "Sign in, prepare a request, approve, hand off and report. Run with the collection runner or step by step.",
+          "item": [
+            {
+              "name": "1. Ask for a sign-in code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/auth/request-code",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "request-code"
+                  ]
+                },
+                "description": "The server sends a 6 digit code to the phone by SMS. With CODE_DELIVERY=dev the answer also contains `devCode`, which is saved as linkCode. With CODE_DELIVERY=log read it from the companion-api log and put it in the linkCode variable. Valid 10 minutes, 5 tries, 3 codes an hour.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customerPhone}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.devCode; if (v !== undefined && v !== null) { pm.collectionVariables.set('linkCode', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2. Phone signs in with the code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/auth/verify",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "verify"
+                  ]
+                },
+                "description": "Returns a signed token tied to the device. Saved as deviceToken.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customerPhone}}\",\n  \"code\": \"{{linkCode}}\",\n  \"deviceId\": \"{{deviceId}}\",\n  \"deviceName\": \"Postman\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.token; if (v !== undefined && v !== null) { pm.collectionVariables.set('deviceToken', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3. Agent prepares a Paybill request",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions"
+                  ]
+                },
+                "description": "Called by agent-service when the customer asks to pay a Paybill. The request id is saved as actionId.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"phone\": \"{{customerPhone}}\",\n  \"type\": \"PAY_BILL\",\n  \"amount\": 1200,\n  \"source\": \"TEXT\",\n  \"details\": {\n    \"paybill\": \"888880\",\n    \"account\": \"123456\",\n    \"businessName\": \"KPLC\"\n  },\n  \"label\": \"Electricity\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'wa-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                      "const d = new Date(Date.now() + 86400000 + 3 * 3600000);",
+                      "pm.collectionVariables.set('startDate', d.toISOString().slice(0, 10));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('Request is CREATED', function () { pm.expect(pm.response.json().status).to.eql('CREATED'); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('actionId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "4. App lists requests",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{deviceToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "5. App opens the request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}"
+                  ]
+                },
+                "description": "Shows the summary and warnings. Phone numbers in the summary are masked.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{deviceToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "6. Customer approves on the phone",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}/approve",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "approve"
+                  ]
+                },
+                "description": "method is BIOMETRIC or DEVICE_CREDENTIAL. It is recorded, the server cannot verify it.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"method\": \"BIOMETRIC\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{deviceToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('APPROVED', function () { pm.expect(pm.response.json().status).to.eql('APPROVED'); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "7. App opens M-Pesa (hand-off)",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}/handoff",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "handoff"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{deviceToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('HANDED_OFF', function () { pm.expect(pm.response.json().status).to.eql('HANDED_OFF'); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "8a. Customer reports it done",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}/report",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "report"
+                  ]
+                },
+                "description": "Recorded as reported by the customer. Publishes a wallet.action event.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"outcome\": \"DONE\",\n  \"receipt\": \"SGL1234567\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{deviceToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "8b. OR: app sends the M-Pesa message evidence (Android)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}/sms-evidence",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "sms-evidence"
+                  ]
+                },
+                "description": "Run this instead of 8a (it works from APPROVED, HANDED_OFF, DONE_REPORTED and NOT_DONE). amount, kind, time and account are checked. A mismatch gives 400 with a warning. One code can back only one request. Change the code to run it again.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"QWE9876543\",\n  \"kind\": \"BILL\",\n  \"amount\": 1200,\n  \"payee\": \"KPLC PREPAID\",\n  \"account\": \"123456\",\n  \"smsAt\": \"{{smsAtMillis}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{deviceToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('smsAtMillis', String(Date.now()));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 400 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 400, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "9. Agent attaches a code sent in chat",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions/{{actionId}}/receipt",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions",
+                    "{{actionId}}",
+                    "receipt"
+                  ]
+                },
+                "description": "record_mpesa_confirmation uses this. A different code on a request that already has one gives 409.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customerPhone}}\",\n  \"receipt\": \"SGL1234567\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "key",
+                      "value": "X-Internal-Key",
+                      "type": "string"
+                    },
+                    {
+                      "key": "value",
+                      "value": "{{internalKey}}",
+                      "type": "string"
+                    },
+                    {
+                      "key": "in",
+                      "value": "header",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "10. Phone signs out",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/devices/me",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "devices",
+                    "me"
+                  ]
+                },
+                "description": "Revokes this device. Run the walkthrough again from step 1 to sign in again.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{deviceToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 204', function () { pm.expect(pm.response.code).to.be.oneOf([204]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "B. Agent side (X-Internal-Key)",
+          "description": "",
+          "item": [
+            {
+              "name": "Create: send money to a number",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"phone\": \"{{customerPhone}}\",\n  \"type\": \"SEND_MONEY\",\n  \"amount\": 500,\n  \"source\": \"TEXT\",\n  \"details\": {\n    \"recipientPhone\": \"0712345678\",\n    \"recipientName\": \"John\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'wa-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                      "const d = new Date(Date.now() + 86400000 + 3 * 3600000);",
+                      "pm.collectionVariables.set('startDate', d.toISOString().slice(0, 10));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('Request is CREATED', function () { pm.expect(pm.response.json().status).to.eql('CREATED'); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('actionId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create: send money to a contact (name only)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions"
+                  ]
+                },
+                "description": "The server never sees the contact's number. The app searches the phone, Google, Microsoft or a file for the name.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"phone\": \"{{customerPhone}}\",\n  \"type\": \"SEND_MONEY\",\n  \"amount\": 500,\n  \"source\": \"VOICE\",\n  \"details\": {\n    \"contactName\": \"Mama\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'wa-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                      "const d = new Date(Date.now() + 86400000 + 3 * 3600000);",
+                      "pm.collectionVariables.set('startDate', d.toISOString().slice(0, 10));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('Request is CREATED', function () { pm.expect(pm.response.json().status).to.eql('CREATED'); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('actionId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create: pay a Paybill",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"phone\": \"{{customerPhone}}\",\n  \"type\": \"PAY_BILL\",\n  \"amount\": 1200,\n  \"source\": \"TEXT\",\n  \"details\": {\n    \"paybill\": \"888880\",\n    \"account\": \"123456\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'wa-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                      "const d = new Date(Date.now() + 86400000 + 3 * 3600000);",
+                      "pm.collectionVariables.set('startDate', d.toISOString().slice(0, 10));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('Request is CREATED', function () { pm.expect(pm.response.json().status).to.eql('CREATED'); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('actionId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create: pay a Till",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"phone\": \"{{customerPhone}}\",\n  \"type\": \"PAY_TILL\",\n  \"amount\": 300,\n  \"source\": \"TEXT\",\n  \"details\": {\n    \"till\": \"123456\",\n    \"businessName\": \"Mama Mboga\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'wa-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                      "const d = new Date(Date.now() + 86400000 + 3 * 3600000);",
+                      "pm.collectionVariables.set('startDate', d.toISOString().slice(0, 10));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('Request is CREATED', function () { pm.expect(pm.response.json().status).to.eql('CREATED'); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('actionId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create: pay Pochi la Biashara",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"phone\": \"{{customerPhone}}\",\n  \"type\": \"PAY_POCHI\",\n  \"amount\": 250,\n  \"source\": \"TEXT\",\n  \"details\": {\n    \"pochiPhone\": \"0722000111\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'wa-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                      "const d = new Date(Date.now() + 86400000 + 3 * 3600000);",
+                      "pm.collectionVariables.set('startDate', d.toISOString().slice(0, 10));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('Request is CREATED', function () { pm.expect(pm.response.json().status).to.eql('CREATED'); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('actionId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create: buy airtime (own number)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"phone\": \"{{customerPhone}}\",\n  \"type\": \"BUY_AIRTIME\",\n  \"amount\": 50,\n  \"source\": \"TEXT\",\n  \"details\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'wa-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                      "const d = new Date(Date.now() + 86400000 + 3 * 3600000);",
+                      "pm.collectionVariables.set('startDate', d.toISOString().slice(0, 10));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('Request is CREATED', function () { pm.expect(pm.response.json().status).to.eql('CREATED'); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('actionId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create: buy airtime for another number",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"phone\": \"{{customerPhone}}\",\n  \"type\": \"BUY_AIRTIME\",\n  \"amount\": 100,\n  \"source\": \"TEXT\",\n  \"details\": {\n    \"airtimePhone\": \"0722000111\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'wa-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                      "const d = new Date(Date.now() + 86400000 + 3 * 3600000);",
+                      "pm.collectionVariables.set('startDate', d.toISOString().slice(0, 10));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('Request is CREATED', function () { pm.expect(pm.response.json().status).to.eql('CREATED'); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('actionId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create: set up a Ratiba",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions"
+                  ]
+                },
+                "description": "startDate must be today or later and within a year. The script sets it to tomorrow.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"phone\": \"{{customerPhone}}\",\n  \"type\": \"SCHEDULE_RATIBA\",\n  \"amount\": 2000,\n  \"source\": \"TEXT\",\n  \"details\": {\n    \"target\": \"PAY_BILL\",\n    \"paybill\": \"888880\",\n    \"account\": \"123456\",\n    \"frequency\": \"MONTHLY\",\n    \"startDate\": \"{{startDate}}\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'wa-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));",
+                      "const d = new Date(Date.now() + 86400000 + 3 * 3600000);",
+                      "pm.collectionVariables.set('startDate', d.toISOString().slice(0, 10));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('Request is CREATED', function () { pm.expect(pm.response.json().status).to.eql('CREATED'); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('actionId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create with bad details (expects 400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions"
+                  ]
+                },
+                "description": "Paybill numbers are 5 to 7 digits.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"wa-bad-1\",\n  \"phone\": \"{{customerPhone}}\",\n  \"type\": \"PAY_BILL\",\n  \"amount\": 100,\n  \"details\": {\n    \"paybill\": \"12\",\n    \"account\": \"x\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 400', function () { pm.expect(pm.response.code).to.be.oneOf([400]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List requests",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions?phone={{customerPhone}}&limit=10",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get one request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions/{{actionId}}?phone={{customerPhone}}",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions",
+                    "{{actionId}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": "A request that belongs to another phone number answers 404."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Cancel a waiting request",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions/{{actionId}}/cancel",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions",
+                    "{{actionId}}",
+                    "cancel"
+                  ]
+                },
+                "description": "Only possible before the customer opens M-Pesa.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customerPhone}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Attach an M-Pesa code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/actions/{{actionId}}/receipt",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "actions",
+                    "{{actionId}}",
+                    "receipt"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customerPhone}}\",\n  \"receipt\": \"SGL1234567\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Issue a sign-in code (without SMS)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/internal/link-codes",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "link-codes"
+                  ]
+                },
+                "description": "Returns a code without sending an SMS, for tests. A new code replaces the old one.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customerPhone}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.code; if (v !== undefined && v !== null) { pm.collectionVariables.set('linkCode', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "auth": {
+            "type": "apikey",
+            "apikey": [
+              {
+                "key": "key",
+                "value": "X-Internal-Key",
+                "type": "string"
+              },
+              {
+                "key": "value",
+                "value": "{{internalKey}}",
+                "type": "string"
+              },
+              {
+                "key": "in",
+                "value": "header",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "C. App side (Bearer token)",
+          "description": "",
+          "item": [
+            {
+              "name": "Ask for a sign-in code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/auth/request-code",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "request-code"
+                  ]
+                },
+                "description": "Sends the code by SMS. devCode is in the answer only when CODE_DELIVERY=dev.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customerPhone}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.devCode; if (v !== undefined && v !== null) { pm.collectionVariables.set('linkCode', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Sign in with a code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/auth/verify",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "verify"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customerPhone}}\",\n  \"code\": \"{{linkCode}}\",\n  \"deviceId\": \"{{deviceId}}\",\n  \"deviceName\": \"Postman\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.token; if (v !== undefined && v !== null) { pm.collectionVariables.set('deviceToken', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Hand-off settings",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/config",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "config"
+                  ]
+                },
+                "description": "USSD main code, USSD templates, M-Pesa app identifiers. Public.",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List requests",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get a request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Approve",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}/approve",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "approve"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"method\": \"DEVICE_CREDENTIAL\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Hand off",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}/handoff",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "handoff"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Report done",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}/report",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "report"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"outcome\": \"DONE\",\n  \"receipt\": \"SGL1234567\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Report not done",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}/report",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "report"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"outcome\": \"NOT_DONE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Send message evidence",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}/sms-evidence",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "sms-evidence"
+                  ]
+                },
+                "description": "kind is SENT, PAID, BILL or AIRTIME. Use values that match your request or you will get 400.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"ZXC1112223\",\n  \"kind\": \"PAID\",\n  \"amount\": 300,\n  \"payee\": \"MAMA MBOGA\",\n  \"smsAt\": \"{{smsAtMillis}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('smsAtMillis', String(Date.now()));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 400 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 400, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Decline",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions/{{actionId}}/decline",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "decline"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Sign out this phone",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/devices/me",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "devices",
+                    "me"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 204', function () { pm.expect(pm.response.code).to.be.oneOf([204]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Call without a token (expects 401)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/actions",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 401', function () { pm.expect(pm.response.code).to.be.oneOf([401]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{deviceToken}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "C2. Chat (Bearer token)",
+          "description": "Needs a device token from the walkthrough. The phone number comes from the token, never from the request.",
+          "item": [
+            {
+              "name": "Read the chat",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/chat/messages?after=0&limit=100",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "messages"
+                  ],
+                  "query": [
+                    {
+                      "key": "after",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "100"
+                    }
+                  ]
+                },
+                "description": "Poll this every second or two while the chat is open. Use the highest message id as the next `after`."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Send text",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/chat/messages",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "messages"
+                  ]
+                },
+                "description": "clientMessageId makes a retry safe: the same id is stored once.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientMessageId\": \"{{messageId}}\",\n  \"kind\": \"TEXT\",\n  \"text\": \"send 500 to Mama\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('messageId', 'msg-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Answer a button",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/chat/messages",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "messages"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientMessageId\": \"{{messageId}}\",\n  \"kind\": \"BUTTON_REPLY\",\n  \"actionId\": \"yes\",\n  \"actionTitle\": \"Yes\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Answer a menu",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/chat/messages",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "messages"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientMessageId\": \"{{messageId}}\",\n  \"kind\": \"LIST_REPLY\",\n  \"actionId\": \"MENU:till\",\n  \"actionTitle\": \"Pay a Till\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Share a contact",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/chat/messages",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "messages"
+                  ]
+                },
+                "description": "What the app sends after the customer picks someone in the contact finder. The last word is the number.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientMessageId\": \"{{messageId}}\",\n  \"kind\": \"CONTACTS\",\n  \"contactsSummary\": \"Mama Wanjiku 0712345678\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Share a location",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/chat/messages",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "messages"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientMessageId\": \"{{messageId}}\",\n  \"kind\": \"LOCATION\",\n  \"latitude\": -1.2921,\n  \"longitude\": 36.8219,\n  \"locationLabel\": \"Nairobi\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Upload a file",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "image/png"
+                  },
+                  {
+                    "key": "X-File-Name",
+                    "value": "photo.png"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/chat/media",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "media"
+                  ]
+                },
+                "description": "Choose a file in the Body tab (binary) and set Content-Type to match. The answer has mediaId, which the next call names.",
+                "body": {
+                  "mode": "file",
+                  "file": {}
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.mediaId; if (v !== undefined && v !== null) { pm.collectionVariables.set('mediaId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Send the uploaded file",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companionUrl}}/api/chat/messages",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "messages"
+                  ]
+                },
+                "description": "kind is IMAGE, DOCUMENT (add fileName), AUDIO (add voiceNote: true) or VIDEO.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientMessageId\": \"{{messageId}}\",\n  \"kind\": \"IMAGE\",\n  \"mediaId\": \"{{mediaId}}\",\n  \"mimeType\": \"image/png\",\n  \"caption\": \"pay this till\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 400', function () { pm.expect(pm.response.code).to.be.oneOf([200, 400]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Download a file from the chat",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/chat/media/{{mediaId}}",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "media",
+                    "{{mediaId}}"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Clear the chat",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/api/chat/messages",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "messages"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 204', function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{deviceToken}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "D. Public pages",
+          "description": "",
+          "item": [
+            {
+              "name": "Landing page for a link",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/a/{{actionId}}",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    "a",
+                    "{{actionId}}"
+                  ]
+                },
+                "description": "The page behind the link sent in the chat. It shows nothing about the request.",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Android app links file",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/.well-known/assetlinks.json",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    ".well-known",
+                    "assetlinks.json"
+                  ]
+                },
+                "description": "404 until COMPANION_ANDROID_PACKAGE and COMPANION_ANDROID_SHA256 are set.",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "iOS app links file",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{companionUrl}}/.well-known/apple-app-site-association",
+                  "host": [
+                    "{{companionUrl}}"
+                  ],
+                  "path": [
+                    ".well-known",
+                    "apple-app-site-association"
+                  ]
+                },
+                "description": "404 until COMPANION_IOS_APP_ID is set.",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. payment-service (port 8083, optional Daraja module)",
+      "description": "Only needed if you run the business payments module (docker compose --profile business).",
+      "item": [
+        {
+          "name": "Payments (STK Push)",
+          "description": "",
+          "item": [
+            {
+              "name": "Create a payment (STK Push)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/payments",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "payments"
+                  ]
+                },
+                "description": "Sends an M-Pesa prompt to the phone. The same idempotencyKey never pushes twice. Needs Daraja credentials.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"phone\": \"{{customerPhone}}\",\n  \"amount\": 10,\n  \"accountReference\": \"ORD-1\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'pay-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('paymentId', v); } } catch (e) { }",
+                      "try { const j = pm.response.json(); const v = j.checkoutRequestId; if (v !== undefined && v !== null) { pm.collectionVariables.set('checkoutRequestId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get a payment",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/payments/{{paymentId}}?phone={{customerPhone}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "payments",
+                    "{{paymentId}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Latest payment of a phone",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/payments/latest?phone={{customerPhone}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "payments",
+                    "latest"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List payments of a phone",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/payments?phone={{customerPhone}}&limit=5",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "payments"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "5"
+                    }
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Receipt (PDF)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/payments/{{paymentId}}/receipt?phone={{customerPhone}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "payments",
+                    "{{paymentId}}",
+                    "receipt"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 404 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "auth": {
+            "type": "apikey",
+            "apikey": [
+              {
+                "key": "key",
+                "value": "X-Internal-Key",
+                "type": "string"
+              },
+              {
+                "key": "value",
+                "value": "{{internalKey}}",
+                "type": "string"
+              },
+              {
+                "key": "in",
+                "value": "header",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Operations (refunds, payouts, lookups) and approvals",
+          "description": "",
+          "item": [
+            {
+              "name": "Request: transaction status (staff)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/operations",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "operations"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"type\": \"TRANSACTION_STATUS\",\n  \"actorPhone\": \"{{staffPhone}}\",\n  \"targetReceipt\": \"SGL1234567\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'op-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 403 or 400', function () { pm.expect(pm.response.code).to.be.oneOf([200, 403, 400]); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('operationId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Request: account balance (admin)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/operations",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "operations"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"type\": \"ACCOUNT_BALANCE\",\n  \"actorPhone\": \"{{adminPhone}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'op-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 403 or 400', function () { pm.expect(pm.response.code).to.be.oneOf([200, 403, 400]); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('operationId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Request: refund",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/operations",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "operations"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"type\": \"REFUND\",\n  \"actorPhone\": \"{{staffPhone}}\",\n  \"amount\": 10,\n  \"relatedPaymentId\": \"{{paymentId}}\",\n  \"reason\": \"Customer asked\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'op-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 403 or 400', function () { pm.expect(pm.response.code).to.be.oneOf([200, 403, 400]); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('operationId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Request: withdrawal (B2C)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/operations",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "operations"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"type\": \"WITHDRAWAL\",\n  \"actorPhone\": \"{{staffPhone}}\",\n  \"amount\": 100,\n  \"recipientPhone\": \"0722000111\",\n  \"reason\": \"Float\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'op-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 403 or 400', function () { pm.expect(pm.response.code).to.be.oneOf([200, 403, 400]); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('operationId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Request: disbursement (B2C)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/operations",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "operations"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"type\": \"DISBURSEMENT\",\n  \"actorPhone\": \"{{staffPhone}}\",\n  \"amount\": 100,\n  \"recipientPhone\": \"0722000111\",\n  \"reason\": \"Supplier\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'op-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 403 or 400', function () { pm.expect(pm.response.code).to.be.oneOf([200, 403, 400]); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('operationId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Request: reversal (admin)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/operations",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "operations"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"type\": \"REVERSAL\",\n  \"actorPhone\": \"{{adminPhone}}\",\n  \"amount\": 10,\n  \"targetReceipt\": \"SGL1234567\",\n  \"reason\": \"Wrong payment\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('idempotencyKey', 'op-' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, ''));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 403 or 400', function () { pm.expect(pm.response.code).to.be.oneOf([200, 403, 400]); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('operationId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get an operation",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/operations/{{operationId}}?actorPhone={{staffPhone}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "operations",
+                    "{{operationId}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "actorPhone",
+                      "value": "{{staffPhone}}"
+                    }
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 403 or 404', function () { pm.expect(pm.response.code).to.be.oneOf([200, 403, 404]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "My operations",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/operations?actorPhone={{staffPhone}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "operations"
+                  ],
+                  "query": [
+                    {
+                      "key": "actorPhone",
+                      "value": "{{staffPhone}}"
+                    }
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Operations waiting for my approval",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/operations/pending?actorPhone={{approverPhone}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "operations",
+                    "pending"
+                  ],
+                  "query": [
+                    {
+                      "key": "actorPhone",
+                      "value": "{{approverPhone}}"
+                    }
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Approve an operation (a different person)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/operations/{{operationId}}/approve",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "operations",
+                    "{{operationId}}",
+                    "approve"
+                  ]
+                },
+                "description": "Nobody can approve their own request unless that is switched on.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"actorPhone\": \"{{approverPhone}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 403 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 403, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Reject an operation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/operations/{{operationId}}/reject",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "operations",
+                    "{{operationId}}",
+                    "reject"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"actorPhone\": \"{{approverPhone}}\",\n  \"reason\": \"Not needed\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 403 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 403, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "auth": {
+            "type": "apikey",
+            "apikey": [
+              {
+                "key": "key",
+                "value": "X-Internal-Key",
+                "type": "string"
+              },
+              {
+                "key": "value",
+                "value": "{{internalKey}}",
+                "type": "string"
+              },
+              {
+                "key": "in",
+                "value": "header",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "QR, C2B registration and staff",
+          "description": "",
+          "item": [
+            {
+              "name": "Generate a pay QR code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/qr",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "qr"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 100,\n  \"accountReference\": \"ORD-1\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Register C2B URLs with Daraja (once)",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/c2b/register",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "c2b",
+                    "register"
+                  ]
+                },
+                "description": "Needed once for direct Paybill or Till payments."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Look up a role",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{paymentUrl}}/internal/staff/{{staffPhone}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "staff",
+                    "{{staffPhone}}"
+                  ]
+                },
+                "description": "Unknown numbers are CUSTOMER."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "auth": {
+            "type": "apikey",
+            "apikey": [
+              {
+                "key": "key",
+                "value": "X-Internal-Key",
+                "type": "string"
+              },
+              {
+                "key": "value",
+                "value": "{{internalKey}}",
+                "type": "string"
+              },
+              {
+                "key": "in",
+                "value": "header",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Daraja callbacks (Safaricom calls these)",
+          "description": "No internal key. The secret token in the path (callbackSecret) protects them, and MPESA_CALLBACK_ALLOWED_IPS can restrict by address.",
+          "item": [
+            {
+              "name": "STK result: success",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/api/callbacks/stk/{{callbackSecret}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "callbacks",
+                    "stk",
+                    "{{callbackSecret}}"
+                  ]
+                },
+                "description": "Needs the checkoutRequestId of a real payment (saved by Create a payment).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Body\": {\n    \"stkCallback\": {\n      \"MerchantRequestID\": \"29115-34620561-1\",\n      \"CheckoutRequestID\": \"{{checkoutRequestId}}\",\n      \"ResultCode\": 0,\n      \"ResultDesc\": \"The service request is processed successfully.\",\n      \"CallbackMetadata\": {\n        \"Item\": [\n          {\n            \"Name\": \"Amount\",\n            \"Value\": 10\n          },\n          {\n            \"Name\": \"MpesaReceiptNumber\",\n            \"Value\": \"SGL1234567\"\n          },\n          {\n            \"Name\": \"TransactionDate\",\n            \"Value\": 20261029201500\n          },\n          {\n            \"Name\": \"PhoneNumber\",\n            \"Value\": 254700000001\n          }\n        ]\n      }\n    }\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "STK result: customer cancelled (1032)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/api/callbacks/stk/{{callbackSecret}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "callbacks",
+                    "stk",
+                    "{{callbackSecret}}"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Body\": {\n    \"stkCallback\": {\n      \"MerchantRequestID\": \"29115-34620561-2\",\n      \"CheckoutRequestID\": \"{{checkoutRequestId}}\",\n      \"ResultCode\": 1032,\n      \"ResultDesc\": \"Request cancelled by user\"\n    }\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Operation result: success (B2C, status, balance, reversal)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/api/callbacks/ops/result/{{callbackSecret}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "callbacks",
+                    "ops",
+                    "result",
+                    "{{callbackSecret}}"
+                  ]
+                },
+                "description": "Set originatorConversationId to the one Daraja returned for a real operation. The API response does not show it; it is in the payment-service log and the mpesa_operations table.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Result\": {\n    \"ResultType\": 0,\n    \"ResultCode\": 0,\n    \"ResultDesc\": \"The service request is processed successfully.\",\n    \"OriginatorConversationID\": \"{{originatorConversationId}}\",\n    \"ConversationID\": \"AG_20261029_0001\",\n    \"TransactionID\": \"SGL7654321\",\n    \"ResultParameters\": {\n      \"ResultParameter\": [\n        {\n          \"Key\": \"TransactionAmount\",\n          \"Value\": 100\n        },\n        {\n          \"Key\": \"TransactionReceipt\",\n          \"Value\": \"SGL7654321\"\n        }\n      ]\n    }\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Operation timeout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/api/callbacks/ops/timeout/{{callbackSecret}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "callbacks",
+                    "ops",
+                    "timeout",
+                    "{{callbackSecret}}"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Result\": {\n    \"ResultType\": 1,\n    \"ResultCode\": 1,\n    \"ResultDesc\": \"The service request timed out.\",\n    \"OriginatorConversationID\": \"{{originatorConversationId}}\",\n    \"ConversationID\": \"AG_20261029_0001\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "C2B validation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/api/callbacks/c2b/validation/{{callbackSecret}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "callbacks",
+                    "c2b",
+                    "validation",
+                    "{{callbackSecret}}"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TransactionType\": \"Pay Bill\",\n  \"TransID\": \"SGL1111111\",\n  \"TransTime\": \"20261029201500\",\n  \"TransAmount\": \"100.00\",\n  \"BusinessShortCode\": \"600000\",\n  \"BillRefNumber\": \"ORD-1\",\n  \"MSISDN\": \"254700000001\",\n  \"FirstName\": \"Test\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "C2B confirmation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{paymentUrl}}/api/callbacks/c2b/confirmation/{{callbackSecret}}",
+                  "host": [
+                    "{{paymentUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "callbacks",
+                    "c2b",
+                    "confirmation",
+                    "{{callbackSecret}}"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TransactionType\": \"Pay Bill\",\n  \"TransID\": \"SGL1111112\",\n  \"TransTime\": \"20261029201500\",\n  \"TransAmount\": \"100.00\",\n  \"BusinessShortCode\": \"600000\",\n  \"BillRefNumber\": \"ORD-1\",\n  \"OrgAccountBalance\": \"5000.00\",\n  \"MSISDN\": \"254700000001\",\n  \"FirstName\": \"Test\",\n  \"LastName\": \"Customer\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "agentUrl",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "paymentUrl",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "companionUrl",
+      "value": "http://localhost:8084"
+    },
+    {
+      "key": "internalKey",
+      "value": "change-me-to-a-long-random-string"
+    },
+    {
+      "key": "customerPhone",
+      "value": "254700000001"
+    },
+    {
+      "key": "staffPhone",
+      "value": "254700000002"
+    },
+    {
+      "key": "approverPhone",
+      "value": "254700000003"
+    },
+    {
+      "key": "adminPhone",
+      "value": "254700000004"
+    },
+    {
+      "key": "callbackSecret",
+      "value": "your-mpesa-callback-secret"
+    },
+    {
+      "key": "deviceId",
+      "value": "postman-device-0001"
+    },
+    {
+      "key": "linkCode",
+      "value": ""
+    },
+    {
+      "key": "deviceToken",
+      "value": ""
+    },
+    {
+      "key": "actionId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "paymentId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "operationId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "checkoutRequestId",
+      "value": "ws_CO_000000000000000000"
+    },
+    {
+      "key": "originatorConversationId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "idempotencyKey",
+      "value": ""
+    },
+    {
+      "key": "messageId",
+      "value": ""
+    },
+    {
+      "key": "mediaId",
+      "value": ""
+    },
+    {
+      "key": "nowSeconds",
+      "value": ""
+    },
+    {
+      "key": "startDate",
+      "value": ""
+    },
+    {
+      "key": "smsAtMillis",
+      "value": ""
+    }
+  ]
+}

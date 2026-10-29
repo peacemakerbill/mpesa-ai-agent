@@ -1,0 +1,17 @@
+# Used when the database type is mongodb (MongoDB 6 or later).
+# Collections and indexes are created by the service. There are no migrations to run.
+# MongoDB mode has no multi-document transactions and no row locks. Concurrent changes to one record are
+# caught with a version number instead, and the loser gets 409 Conflict and can try again.
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/companion}
+      auto-index-creation: true
+      uuid-representation: standard
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration

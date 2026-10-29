@@ -1,0 +1,99 @@
+server:
+  port: ${SERVER_PORT:8083}
+  # Lets request.getRemoteAddr() reflect the real client IP behind a trusted reverse proxy
+  forward-headers-strategy: native
+
+spring:
+  profiles:
+    # Which database this service uses: postgresql, mysql or mongodb.
+    # Change the word after the colon, or set DATABASE_TYPE in the environment.
+    # The settings for each live in application-postgresql.yml, application-mysql.yml and application-mongodb.yml.
+    active: ${DATABASE_TYPE:postgresql}
+  application:
+    name: payment-service
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  jackson:
+    default-property-inclusion: non_null
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# Shared secret that the agent-service and companion-api send in the X-Internal-Key header
+# Browser access for the test console (console/console.html). Empty means off. Never set this in production.
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+
+internal:
+  key: ${INTERNAL_KEY}
+
+mpesa:
+  # Sandbox: https://sandbox.safaricom.co.ke   Production: https://api.safaricom.co.ke
+  base-url: ${MPESA_BASE_URL:https://sandbox.safaricom.co.ke}
+  consumer-key: ${MPESA_CONSUMER_KEY}
+  consumer-secret: ${MPESA_CONSUMER_SECRET}
+  shortcode: ${MPESA_SHORTCODE:174379}
+  passkey: ${MPESA_PASSKEY}
+  # Paybill: CustomerPayBillOnline   Till number: CustomerBuyGoodsOnline
+  transaction-type: ${MPESA_TRANSACTION_TYPE:CustomerPayBillOnline}
+  # Public HTTPS address that Safaricom can reach. Include any gateway path prefix here.
+  public-base-url: ${PUBLIC_BASE_URL}
+  # Random string appended to the callback URL so only Safaricom (who knows the URL) can post to it
+  callback-secret: ${MPESA_CALLBACK_SECRET}
+  # Optional comma separated list of Safaricom source IPs. Empty means no IP check.
+  callback-allowed-ips: ${MPESA_CALLBACK_ALLOWED_IPS:}
+  # Optional Daraja APIs: B2C payouts, balance, transaction status, reversal, C2B and dynamic QR.
+  # Leave blank to run with STK Push only. Those operations then answer 503.
+  operations:
+    initiator-name: ${MPESA_INITIATOR_NAME:}
+    initiator-password: ${MPESA_INITIATOR_PASSWORD:}
+    # Safaricom public certificate (sandbox or production). Used to encrypt the initiator password.
+    certificate-path: ${MPESA_CERTIFICATE_PATH:}
+    # Alternative: a ready made SecurityCredential, used instead of password plus certificate
+    security-credential: ${MPESA_SECURITY_CREDENTIAL:}
+    # Check the current B2C version on the Daraja portal before going live
+    b2c-path: ${MPESA_B2C_PATH:/mpesa/b2c/v3/paymentrequest}
+    c2b-register-path: ${MPESA_C2B_REGISTER_PATH:/mpesa/c2b/v2/registerurl}
+    c2b-response-type: ${MPESA_C2B_RESPONSE_TYPE:Completed}
+    qr-merchant-name: ${MPESA_QR_MERCHANT_NAME:}
+    qr-trx-code: ${MPESA_QR_TRX_CODE:PB}
+    qr-cpi: ${MPESA_QR_CPI:}
+
+operations:
+  # Money leaving the business account (refunds, withdrawals, disbursements), in KES
+  max-payout: ${OPERATIONS_MAX_PAYOUT:20000}
+  daily-payout-limit: ${OPERATIONS_DAILY_PAYOUT_LIMIT:100000}
+  # Keep false in production: a second person must approve every payout
+  allow-self-approval: ${OPERATIONS_ALLOW_SELF_APPROVAL:false}
+
+business:
+  name: ${BUSINESS_NAME:Our Business}
+  support-phone: ${BUSINESS_SUPPORT_PHONE:}
+
+# Staff who may do more than a normal customer. Anyone not listed is a customer.
+# Set with environment variables, for example STAFF_MEMBERS_0_PHONE, STAFF_MEMBERS_0_NAME, STAFF_MEMBERS_0_ROLE.
+# Roles: STAFF, APPROVER, ADMIN (each includes the one before it).
+
+payments:
+  limits:
+    per-transaction: ${PAYMENT_LIMIT_PER_TX:70000}
+    per-day: ${PAYMENT_LIMIT_PER_DAY:150000}
+  reconcile:
+    enabled: true
+    interval: PT1M
+    min-age: PT2M
+    give-up-after: PT15M
+
+logging:
+  level:
+    com.mpesaagent: INFO
