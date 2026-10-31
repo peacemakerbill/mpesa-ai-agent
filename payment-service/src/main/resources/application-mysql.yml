@@ -8,9 +8,8 @@ spring:
   jpa:
     open-in-view: false
     properties:
-      hibernate:
-        jdbc:
-          time_zone: UTC
+      # Free form Hibernate setting, so the key is written in [ ] to keep its dots and underscore exactly as written
+      "[hibernate.jdbc.time_zone]": UTC
     hibernate:
       # Flyway owns the tables. Hibernate's own column type check is too strict for MySQL date columns.
       ddl-auto: none
@@ -19,7 +18,8 @@ spring:
     locations: classpath:db/migration/mysql
   autoconfigure:
     exclude:
-      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
-      - org.springframework.boot.actuate.autoconfigure.data.mongo.MongoHealthContributorAutoConfiguration
+      # Spring Boot 4 class names (they moved out of org.springframework.boot.autoconfigure)
+      - org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration
+      - org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration
+      - org.springframework.boot.data.mongodb.autoconfigure.DataMongoRepositoriesAutoConfiguration
+      - org.springframework.boot.mongodb.autoconfigure.health.MongoHealthContributorAutoConfiguration

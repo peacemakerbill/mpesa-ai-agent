@@ -1,0 +1,190 @@
+{
+  "properties": [
+    {
+      "name": "cors.allowed-origins",
+      "type": "java.lang.String",
+      "description": "Browser origins allowed to call this service, comma separated, for the test console (console/console.html). Empty means CORS is off. Never set this in production. Set with CORS_ALLOWED_ORIGINS.",
+      "defaultValue": ""
+    },
+    {
+      "name": "internal.key",
+      "type": "java.lang.String",
+      "description": "Shared secret that agent-service and companion-api send in the X-Internal-Key header. Required. Set with INTERNAL_KEY."
+    },
+    {
+      "name": "mpesa.base-url",
+      "type": "java.lang.String",
+      "description": "Daraja address. Sandbox: https://sandbox.safaricom.co.ke, production: https://api.safaricom.co.ke. Set with MPESA_BASE_URL.",
+      "defaultValue": "https://sandbox.safaricom.co.ke"
+    },
+    {
+      "name": "mpesa.consumer-key",
+      "type": "java.lang.String",
+      "description": "Daraja app consumer key. Required. Set with MPESA_CONSUMER_KEY."
+    },
+    {
+      "name": "mpesa.consumer-secret",
+      "type": "java.lang.String",
+      "description": "Daraja app consumer secret. Required. Set with MPESA_CONSUMER_SECRET."
+    },
+    {
+      "name": "mpesa.shortcode",
+      "type": "java.lang.String",
+      "description": "Paybill or Till number that receives the money. Set with MPESA_SHORTCODE.",
+      "defaultValue": "174379"
+    },
+    {
+      "name": "mpesa.passkey",
+      "type": "java.lang.String",
+      "description": "Passkey for the shortcode, used to build the STK Push password. Required. Set with MPESA_PASSKEY."
+    },
+    {
+      "name": "mpesa.transaction-type",
+      "type": "java.lang.String",
+      "description": "CustomerPayBillOnline for a Paybill, CustomerBuyGoodsOnline for a Till number. Set with MPESA_TRANSACTION_TYPE.",
+      "defaultValue": "CustomerPayBillOnline"
+    },
+    {
+      "name": "mpesa.public-base-url",
+      "type": "java.lang.String",
+      "description": "Public HTTPS address Safaricom can reach for callbacks. Include any gateway path prefix. Required. Set with PUBLIC_BASE_URL."
+    },
+    {
+      "name": "mpesa.callback-secret",
+      "type": "java.lang.String",
+      "description": "Random string added to the callback URL so only Safaricom, who knows the URL, can post to it. Required. Set with MPESA_CALLBACK_SECRET."
+    },
+    {
+      "name": "mpesa.callback-allowed-ips",
+      "type": "java.lang.String",
+      "description": "Safaricom source IPs allowed to call the callbacks, comma separated. Empty means no IP check. Set with MPESA_CALLBACK_ALLOWED_IPS.",
+      "defaultValue": ""
+    },
+    {
+      "name": "mpesa.operations.initiator-name",
+      "type": "java.lang.String",
+      "description": "Daraja initiator name for B2C, balance, status and reversal. Leave blank for STK Push only. Set with MPESA_INITIATOR_NAME.",
+      "defaultValue": ""
+    },
+    {
+      "name": "mpesa.operations.initiator-password",
+      "type": "java.lang.String",
+      "description": "Daraja initiator password, encrypted with the certificate. Set with MPESA_INITIATOR_PASSWORD.",
+      "defaultValue": ""
+    },
+    {
+      "name": "mpesa.operations.certificate-path",
+      "type": "java.lang.String",
+      "description": "Path to the Safaricom public certificate (sandbox or production). Set with MPESA_CERTIFICATE_PATH.",
+      "defaultValue": ""
+    },
+    {
+      "name": "mpesa.operations.security-credential",
+      "type": "java.lang.String",
+      "description": "A ready made SecurityCredential, used instead of the initiator password and certificate. Set with MPESA_SECURITY_CREDENTIAL.",
+      "defaultValue": ""
+    },
+    {
+      "name": "mpesa.operations.b2c-path",
+      "type": "java.lang.String",
+      "description": "Daraja B2C path. Check the current version on the Daraja portal. Set with MPESA_B2C_PATH.",
+      "defaultValue": "/mpesa/b2c/v3/paymentrequest"
+    },
+    {
+      "name": "mpesa.operations.c2b-register-path",
+      "type": "java.lang.String",
+      "description": "Daraja C2B register URL path. Set with MPESA_C2B_REGISTER_PATH.",
+      "defaultValue": "/mpesa/c2b/v2/registerurl"
+    },
+    {
+      "name": "mpesa.operations.c2b-response-type",
+      "type": "java.lang.String",
+      "description": "Default answer for C2B validation, Completed or Cancelled. Set with MPESA_C2B_RESPONSE_TYPE.",
+      "defaultValue": "Completed"
+    },
+    {
+      "name": "mpesa.operations.qr-merchant-name",
+      "type": "java.lang.String",
+      "description": "Merchant name shown on dynamic QR codes. Set with MPESA_QR_MERCHANT_NAME.",
+      "defaultValue": ""
+    },
+    {
+      "name": "mpesa.operations.qr-trx-code",
+      "type": "java.lang.String",
+      "description": "Transaction code for dynamic QR codes, for example PB for Paybill. Set with MPESA_QR_TRX_CODE.",
+      "defaultValue": "PB"
+    },
+    {
+      "name": "mpesa.operations.qr-cpi",
+      "type": "java.lang.String",
+      "description": "Credit party identifier for dynamic QR codes. Set with MPESA_QR_CPI.",
+      "defaultValue": ""
+    },
+    {
+      "name": "operations.max-payout",
+      "type": "java.lang.Long",
+      "description": "Largest single payout, in KES. Money leaving the business account: refunds, withdrawals, disbursements. Set with OPERATIONS_MAX_PAYOUT.",
+      "defaultValue": 20000
+    },
+    {
+      "name": "operations.daily-payout-limit",
+      "type": "java.lang.Long",
+      "description": "Most that can be paid out in one day, in KES. Set with OPERATIONS_DAILY_PAYOUT_LIMIT.",
+      "defaultValue": 100000
+    },
+    {
+      "name": "operations.allow-self-approval",
+      "type": "java.lang.Boolean",
+      "description": "Let the person who asked for a payout approve it. Keep false in production, so a second person approves every payout. Set with OPERATIONS_ALLOW_SELF_APPROVAL.",
+      "defaultValue": false
+    },
+    {
+      "name": "business.name",
+      "type": "java.lang.String",
+      "description": "Business name shown on receipts. Set with BUSINESS_NAME.",
+      "defaultValue": "Our Business"
+    },
+    {
+      "name": "business.support-phone",
+      "type": "java.lang.String",
+      "description": "Support number shown on receipts. Set with BUSINESS_SUPPORT_PHONE.",
+      "defaultValue": ""
+    },
+    {
+      "name": "payments.limits.per-transaction",
+      "type": "java.lang.Long",
+      "description": "Largest single payment, in KES. Set with PAYMENT_LIMIT_PER_TX.",
+      "defaultValue": 70000
+    },
+    {
+      "name": "payments.limits.per-day",
+      "type": "java.lang.Long",
+      "description": "Most one phone can pay in a day, in KES. Set with PAYMENT_LIMIT_PER_DAY.",
+      "defaultValue": 150000
+    },
+    {
+      "name": "payments.reconcile.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Turn on the job that asks Daraja about payments whose callback never arrived.",
+      "defaultValue": true
+    },
+    {
+      "name": "payments.reconcile.interval",
+      "type": "java.time.Duration",
+      "description": "How often the reconcile job runs.",
+      "defaultValue": "PT1M"
+    },
+    {
+      "name": "payments.reconcile.min-age",
+      "type": "java.time.Duration",
+      "description": "How old a pushed payment must be before the job checks it.",
+      "defaultValue": "PT2M"
+    },
+    {
+      "name": "payments.reconcile.give-up-after",
+      "type": "java.time.Duration",
+      "description": "How long the job keeps checking before it gives up on a payment.",
+      "defaultValue": "PT15M"
+    }
+  ]
+}

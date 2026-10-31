@@ -4,6 +4,9 @@ server:
   forward-headers-strategy: native
 
 spring:
+  # Loads a .env file from the folder the service is started in. Real environment variables win over it.
+  config:
+    import: optional:file:.env[.properties]
   profiles:
     # Which database this service uses: postgresql, mysql or mongodb.
     # Change the word after the colon, or set DATABASE_TYPE in the environment.
@@ -96,4 +99,4 @@ payments:
 
 logging:
   level:
-    com.mpesaagent: INFO
+    "[com.mpesaagent]": INFO
