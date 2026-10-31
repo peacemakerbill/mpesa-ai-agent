@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/card-console.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/card-console.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="384" height="184" viewBox="0 0 384 184" role="img" aria-label="console. One HTML file that works like a frontend for every endpoint.">
 <title>console. One HTML file that works like a frontend for every endpoint.</title>
 <defs><clipPath id="cc"><rect width="384" height="184" rx="8"/></clipPath><clipPath id="ch"><rect width="384" height="66"/></clipPath><pattern id="qconsole" width="8" height="6" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="8" height="2" fill="#fff" fill-opacity="0.1"/></pattern></defs>

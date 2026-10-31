@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/banner-ganji-app.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/banner-ganji-app.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="172" viewBox="0 0 1200 172" role="img" aria-label="ganji-app. The customer's side. Chat, approve, hand over to M-Pesa.">
 <title>ganji-app. The customer's side. Chat, approve, hand over to M-Pesa.</title>
 <defs><clipPath id="bc"><rect width="1200" height="172" rx="10"/></clipPath><pattern id="papp" width="40" height="40" patternUnits="userSpaceOnUse"><rect x="8" y="8" width="24" height="24" rx="7" fill="none" stroke="#fff" stroke-opacity="0.11249999999999999" stroke-width="1.4"/><circle cx="20" cy="20" r="2" fill="#fff" fill-opacity="0.12"/></pattern></defs>

@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/banner-platform.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/banner-platform.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="172" viewBox="0 0 1200 172" role="img" aria-label="Platform setup. Android and iOS changes to apply after setup.sh.">
 <title>Platform setup. Android and iOS changes to apply after setup.sh.</title>
 <defs><clipPath id="bc"><rect width="1200" height="172" rx="10"/></clipPath><pattern id="pplatform" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M14 9V19M9 14H19" stroke="#fff" stroke-opacity="0.165" stroke-width="1.4"/></pattern></defs>

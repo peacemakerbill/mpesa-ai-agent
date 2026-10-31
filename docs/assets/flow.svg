@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/flow.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/flow.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="252" viewBox="0 0 1200 252" role="img" aria-label="Request flow: ask, prepare, approve, hand off, record">
 <title>Request flow: ask, prepare, approve, hand off, record</title>
 <defs><clipPath id="fc"><rect width="1200" height="252" rx="10"/></clipPath><pattern id="fg" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" style="fill:var(--dot)"/></pattern></defs>

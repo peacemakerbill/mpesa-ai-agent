@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/banner-sms.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/banner-sms.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="172" viewBox="0 0 1200 172" role="img" aria-label="M-Pesa message check. Match M-Pesa's own SMS to the request. Android only.">
 <title>M-Pesa message check. Match M-Pesa's own SMS to the request. Android only.</title>
 <defs><clipPath id="bc"><rect width="1200" height="172" rx="10"/></clipPath><pattern id="psms" width="44" height="14" patternUnits="userSpaceOnUse"><path d="M0 7Q11 0 22 7T44 7" fill="none" stroke="#fff" stroke-opacity="0.12" stroke-width="1.6"/></pattern></defs>

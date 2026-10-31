@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/banner-ganji-api.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/banner-ganji-api.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="172" viewBox="0 0 1200 172" role="img" aria-label="ganji-api. The front door. Sign-in, chat relay and stored requests.">
 <title>ganji-api. The front door. Sign-in, chat relay and stored requests.</title>
 <defs><clipPath id="bc"><rect width="1200" height="172" rx="10"/></clipPath><pattern id="papi" width="48" height="48" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="48" height="5" fill="#fff" fill-opacity="0.07500000000000001"/><rect x="0" y="22" width="48" height="2" fill="#fff" fill-opacity="0.052500000000000005"/><rect x="0" y="0" width="5" height="48" fill="#fff" fill-opacity="0.07500000000000001"/><rect x="22" y="0" width="2" height="48" fill="#fff" fill-opacity="0.052500000000000005"/><rect x="0" y="0" width="5" height="5" fill="#fff" fill-opacity="0.07500000000000001"/></pattern></defs>

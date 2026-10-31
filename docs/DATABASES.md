@@ -1,5 +1,5 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/DATABASES.md
-     Replace the existing file. The images it uses are in m-ganji/docs/assets/. You can delete this comment. -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/DATABASES.md
+     Replace the existing file. The images it uses are in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
 
 <div align="center">
 

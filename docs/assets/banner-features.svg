@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/banner-features.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/banner-features.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="172" viewBox="0 0 1200 172" role="img" aria-label="Features. What the assistant, the app and the services do today.">
 <title>Features. What the assistant, the app and the services do today.</title>
 <defs><clipPath id="bc"><rect width="1200" height="172" rx="10"/></clipPath><pattern id="pfeatures" width="56" height="100" patternUnits="userSpaceOnUse"><path d="M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100" fill="none" stroke="#fff" stroke-opacity="0.0975" stroke-width="1.4"/><path d="M28 0L28 34L0 50L0 84L28 100L56 84L56 50L28 34" fill="none" stroke="#fff" stroke-opacity="0.0975" stroke-width="1.4"/></pattern></defs>

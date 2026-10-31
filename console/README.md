@@ -1,5 +1,5 @@
-<!-- PLACE THIS FILE AT: m-ganji/console/README.md
-     Replace the existing file if there is one. The SVG images it uses go in m-ganji/docs/assets/. You can delete this comment. -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/console/README.md
+     Replace the existing file if there is one. The SVG images it uses go in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
 
 <div align="center">
 

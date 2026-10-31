@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/sms-flow.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/sms-flow.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="296" viewBox="0 0 1200 296" role="img" aria-label="M-Pesa message check: tap, read and parse on the phone, then send fields and verify on the server">
 <title>M-Pesa message check: tap, read and parse on the phone, then send fields and verify on the server</title>
 <defs><clipPath id="fc"><rect width="1200" height="296" rx="10"/></clipPath><pattern id="fg" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" style="fill:var(--dot)"/></pattern></defs>

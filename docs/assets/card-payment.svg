@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/card-payment.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/card-payment.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="384" height="184" viewBox="0 0 384 184" role="img" aria-label="payment-service. Daraja for a business: STK Push, refunds, payouts, staff approvals.">
 <title>payment-service. Daraja for a business: STK Push, refunds, payouts, staff approvals.</title>
 <defs><clipPath id="cc"><rect width="384" height="184" rx="8"/></clipPath><clipPath id="ch"><rect width="384" height="66"/></clipPath><pattern id="qpay" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2" fill="#fff" fill-opacity="0.2"/></pattern></defs>

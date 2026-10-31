@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/banner-postman.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/banner-postman.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="172" viewBox="0 0 1200 172" role="img" aria-label="postman. A collection and an environment for every endpoint.">
 <title>postman. A collection and an environment for every endpoint.</title>
 <defs><clipPath id="bc"><rect width="1200" height="172" rx="10"/></clipPath><pattern id="ppostman" width="64" height="64" patternUnits="userSpaceOnUse"><circle cx="32" cy="32" r="8" fill="none" stroke="#fff" stroke-opacity="0.10500000000000001" stroke-width="1.6"/><circle cx="32" cy="32" r="16" fill="none" stroke="#fff" stroke-opacity="0.09" stroke-width="1.6"/><circle cx="32" cy="32" r="24" fill="none" stroke="#fff" stroke-opacity="0.07500000000000001" stroke-width="1.6"/><circle cx="32" cy="32" r="32" fill="none" stroke="#fff" stroke-opacity="0.06" stroke-width="1.6"/></pattern></defs>

@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/banner-databases.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/banner-databases.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="172" viewBox="0 0 1200 172" role="img" aria-label="Databases. Choosing and switching the database.">
 <title>Databases. Choosing and switching the database.</title>
 <defs><clipPath id="bc"><rect width="1200" height="172" rx="10"/></clipPath><pattern id="pdb" width="80" height="24" patternUnits="userSpaceOnUse"><rect x="0" y="23" width="80" height="1" fill="#fff" fill-opacity="0.10500000000000001"/><rect x="79" y="0" width="1" height="24" fill="#fff" fill-opacity="0.06"/></pattern></defs>

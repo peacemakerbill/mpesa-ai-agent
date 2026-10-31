@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/safety.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/safety.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="880" height="288" viewBox="0 0 880 288" role="img" aria-label="Safety built in: no PIN, phone lock approval, whitelist checks, read-back, scam warnings, one phone one chat, rate limits and a 30 minute expiry.">
 <title>Safety built in: no PIN, phone lock approval, whitelist checks, read-back, scam warnings, one phone one chat, rate limits and a 30 minute expiry.</title>
 <defs></defs>

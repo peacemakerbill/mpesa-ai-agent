@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/banner-agent.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/banner-agent.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="172" viewBox="0 0 1200 172" role="img" aria-label="agent-service. The assistant. It talks to Claude and prepares requests.">
 <title>agent-service. The assistant. It talks to Claude and prepares requests.</title>
 <defs><clipPath id="bc"><rect width="1200" height="172" rx="10"/></clipPath><pattern id="pagent" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M-4 4L4 -4M0 18L18 0M14 22L22 14" stroke="#fff" stroke-opacity="0.0975" stroke-width="2"/></pattern></defs>

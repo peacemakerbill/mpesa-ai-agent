@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/badges-databases.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/badges-databases.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="880" height="94" viewBox="0 0 880 94" role="img" aria-label="PostgreSQL, MySQL and MongoDB are supported. Flyway 12.4, Spring Boot 4.1.2, switch with DATABASE_TYPE.">
 <title>PostgreSQL, MySQL and MongoDB are supported. Flyway 12.4, Spring Boot 4.1.2, switch with DATABASE_TYPE.</title>
 <defs><clipPath id="c104"><rect width="104" height="42" rx="6"/></clipPath><clipPath id="c186"><rect width="186" height="42" rx="6"/></clipPath><clipPath id="c127"><rect width="127" height="42" rx="6"/></clipPath><clipPath id="c143"><rect width="143" height="42" rx="6"/></clipPath><clipPath id="cl"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z"/></clipPath><clipPath id="od"><rect x="-1" y="21" width="10" height="17"/></clipPath></defs>

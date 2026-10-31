@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/banner-contacts.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/banner-contacts.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="172" viewBox="0 0 1200 172" role="img" aria-label="Contact search. Find a person on the phone without sharing the address book.">
 <title>Contact search. Find a person on the phone without sharing the address book.</title>
 <defs><clipPath id="bc"><rect width="1200" height="172" rx="10"/></clipPath><pattern id="pcontacts" width="72" height="72" patternUnits="userSpaceOnUse"><path d="M10 12L50 30L30 62L10 12M50 30L72 8M30 62L72 66" stroke="#fff" stroke-opacity="0.0975" fill="none"/><circle cx="10" cy="12" r="3" fill="#fff" fill-opacity="0.21000000000000002"/><circle cx="50" cy="30" r="3" fill="#fff" fill-opacity="0.21000000000000002"/><circle cx="30" cy="62" r="3" fill="#fff" fill-opacity="0.21000000000000002"/></pattern></defs>

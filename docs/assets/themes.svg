@@ -1,4 +1,4 @@
-<!-- PLACE THIS FILE AT: m-ganji/docs/assets/themes.svg  (create the docs/assets folder if it does not exist) -->
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/themes.svg  (create the docs/assets folder if it does not exist) -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="476" viewBox="0 0 1200 476" role="img" aria-label="The ten looks shared by the Flutter app and the browser console. A selection outline moves through them.">
 <title>The ten looks shared by the Flutter app and the browser console. A selection outline moves through them.</title>
 <defs><pattern id="tg" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" style="fill:var(--dot)"/></pattern></defs>
