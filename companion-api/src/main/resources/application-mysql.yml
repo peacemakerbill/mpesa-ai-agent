@@ -8,9 +8,8 @@ spring:
   jpa:
     open-in-view: false
     properties:
-      hibernate:
-        jdbc:
-          time_zone: UTC
+      # Free form Hibernate setting, so the key is written in [ ] to keep its dots and underscore exactly as written
+      "[hibernate.jdbc.time_zone]": UTC
     hibernate:
       # Flyway owns the tables. Hibernate's own column type check is too strict for MySQL date columns.
       ddl-auto: none
