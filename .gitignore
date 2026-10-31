@@ -42,6 +42,14 @@ docker/data/
 *.iml
 .vscode/
 *.swp
+.project
+.classpath
+.settings/
+.factorypath
+.apt_generated/
+.apt_generated_tests/
+.springBeans
+.sts4-cache/
 
 # OS files
 .DS_Store
