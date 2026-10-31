@@ -3,7 +3,7 @@ internal:
 
 payment:
   base-url: http://localhost:9
-companion:
+ganji:
   base-url: http://localhost:9
   public-url: https://app.example.test
 

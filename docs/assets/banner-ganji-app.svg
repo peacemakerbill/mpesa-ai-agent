@@ -1,0 +1,41 @@
+<!-- PLACE THIS FILE AT: m-ganji/docs/assets/banner-ganji-app.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="172" viewBox="0 0 1200 172" role="img" aria-label="ganji-app. The customer's side. Chat, approve, hand over to M-Pesa.">
+<title>ganji-app. The customer's side. Chat, approve, hand over to M-Pesa.</title>
+<defs><clipPath id="bc"><rect width="1200" height="172" rx="10"/></clipPath><pattern id="papp" width="40" height="40" patternUnits="userSpaceOnUse"><rect x="8" y="8" width="24" height="24" rx="7" fill="none" stroke="#fff" stroke-opacity="0.11249999999999999" stroke-width="1.4"/><circle cx="20" cy="20" r="2" fill="#fff" fill-opacity="0.12"/></pattern></defs>
+<style>
+:root { --bg:#F6F7F4; --pn:#FFFFFF; --ink:#14211A; --mut:#5B6A62; --rule:#D8DDD6; --grn:#17803D; --amb:#A8650A; --red:#B3261E; --blu:#1F5FBF; --dot:#C9D0C8; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0F1512; --pn:#151D19; --ink:#E7EDE9; --mut:#8D9C94; --rule:#2A352F; --grn:#47C27A; --amb:#E0A84A; --red:#FF7B72; --blu:#6EA8FF; --dot:#26312B; } }
+text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+:where(text:not([fill])) { fill: var(--ink); }
+.m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+.mut { fill: var(--mut); }
+.bg { fill: var(--bg); stroke: var(--rule); }
+.pn { fill: var(--pn); stroke: var(--rule); }
+.hl { stroke: var(--rule); fill: none; }
+.hf { fill: var(--rule); }
+.g { fill: var(--grn); } .gs { stroke: var(--grn); fill: none; }
+.ms { stroke: var(--mut); fill: none; }
+.wt { fill: #fff; } .w8 { fill: #fff; fill-opacity: .82; } .w6 { fill: #fff; fill-opacity: .6; }
+.halo { paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.fu { opacity: 0; animation: fu .8s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes fu { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+.lf { animation: lf .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lf { from { fill-opacity: 0; fill: #47C27A } to { fill-opacity: 1; fill: #fff } }
+.wipe { animation: wipe 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes wipe { from { clip-path: inset(-12% 100% -12% 0) } to { clip-path: inset(-12% -3% -12% 0) } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } .fu { opacity: 1 !important; } }
+@keyframes dpapp { to { transform: translate(40px, 40px) } }
+.dpapp { animation: dpapp 22s linear infinite; }
+@keyframes sc { from { transform: translateX(-260px) } to { transform: translateX(1200px) } }
+.sc { animation: sc 5.5s cubic-bezier(.5,0,.5,1) infinite; }
+</style>
+<g clip-path="url(#bc)"><rect width="1200" height="172" style="fill:#143D2E"/>
+<g clip-path="url(#bc)"><g class="dpapp"><rect x="-40" y="-40" width="1280" height="252" fill="url(#papp)"/></g></g>
+<rect x="780" y="22" width="372" height="124" rx="6" fill="#000" fill-opacity=".28" stroke="#fff" stroke-opacity=".16"/>
+<text class="m fu" x="48" y="50" font-size="13" fill="#fff" fill-opacity=".62">m-ganji / ganji-app</text>
+<text x="46" y="102" font-size="42" font-weight="800" letter-spacing="-1.2" fill="#fff" ><tspan class="lf" style="animation-delay:0.150s">g</tspan><tspan class="lf" style="animation-delay:0.190s">a</tspan><tspan class="lf" style="animation-delay:0.230s">n</tspan><tspan class="lf" style="animation-delay:0.270s">j</tspan><tspan class="lf" style="animation-delay:0.310s">i</tspan><tspan class="lf" style="animation-delay:0.350s">-</tspan><tspan class="lf" style="animation-delay:0.390s">a</tspan><tspan class="lf" style="animation-delay:0.430s">p</tspan><tspan class="lf" style="animation-delay:0.470s">p</tspan></text>
+<text class="fu" style="animation-delay:.6s" x="48" y="136" font-size="17" fill="#fff" fill-opacity=".82">The customer's side. Chat, approve, hand over to M-Pesa.</text>
+<g class="fu" style="animation-delay:0.50s"><text class="m" x="814" y="58" font-size="12" fill="#F2B544" fill-opacity=".95">platforms</text><text class="m" x="906" y="58" font-size="13" fill="#fff">Android, iOS</text></g><g class="fu" style="animation-delay:0.62s"><text class="m" x="814" y="84" font-size="12" fill="#F2B544" fill-opacity=".95">framework</text><text class="m" x="906" y="84" font-size="13" fill="#fff">Flutter 3.22 or later</text></g><g class="fu" style="animation-delay:0.74s"><text class="m" x="814" y="110" font-size="12" fill="#F2B544" fill-opacity=".95">approval</text><text class="m" x="906" y="110" font-size="13" fill="#fff">fingerprint, face or lock</text></g><g class="fu" style="animation-delay:0.86s"><text class="m" x="814" y="136" font-size="12" fill="#F2B544" fill-opacity=".95">looks</text><text class="m" x="906" y="136" font-size="13" fill="#fff">10</text></g>
+<rect x="0" y="168" width="1200" height="4" fill="#000" fill-opacity=".25"/><rect class="sc" x="0" y="168" width="260" height="4" style="fill:#F2B544"/>
+</g><rect x=".5" y=".5" width="1199" height="171" rx="10" fill="none" stroke="#fff" stroke-opacity=".14"/>
+</svg>

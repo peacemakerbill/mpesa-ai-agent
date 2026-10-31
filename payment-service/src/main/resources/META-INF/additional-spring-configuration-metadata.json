@@ -9,7 +9,7 @@
     {
       "name": "internal.key",
       "type": "java.lang.String",
-      "description": "Shared secret that agent-service and companion-api send in the X-Internal-Key header. Required. Set with INTERNAL_KEY."
+      "description": "Shared secret that agent-service and ganji-api send in the X-Internal-Key header. Required. Set with INTERNAL_KEY."
     },
     {
       "name": "mpesa.base-url",

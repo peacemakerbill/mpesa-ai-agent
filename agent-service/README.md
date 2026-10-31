@@ -1,5 +1,5 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/agent-service/README.md
-     Replace the existing file if there is one. The SVG images it uses go in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
+<!-- PLACE THIS FILE AT: m-ganji/agent-service/README.md
+     Replace the existing file if there is one. The SVG images it uses go in m-ganji/docs/assets/. You can delete this comment. -->
 
 <div align="center">
 
@@ -7,7 +7,7 @@
 
 <br/>
 
-<img alt="Spring%20Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1.2-087F36?style=flat-square&logo=springboot&logoColor=white"/> <img alt="Java" src="https://img.shields.io/badge/Java-21-14231C?style=flat-square&logo=openjdk&logoColor=2BD576"/> <img alt="Maven" src="https://img.shields.io/badge/Maven-3.9+-14231C?style=flat-square&logo=apachemaven&logoColor=F2B544"/> <img alt="Claude" src="https://img.shields.io/badge/Claude-tool%20use-14231C?style=flat-square&logo=anthropic&logoColor=F2B544"/> <img alt="Redis" src="https://img.shields.io/badge/Redis-state-14231C?style=flat-square&logo=redis&logoColor=FF5468"/> <img alt="RabbitMQ" src="https://img.shields.io/badge/RabbitMQ-events-14231C?style=flat-square&logo=rabbitmq&logoColor=FF7A45"/>
+<img src="../docs/assets/badges-agent.svg" alt="Spring Boot 4.1.2, Java 21, Maven 3.9 or later, Claude with tool use, Redis, RabbitMQ, port 8082." width="880"/>
 
 <br/><br/>
 
@@ -27,21 +27,21 @@ agent-service is the only part that talks to the model. It never moves money. It
 |---|---|
 | Understand the customer | Text, voice notes (optional speech to text), photos, PDFs, Word, Excel, CSV and text files, shared contacts and locations |
 | Keep the chat | Messages and files per phone number, with conversation memory in Redis |
-| Prepare requests | Send money, Paybill, Till, Pochi la Biashara, airtime, Ratiba, and list or cancel requests, by calling companion-api |
+| Prepare requests | Send money, Paybill, Till, Pochi la Biashara, airtime, Ratiba, and list or cancel requests, by calling ganji-api |
 | Hand over to a person | Escalates to the phones in `AGENT_ESCALATION_PHONES` |
 | Stay safe | Refuses the PIN, treats text inside images and files as data, adds scam warnings, rate limits each customer |
 
 > [!IMPORTANT]
-> Keep this service private. Only companion-api should reach port 8082, and every call must carry the `X-Internal-Key` header.
+> Keep this service private. Only ganji-api should reach port 8082, and every call must carry the `X-Internal-Key` header.
 
 ## Package layout
 
 ```text
-com.mpesaagent.agent
+com.mganji.agent
   AgentServiceApplication
   controller/   InboundController, ChatController            (HTTP in)
   service/      the agent loop, tools, memory, media understanding
-  client/       ClaudeClient, companion and payment clients  (HTTP out)
+  client/       ClaudeClient, ganji and payment clients  (HTTP out)
   chat/         message and file storage
   store/        Redis backed conversation state
   config/       typed properties, internal key filter, RabbitMQ, CORS
@@ -68,8 +68,8 @@ The service reads `.env` through `spring.config.import: optional:file:.env[.prop
 | `INTERNAL_KEY` | required | Shared secret for calls between services |
 | `ANTHROPIC_API_KEY` | required | Without it, messages are accepted but nothing replies |
 | `ANTHROPIC_MODEL` | `claude-sonnet-5-5` | Model name. `ANTHROPIC_MAX_TOKENS` defaults to 1024 |
-| `COMPANION_BASE_URL` | `http://localhost:8084` | Private address of companion-api |
-| `COMPANION_PUBLIC_BASE_URL` | `http://localhost:8084` | Public address used in the links sent to customers |
+| `GANJI_BASE_URL` | `http://localhost:8084` | Private address of ganji-api |
+| `GANJI_PUBLIC_BASE_URL` | `http://localhost:8084` | Public address used in the links sent to customers |
 | `PAYMENT_BASE_URL` | `http://localhost:8083` | Only used when business payments are on |
 | `BUSINESS_NAME`, `BUSINESS_SUPPORT_PHONE` | `Our Business`, empty | Shown to customers |
 | `AGENT_STORE` | `redis` | Where conversation state lives |

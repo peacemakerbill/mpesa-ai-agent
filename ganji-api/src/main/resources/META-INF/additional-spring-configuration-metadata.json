@@ -1,0 +1,176 @@
+{
+  "properties": [
+    {
+      "name": "agent.base-url",
+      "type": "java.lang.String",
+      "description": "Private address of agent-service, which keeps the chat. Only this service talks to it. Set with AGENT_BASE_URL.",
+      "defaultValue": "http://localhost:8082"
+    },
+    {
+      "name": "sms.username",
+      "type": "java.lang.String",
+      "description": "Africa's Talking username. Use sandbox with the sandbox address. Only used when ganji.code-delivery is sms. Set with SMS_USERNAME.",
+      "defaultValue": "sandbox"
+    },
+    {
+      "name": "sms.api-key",
+      "type": "java.lang.String",
+      "description": "Africa's Talking API key. Only used when ganji.code-delivery is sms. Set with SMS_API_KEY.",
+      "defaultValue": ""
+    },
+    {
+      "name": "sms.sender-id",
+      "type": "java.lang.String",
+      "description": "Sender name shown on the sign-in SMS. Leave blank to use the account default. Set with SMS_SENDER_ID.",
+      "defaultValue": ""
+    },
+    {
+      "name": "sms.base-url",
+      "type": "java.lang.String",
+      "description": "Africa's Talking address. The sandbox address does not reach real phones. Use https://api.africastalking.com with a live key. Set with SMS_BASE_URL.",
+      "defaultValue": "https://api.sandbox.africastalking.com"
+    },
+    {
+      "name": "cors.allowed-origins",
+      "type": "java.lang.String",
+      "description": "Comma separated browser origins allowed to call this service, for the test console. Empty means off. Never set this in production. Set with CORS_ALLOWED_ORIGINS.",
+      "defaultValue": ""
+    },
+    {
+      "name": "internal.key",
+      "type": "java.lang.String",
+      "description": "Shared secret between our own services, sent in the X-Internal-Key header. Only agent-service calls /internal/**. Set with INTERNAL_KEY."
+    },
+    {
+      "name": "ganji.token-secret",
+      "type": "java.lang.String",
+      "description": "Signs the phone app's login tokens and hashes link codes. At least 32 random characters. Set with GANJI_TOKEN_SECRET."
+    },
+    {
+      "name": "ganji.token-ttl",
+      "type": "java.time.Duration",
+      "description": "How long a phone app login token stays valid. Set with GANJI_TOKEN_TTL.",
+      "defaultValue": "P30D"
+    },
+    {
+      "name": "ganji.link-code-ttl",
+      "type": "java.time.Duration",
+      "description": "How long a sign-in code can be used after it is issued.",
+      "defaultValue": "PT10M"
+    },
+    {
+      "name": "ganji.link-max-attempts",
+      "type": "java.lang.Integer",
+      "description": "Wrong guesses allowed on one sign-in code before it stops working.",
+      "defaultValue": 5
+    },
+    {
+      "name": "ganji.link-codes-per-hour",
+      "type": "java.lang.Integer",
+      "description": "How many sign-in codes one phone number can ask for per hour. Set with GANJI_CODES_PER_HOUR.",
+      "defaultValue": 5
+    },
+    {
+      "name": "ganji.action-ttl",
+      "type": "java.time.Duration",
+      "description": "How long a wallet request waits for the customer before it expires. Set with GANJI_ACTION_TTL.",
+      "defaultValue": "PT30M"
+    },
+    {
+      "name": "ganji.max-open-actions",
+      "type": "java.lang.Integer",
+      "description": "Most wallet requests one customer can have open at the same time.",
+      "defaultValue": 10
+    },
+    {
+      "name": "ganji.max-amount",
+      "type": "java.lang.Integer",
+      "description": "Largest amount in KES a request may carry. M-Pesa's own limits still apply on the phone; this only stops obviously wrong requests. Set with GANJI_MAX_AMOUNT.",
+      "defaultValue": 250000
+    },
+    {
+      "name": "ganji.min-airtime",
+      "type": "java.lang.Integer",
+      "description": "Smallest airtime purchase in KES.",
+      "defaultValue": 5
+    },
+    {
+      "name": "ganji.public-base-url",
+      "type": "java.lang.String",
+      "description": "Public HTTPS address of this service. Links shown in the chat look like PUBLIC_BASE_URL/a/ACTION_ID. Set with GANJI_PUBLIC_BASE_URL.",
+      "defaultValue": "http://localhost:8084"
+    },
+    {
+      "name": "ganji.android-package",
+      "type": "java.lang.String",
+      "description": "Android package name for app links that open the app directly. Leave blank until the app is published. Set with GANJI_ANDROID_PACKAGE.",
+      "defaultValue": ""
+    },
+    {
+      "name": "ganji.android-sha256",
+      "type": "java.lang.String",
+      "description": "SHA-256 fingerprint of the Android signing certificate, for app links. Leave blank until the app is published. Set with GANJI_ANDROID_SHA256.",
+      "defaultValue": ""
+    },
+    {
+      "name": "ganji.ios-app-id",
+      "type": "java.lang.String",
+      "description": "iOS app id (team id plus bundle id) for app links. Leave blank until the app is published. Set with GANJI_IOS_APP_ID.",
+      "defaultValue": ""
+    },
+    {
+      "name": "ganji.code-delivery",
+      "type": "java.lang.String",
+      "description": "How sign-in codes reach people. log writes the code to this service's log, for a developer. dev also returns it to the app, for a test console only, never on a real system. sms sends it through Africa's Talking, see the sms block. Set with CODE_DELIVERY.",
+      "defaultValue": "log"
+    },
+    {
+      "name": "ganji.app-name",
+      "type": "java.lang.String",
+      "description": "Name shown in the sign-in SMS. Set with GANJI_APP_NAME.",
+      "defaultValue": "Assistant"
+    },
+    {
+      "name": "ganji.hand-off.ussd-main",
+      "type": "java.lang.String",
+      "description": "USSD code that opens the main M-Pesa menu. Verify with the M-Pesa team before relying on it. Set with HANDOFF_USSD_MAIN.",
+      "defaultValue": "*334#"
+    },
+    {
+      "name": "ganji.hand-off.mpesa-android-package",
+      "type": "java.lang.String",
+      "description": "Android package name of the M-Pesa app the phone app opens. Leave blank to fall back to guided steps. Set with HANDOFF_MPESA_ANDROID_PACKAGE.",
+      "defaultValue": ""
+    },
+    {
+      "name": "ganji.hand-off.mpesa-ios-url",
+      "type": "java.lang.String",
+      "description": "URL that opens the M-Pesa app on iOS. Leave blank to fall back to guided steps. Set with HANDOFF_MPESA_IOS_URL.",
+      "defaultValue": ""
+    },
+    {
+      "name": "ganji.hand-off.ussd-templates",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
+      "description": "USSD string per request type, with the placeholders {amount} {phone} {paybill} {account} {till}. Verify each with the M-Pesa team. The app falls back to guided steps when a template is empty. Keys are SEND_MONEY, PAY_BILL, PAY_TILL and BUY_AIRTIME."
+    }
+  ],
+  "hints": [
+    {
+      "name": "ganji.code-delivery",
+      "values": [
+        { "value": "log", "description": "Write the code to this service's log. For a developer." },
+        { "value": "dev", "description": "Also return the code to the app. For a test console only, never on a real system." },
+        { "value": "sms", "description": "Send the code by SMS through Africa's Talking." }
+      ]
+    },
+    {
+      "name": "ganji.hand-off.ussd-templates.keys",
+      "values": [
+        { "value": "SEND_MONEY" },
+        { "value": "PAY_BILL" },
+        { "value": "PAY_TILL" },
+        { "value": "BUY_AIRTIME" }
+      ]
+    }
+  ]
+}

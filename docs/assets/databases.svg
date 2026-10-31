@@ -1,37 +1,37 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/databases.svg  (create the docs/assets folder if it does not exist) -->
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="330" viewBox="0 0 1200 330" role="img" aria-label="PostgreSQL, MySQL and MongoDB compared: schema, concurrency and multi-record changes">
+<!-- PLACE THIS FILE AT: m-ganji/docs/assets/databases.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-label="PostgreSQL, MySQL and MongoDB compared: schema, concurrency and multi-record changes">
 <title>PostgreSQL, MySQL and MongoDB compared: schema, concurrency and multi-record changes</title>
-<defs><clipPath id="c0"><rect x="16" y="10" width="368" height="310" rx="18"/></clipPath><linearGradient id="g0" x1="0" x2="1"><stop offset="0" stop-color="#6EA8FF" stop-opacity="0"/><stop offset=".5" stop-color="#6EA8FF"/><stop offset="1" stop-color="#6EA8FF" stop-opacity="0"/></linearGradient><clipPath id="c1"><rect x="416" y="10" width="368" height="310" rx="18"/></clipPath><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#F2B544" stop-opacity="0"/><stop offset=".5" stop-color="#F2B544"/><stop offset="1" stop-color="#F2B544" stop-opacity="0"/></linearGradient><clipPath id="c2"><rect x="816" y="10" width="368" height="310" rx="18"/></clipPath><linearGradient id="g2" x1="0" x2="1"><stop offset="0" stop-color="#2BD576" stop-opacity="0"/><stop offset=".5" stop-color="#2BD576"/><stop offset="1" stop-color="#2BD576" stop-opacity="0"/></linearGradient></defs>
+<defs><clipPath id="dc"><rect width="1200" height="360" rx="10"/></clipPath><clipPath id="hc0"><rect x="0" y="0" width="400" height="84"/></clipPath><pattern id="pd0" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M-4 4L4 -4M0 18L18 0M14 22L22 14" stroke="#fff" stroke-opacity="0.13" stroke-width="2"/></pattern><clipPath id="hc1"><rect x="400" y="0" width="400" height="84"/></clipPath><pattern id="pd1" width="44" height="14" patternUnits="userSpaceOnUse"><path d="M0 7Q11 0 22 7T44 7" fill="none" stroke="#fff" stroke-opacity="0.16" stroke-width="1.6"/></pattern><clipPath id="hc2"><rect x="800" y="0" width="400" height="84"/></clipPath><pattern id="pd2" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2" fill="#fff" fill-opacity="0.2"/></pattern></defs>
 <style>
-.t { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 700; font-size: 22px; fill: #E8F4EC; }
-.k { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 12px; fill: #8DA89A; }
-.v { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; fill: #E8F4EC; }
-.in { opacity: 0; animation: up .8s ease-out forwards; }
-@keyframes up { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: translateY(0) } }
-.sw { animation: sw 6s ease-in-out infinite; }
-@keyframes sw { 0% { transform: translateX(-160px) } 55%,100% { transform: translateX(368px) } }
-@media (prefers-reduced-motion: reduce) { .in { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }</style>
-<g class="in" style="animation-delay:0.00s">
-<g clip-path="url(#c0)"><rect x="16" y="10" width="368" height="310" fill="#0F1A15"/>
-<rect x="16" y="10" width="368" height="3" fill="#22372C"/><rect class="sw" style="animation-delay:0.0s" x="16" y="10" width="160" height="3" fill="url(#g0)"/>
-<rect x="40" y="34" width="52" height="52" rx="14" fill="#6EA8FF" fill-opacity=".18"/><g transform="translate(53 47) scale(1.0833)" fill="none" stroke="#6EA8FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4.4 0 8 1.1 8 2.5S16.4 8 12 8 4 6.9 4 5.5 7.6 3 12 3z"/><path d="M4 5.5v13C4 19.9 7.6 21 12 21s8-1.1 8-2.5v-13"/><path d="M4 12c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5"/></g>
-<text class="t" x="106" y="58">PostgreSQL</text>
-<rect x="106" y="66" width="42" height="20" rx="10" fill="#14231C" stroke="#6EA8FF" stroke-opacity=".6"/><text class="k" x="127" y="80" text-anchor="middle" style="fill:#6EA8FF">SQL</text>
-<text class="k" x="40" y="128">Schema</text><text class="v" x="40" y="148">Flyway, db/migration/postgresql</text><text class="k" x="40" y="180">Two requests changing one record</text><text class="v" x="40" y="200">Row lock</text><text class="k" x="40" y="232">One change across several records</text><text class="v" x="40" y="252">Transaction</text></g>
-<rect x="16.5" y="10.5" width="367" height="309" rx="18" fill="none" stroke="#22372C"/></g><g class="in" style="animation-delay:0.15s">
-<g clip-path="url(#c1)"><rect x="416" y="10" width="368" height="310" fill="#0F1A15"/>
-<rect x="416" y="10" width="368" height="3" fill="#22372C"/><rect class="sw" style="animation-delay:0.8s" x="416" y="10" width="160" height="3" fill="url(#g1)"/>
-<rect x="440" y="34" width="52" height="52" rx="14" fill="#F2B544" fill-opacity=".18"/><g transform="translate(453 47) scale(1.0833)" fill="none" stroke="#F2B544" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4.4 0 8 1.1 8 2.5S16.4 8 12 8 4 6.9 4 5.5 7.6 3 12 3z"/><path d="M4 5.5v13C4 19.9 7.6 21 12 21s8-1.1 8-2.5v-13"/><path d="M4 12c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5"/></g>
-<text class="t" x="506" y="58">MySQL</text>
-<rect x="506" y="66" width="42" height="20" rx="10" fill="#14231C" stroke="#F2B544" stroke-opacity=".6"/><text class="k" x="527" y="80" text-anchor="middle" style="fill:#F2B544">SQL</text>
-<text class="k" x="440" y="128">Schema</text><text class="v" x="440" y="148">Flyway, db/migration/mysql</text><text class="k" x="440" y="180">Two requests changing one record</text><text class="v" x="440" y="200">Row lock</text><text class="k" x="440" y="232">One change across several records</text><text class="v" x="440" y="252">Transaction</text></g>
-<rect x="416.5" y="10.5" width="367" height="309" rx="18" fill="none" stroke="#22372C"/></g><g class="in" style="animation-delay:0.30s">
-<g clip-path="url(#c2)"><rect x="816" y="10" width="368" height="310" fill="#0F1A15"/>
-<rect x="816" y="10" width="368" height="3" fill="#22372C"/><rect class="sw" style="animation-delay:1.6s" x="816" y="10" width="160" height="3" fill="url(#g2)"/>
-<rect x="840" y="34" width="52" height="52" rx="14" fill="#2BD576" fill-opacity=".18"/><g transform="translate(853 47) scale(1.0833)" fill="none" stroke="#2BD576" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4.4 0 8 1.1 8 2.5S16.4 8 12 8 4 6.9 4 5.5 7.6 3 12 3z"/><path d="M4 5.5v13C4 19.9 7.6 21 12 21s8-1.1 8-2.5v-13"/><path d="M4 12c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5"/></g>
-<text class="t" x="906" y="58">MongoDB</text>
-<rect x="906" y="66" width="200" height="20" rx="10" fill="#14231C" stroke="#2BD576" stroke-opacity=".6"/><text class="k" x="1006" y="80" text-anchor="middle" style="fill:#2BD576">Default for payment-service</text>
-<text class="k" x="840" y="128">Schema</text><text class="v" x="840" y="148">Created by the service, indexes included</text><text class="k" x="840" y="180">Two requests changing one record</text><text class="v" x="840" y="200">Version number, loser gets 409</text><text class="k" x="840" y="232">One change across several records</text><text class="v" x="840" y="252">Not atomic across records</text></g>
-<rect x="816.5" y="10.5" width="367" height="309" rx="18" fill="none" stroke="#22372C"/></g>
+:root { --bg:#F6F7F4; --pn:#FFFFFF; --ink:#14211A; --mut:#5B6A62; --rule:#D8DDD6; --grn:#17803D; --amb:#A8650A; --red:#B3261E; --blu:#1F5FBF; --dot:#C9D0C8; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0F1512; --pn:#151D19; --ink:#E7EDE9; --mut:#8D9C94; --rule:#2A352F; --grn:#47C27A; --amb:#E0A84A; --red:#FF7B72; --blu:#6EA8FF; --dot:#26312B; } }
+text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+:where(text:not([fill])) { fill: var(--ink); }
+.m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+.mut { fill: var(--mut); }
+.bg { fill: var(--bg); stroke: var(--rule); }
+.pn { fill: var(--pn); stroke: var(--rule); }
+.hl { stroke: var(--rule); fill: none; }
+.hf { fill: var(--rule); }
+.g { fill: var(--grn); } .gs { stroke: var(--grn); fill: none; }
+.ms { stroke: var(--mut); fill: none; }
+.wt { fill: #fff; } .w8 { fill: #fff; fill-opacity: .82; } .w6 { fill: #fff; fill-opacity: .6; }
+.halo { paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.fu { opacity: 0; animation: fu .8s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes fu { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+.lf { animation: lf .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lf { from { fill-opacity: 0; fill: #47C27A } to { fill-opacity: 1; fill: #fff } }
+.wipe { animation: wipe 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes wipe { from { clip-path: inset(-12% 100% -12% 0) } to { clip-path: inset(-12% -3% -12% 0) } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } .fu { opacity: 1 !important; } }
+@keyframes rw { 0%,30% { opacity: 1 } 33.3%,100% { opacity: 0 } }
+.rw { opacity: 0; animation: rw 9s linear infinite; }
+@keyframes dpd0 { to { transform: translate(18px, 18px) } }
+.dpd0 { animation: dpd0 20s linear infinite; }
+@keyframes dpd1 { to { transform: translate(44px, 0px) } }
+.dpd1 { animation: dpd1 20s linear infinite; }
+@keyframes dpd2 { to { transform: translate(14px, 14px) } }
+.dpd2 { animation: dpd2 20s linear infinite; }
+</style>
+<g clip-path="url(#dc)"><rect width="1200" height="360" class="bg" style="stroke:none"/><rect class="rw" style="animation-delay:0s;fill:var(--rule);fill-opacity:.55" x="0" y="110" width="1200" height="54"/><rect class="rw" style="animation-delay:3s;fill:var(--rule);fill-opacity:.55" x="0" y="166" width="1200" height="54"/><rect class="rw" style="animation-delay:6s;fill:var(--rule);fill-opacity:.55" x="0" y="222" width="1200" height="54"/><rect x="0" y="0" width="400" height="84" style="fill:#1B4F8F"/><g clip-path="url(#hc0)"><g class="dpd0"><rect x="-18" y="-18" width="436" height="120" fill="url(#pd0)"/></g></g><rect x="0" y="80" width="400" height="4" style="fill:#6EA8FF"/><text x="24" y="52" font-size="24" font-weight="700" letter-spacing="-.4" fill="#fff">PostgreSQL</text><text class="mut" x="24" y="126" font-size="12">Schema</text><text x="24" y="148" font-size="15">Flyway, db/migration/postgresql</text><text class="mut" x="24" y="182" font-size="12">Two requests, one record</text><text x="24" y="204" font-size="15">Row lock</text><text class="mut" x="24" y="238" font-size="12">One change, several records</text><text x="24" y="260" font-size="15">Transaction</text><rect x="400" y="0" width="400" height="84" style="fill:#7A4A0C"/><g clip-path="url(#hc1)"><g class="dpd1"><rect x="356" y="-14" width="488" height="112" fill="url(#pd1)"/></g></g><rect x="400" y="80" width="400" height="4" style="fill:#F2B544"/><text x="424" y="52" font-size="24" font-weight="700" letter-spacing="-.4" fill="#fff">MySQL</text><line class="hl" x1="400" y1="84" x2="400" y2="298"/><text class="mut" x="424" y="126" font-size="12">Schema</text><text x="424" y="148" font-size="15">Flyway, db/migration/mysql</text><text class="mut" x="424" y="182" font-size="12">Two requests, one record</text><text x="424" y="204" font-size="15">Row lock</text><text class="mut" x="424" y="238" font-size="12">One change, several records</text><text x="424" y="260" font-size="15">Transaction</text><rect x="800" y="0" width="400" height="84" style="fill:#0B3D24"/><g clip-path="url(#hc2)"><g class="dpd2"><rect x="786" y="-14" width="428" height="112" fill="url(#pd2)"/></g></g><rect x="800" y="80" width="400" height="4" style="fill:#47C27A"/><text x="824" y="52" font-size="24" font-weight="700" letter-spacing="-.4" fill="#fff">MongoDB</text><rect x="950" y="34" width="204" height="24" rx="4" fill="#000" fill-opacity=".3" stroke="#fff" stroke-opacity=".4"/><text class="m" x="959" y="50" font-size="11.5" fill="#fff">default for payment-service</text><line class="hl" x1="800" y1="84" x2="800" y2="298"/><text class="mut" x="824" y="126" font-size="12">Schema</text><text x="824" y="148" font-size="15">Created by the service, indexes included</text><text class="mut" x="824" y="182" font-size="12">Two requests, one record</text><text x="824" y="204" font-size="15">Version number. The loser gets 409</text><text class="mut" x="824" y="238" font-size="12">One change, several records</text><text x="824" y="260" font-size="15">Not atomic across records</text><line class="hl" x1="0" y1="298" x2="1200" y2="298"/><text class="mut" x="24" y="332" font-size="13">Pick one with DATABASE_TYPE. The environment wins over application.yml. The highlight reads across one row at a time.</text></g><rect class="hl" x=".5" y=".5" width="1199" height="359" rx="10"/>
 </svg>

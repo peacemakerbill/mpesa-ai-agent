@@ -1,206 +1,165 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/themes.svg  (create the docs/assets folder if it does not exist) -->
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="470" viewBox="0 0 1200 470" role="img" aria-label="The ten looks shared by the Flutter app and the browser console">
-<title>The ten looks shared by the Flutter app and the browser console</title>
-<defs></defs>
+<!-- PLACE THIS FILE AT: m-ganji/docs/assets/themes.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="476" viewBox="0 0 1200 476" role="img" aria-label="The ten looks shared by the Flutter app and the browser console. A selection outline moves through them.">
+<title>The ten looks shared by the Flutter app and the browser console. A selection outline moves through them.</title>
+<defs><pattern id="tg" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" style="fill:var(--dot)"/></pattern></defs>
 <style>
-.in { opacity: 0; animation: up .8s ease-out forwards; }
-@keyframes up { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: translateY(0) } }
-.ring { opacity: 0; animation: ring 20s linear infinite; }
-@keyframes ring { 0% { opacity: 1 } 9.6% { opacity: 1 } 10% { opacity: 0 } 100% { opacity: 0 } }
-.hd { font-size: 14px; font-weight: 700; }
-.tg { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 10.5px; }
-.ds { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 11.5px; }
-@media (prefers-reduced-motion: reduce) { .in { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }</style>
-<rect width="1200" height="470" fill="none"/><g class="in" style="animation-delay:0.00s">
-<clipPath id="k0"><rect x="8" y="16" width="224" height="196" rx="14"/></clipPath>
-<g clip-path="url(#k0)">
-<rect x="8" y="16" width="224" height="196" fill="#F3F4F7"/>
-<rect x="8" y="16" width="224" height="38" fill="#FFFFFF"/><rect x="8" y="53" width="224" height="1" fill="#E1E4EA"/>
-<text class="hd" x="22" y="40" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#11151B">Daylight</text>
-<circle cx="212" cy="35" r="5" fill="#2457D6"/>
-<rect x="22" y="68" width="118" height="26" rx="10" fill="#FFFFFF" stroke="#E1E4EA"/>
-<rect x="30" y="78" width="70" height="5" rx="2.5" fill="#646E7F" fill-opacity=".6"/>
-<rect x="114" y="102" width="104" height="26" rx="10" fill="#2457D6"/>
-<rect x="124" y="112" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
-<rect x="22" y="138" width="196" height="22" rx="8" fill="#E7EDFC" stroke="#B6C8F4"/>
-<circle cx="36" cy="149" r="4" fill="#137A4A"/><circle cx="50" cy="149" r="4" fill="#9A5D00"/><circle cx="64" cy="149" r="4" fill="#C42B3A"/>
-<text class="tg" x="76" y="152" fill="#4A5362">good  warn  bad</text>
-<text class="ds" x="22" y="184" fill="#11151B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">Light, cool grey, cobalt</text>
-<text class="tg" x="22" y="200" fill="#646E7F">Everyday</text>
-</g>
-<rect x="8.5" y="16.5" width="223" height="195" rx="14" fill="none" stroke="#C9CED8"/>
-<rect class="ring" style="animation-delay:0.00s" x="5" y="13" width="230" height="202" rx="17" fill="none" stroke="#2BD576" stroke-width="3"/>
-</g><g class="in" style="animation-delay:0.09s">
-<clipPath id="k1"><rect x="248" y="16" width="224" height="196" rx="14"/></clipPath>
-<g clip-path="url(#k1)">
-<rect x="248" y="16" width="224" height="196" fill="#0D0F12"/>
-<rect x="248" y="16" width="224" height="38" fill="#101317"/><rect x="248" y="53" width="224" height="1" fill="#242932"/>
-<text class="hd" x="262" y="40" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#E7E9EE">Graphite</text>
-<circle cx="452" cy="35" r="5" fill="#F0A63A"/>
-<rect x="262" y="68" width="118" height="26" rx="10" fill="#14171C" stroke="#242932"/>
-<rect x="270" y="78" width="70" height="5" rx="2.5" fill="#808895" fill-opacity=".6"/>
-<rect x="354" y="102" width="104" height="26" rx="10" fill="#F0A63A"/>
-<rect x="364" y="112" width="62" height="5" rx="2.5" fill="#1B1304" fill-opacity=".85"/>
-<rect x="262" y="138" width="196" height="22" rx="8" fill="#2A2110" stroke="#5A4318"/>
-<circle cx="276" cy="149" r="4" fill="#52C68F"/><circle cx="290" cy="149" r="4" fill="#F0A63A"/><circle cx="304" cy="149" r="4" fill="#F07272"/>
-<text class="tg" x="316" y="152" fill="#A0A8B5">good  warn  bad</text>
-<text class="ds" x="262" y="184" fill="#E7E9EE" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">Dark, neutral, amber</text>
-<text class="tg" x="262" y="200" fill="#808895">Everyday</text>
-</g>
-<rect x="248.5" y="16.5" width="223" height="195" rx="14" fill="none" stroke="#343B46"/>
-<rect class="ring" style="animation-delay:2.00s" x="245" y="13" width="230" height="202" rx="17" fill="none" stroke="#2BD576" stroke-width="3"/>
-</g><g class="in" style="animation-delay:0.18s">
-<clipPath id="k2"><rect x="488" y="16" width="224" height="196" rx="14"/></clipPath>
-<g clip-path="url(#k2)">
-<rect x="488" y="16" width="224" height="196" fill="#EDF3F3"/>
-<rect x="488" y="16" width="224" height="38" fill="#0A5C66"/><rect x="488" y="53" width="224" height="1" fill="#0A5C66"/>
-<text class="hd" x="502" y="40" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#FFFFFF">Pwani</text>
-<circle cx="692" cy="35" r="5" fill="#0A7480"/>
-<rect x="502" y="68" width="118" height="26" rx="10" fill="#FFFFFF" stroke="#D3E0E0"/>
-<rect x="510" y="78" width="70" height="5" rx="2.5" fill="#567078" fill-opacity=".6"/>
-<rect x="594" y="102" width="104" height="26" rx="10" fill="#0A7480"/>
-<rect x="604" y="112" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
-<rect x="502" y="138" width="196" height="22" rx="8" fill="#D9EEF0" stroke="#8FC6CC"/>
-<circle cx="516" cy="149" r="4" fill="#0B6B4B"/><circle cx="530" cy="149" r="4" fill="#8A4B1F"/><circle cx="544" cy="149" r="4" fill="#B3261E"/>
-<text class="tg" x="556" y="152" fill="#3B5961">good  warn  bad</text>
-<text class="ds" x="502" y="184" fill="#0F2B33" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">Coastal teal, soft white</text>
-<text class="tg" x="502" y="200" fill="#567078">Everyday</text>
-</g>
-<rect x="488.5" y="16.5" width="223" height="195" rx="14" fill="none" stroke="#AEC6C7"/>
-<rect class="ring" style="animation-delay:4.00s" x="485" y="13" width="230" height="202" rx="17" fill="none" stroke="#2BD576" stroke-width="3"/>
-</g><g class="in" style="animation-delay:0.27s">
-<clipPath id="k3"><rect x="728" y="16" width="224" height="196" rx="14"/></clipPath>
-<g clip-path="url(#k3)">
-<rect x="728" y="16" width="224" height="196" fill="#FFFFFF"/>
-<rect x="728" y="16" width="224" height="38" fill="#FFFFFF"/><rect x="728" y="53" width="224" height="1" fill="#000000"/>
-<text class="hd" x="742" y="40" font-family="Georgia, 'Times New Roman', serif" fill="#000000">Mono</text>
-<circle cx="932" cy="35" r="5" fill="#000000"/>
-<rect x="742" y="68" width="118" height="26" rx="10" fill="#FFFFFF" stroke="#111111"/>
-<rect x="750" y="78" width="70" height="5" rx="2.5" fill="#5C5C5C" fill-opacity=".6"/>
-<rect x="834" y="102" width="104" height="26" rx="10" fill="#000000"/>
-<rect x="844" y="112" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
-<rect x="742" y="138" width="196" height="22" rx="8" fill="#ECECEC" stroke="#000000"/>
-<circle cx="756" cy="149" r="4" fill="#0A6A2C"/><circle cx="770" cy="149" r="4" fill="#8A5300"/><circle cx="784" cy="149" r="4" fill="#B00020"/>
-<text class="tg" x="796" y="152" fill="#2E2E2E">good  warn  bad</text>
-<text class="ds" x="742" y="184" fill="#000000" font-family="Georgia, 'Times New Roman', serif">Black on white, serif type</text>
-<text class="tg" x="742" y="200" fill="#5C5C5C">Everyday</text>
-</g>
-<rect x="728.5" y="16.5" width="223" height="195" rx="14" fill="none" stroke="#111111"/>
-<rect class="ring" style="animation-delay:6.00s" x="725" y="13" width="230" height="202" rx="17" fill="none" stroke="#2BD576" stroke-width="3"/>
-</g><g class="in" style="animation-delay:0.36s">
-<clipPath id="k4"><rect x="968" y="16" width="224" height="196" rx="14"/></clipPath>
-<g clip-path="url(#k4)">
-<rect x="968" y="16" width="224" height="196" fill="#FFD400"/>
-<rect x="968" y="16" width="224" height="38" fill="#111111"/><rect x="968" y="53" width="224" height="1" fill="#D4002A"/>
-<text class="hd" x="982" y="40" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#FFD400">Matatu</text>
-<circle cx="1172" cy="35" r="5" fill="#D4002A"/>
-<rect x="982" y="68" width="118" height="26" rx="10" fill="#FFFFFF" stroke="#111111"/>
-<rect x="990" y="78" width="70" height="5" rx="2.5" fill="#4A4400" fill-opacity=".6"/>
-<rect x="1074" y="102" width="104" height="26" rx="10" fill="#D4002A"/>
-<rect x="1084" y="112" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
-<rect x="982" y="138" width="196" height="22" rx="8" fill="#FFE7A1" stroke="#111111"/>
-<circle cx="996" cy="149" r="4" fill="#0A6B2F"/><circle cx="1010" cy="149" r="4" fill="#7A4A00"/><circle cx="1024" cy="149" r="4" fill="#B00020"/>
-<text class="tg" x="1036" y="152" fill="#2B2B2B">good  warn  bad</text>
-<text class="ds" x="982" y="184" fill="#111111" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">Street yellow, black, red</text>
-<text class="tg" x="982" y="200" fill="#4A4400">Everyday</text>
-</g>
-<rect x="968.5" y="16.5" width="223" height="195" rx="14" fill="none" stroke="#111111"/>
-<rect class="ring" style="animation-delay:8.00s" x="965" y="13" width="230" height="202" rx="17" fill="none" stroke="#2BD576" stroke-width="3"/>
-</g><g class="in" style="animation-delay:0.45s">
-<clipPath id="k5"><rect x="8" y="240" width="224" height="196" rx="14"/></clipPath>
-<g clip-path="url(#k5)">
-<rect x="8" y="240" width="224" height="196" fill="#1B1410"/>
-<rect x="8" y="240" width="224" height="38" fill="#140E0B"/><rect x="8" y="277" width="224" height="1" fill="#3A2D24"/>
-<text class="hd" x="22" y="264" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#F3E9DC">Kahawa</text>
-<circle cx="212" cy="259" r="5" fill="#6CC4B5"/>
-<rect x="22" y="292" width="118" height="26" rx="10" fill="#251C16" stroke="#3A2D24"/>
-<rect x="30" y="302" width="70" height="5" rx="2.5" fill="#A8927B" fill-opacity=".6"/>
-<rect x="114" y="326" width="104" height="26" rx="10" fill="#6CC4B5"/>
-<rect x="124" y="336" width="62" height="5" rx="2.5" fill="#0D1F1C" fill-opacity=".85"/>
-<rect x="22" y="362" width="196" height="22" rx="8" fill="#17302C" stroke="#2F6B62"/>
-<circle cx="36" cy="373" r="4" fill="#86D0A0"/><circle cx="50" cy="373" r="4" fill="#E6B450"/><circle cx="64" cy="373" r="4" fill="#F08A7C"/>
-<text class="tg" x="76" y="376" fill="#CDBBA6">good  warn  bad</text>
-<text class="ds" x="22" y="408" fill="#F3E9DC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">Espresso brown, teal</text>
-<text class="tg" x="22" y="424" fill="#A8927B">Everyday</text>
-</g>
-<rect x="8.5" y="240.5" width="223" height="195" rx="14" fill="none" stroke="#5A4636"/>
-<rect class="ring" style="animation-delay:10.00s" x="5" y="237" width="230" height="202" rx="17" fill="none" stroke="#2BD576" stroke-width="3"/>
-</g><g class="in" style="animation-delay:0.54s">
-<clipPath id="k6"><rect x="248" y="240" width="224" height="196" rx="14"/></clipPath>
-<g clip-path="url(#k6)">
-<rect x="248" y="240" width="224" height="196" fill="#0E2A47"/><path d="M268 276V436" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M288 276V436" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M308 276V436" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M328 276V436" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M348 276V436" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M368 276V436" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M388 276V436" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M408 276V436" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M428 276V436" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M448 276V436" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M248 276H472" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M248 296H472" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M248 316H472" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M248 336H472" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M248 356H472" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M248 376H472" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M248 396H472" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M248 416H472" stroke="#2D5B8C" stroke-opacity=".35"/>
-<rect x="248" y="240" width="224" height="38" fill="#0A2037"/><rect x="248" y="277" width="224" height="1" fill="#2D5B8C"/>
-<text class="hd" x="262" y="264" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#E8F1FB">Blueprint</text>
-<circle cx="452" cy="259" r="5" fill="#7FD6FF"/>
-<rect x="262" y="292" width="118" height="26" rx="10" fill="#123354" stroke="#2D5B8C"/>
-<rect x="270" y="302" width="70" height="5" rx="2.5" fill="#93B3D4" fill-opacity=".6"/>
-<rect x="354" y="326" width="104" height="26" rx="10" fill="#7FD6FF"/>
-<rect x="364" y="336" width="62" height="5" rx="2.5" fill="#06223A" fill-opacity=".85"/>
-<rect x="262" y="362" width="196" height="22" rx="8" fill="#16436E" stroke="#3D7DB3"/>
-<circle cx="276" cy="373" r="4" fill="#7BE0A8"/><circle cx="290" cy="373" r="4" fill="#FFD24A"/><circle cx="304" cy="373" r="4" fill="#FF8F8F"/>
-<text class="tg" x="316" y="376" fill="#B4CDE6">good  warn  bad</text>
-<text class="ds" x="262" y="408" fill="#E8F1FB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">Drafting navy, grid, cyan</text>
-<text class="tg" x="262" y="424" fill="#93B3D4">Everyday</text>
-</g>
-<rect x="248.5" y="240.5" width="223" height="195" rx="14" fill="none" stroke="#4A7DB3"/>
-<rect class="ring" style="animation-delay:12.00s" x="245" y="237" width="230" height="202" rx="17" fill="none" stroke="#2BD576" stroke-width="3"/>
-</g><g class="in" style="animation-delay:0.63s">
-<clipPath id="k7"><rect x="488" y="240" width="224" height="196" rx="14"/></clipPath>
-<g clip-path="url(#k7)">
-<rect x="488" y="240" width="224" height="196" fill="#F6F8F5"/>
-<rect x="488" y="240" width="224" height="38" fill="#087F36"/><rect x="488" y="277" width="224" height="1" fill="#087F36"/>
-<text class="hd" x="502" y="264" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#FFFFFF">Savanna</text>
-<circle cx="692" cy="259" r="5" fill="#087F36"/>
-<rect x="502" y="292" width="118" height="26" rx="10" fill="#FFFFFF" stroke="#DCE5DE"/>
-<rect x="510" y="302" width="70" height="5" rx="2.5" fill="#586C60" fill-opacity=".6"/>
-<rect x="594" y="326" width="104" height="26" rx="10" fill="#087F36"/>
-<rect x="604" y="336" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
-<rect x="502" y="362" width="196" height="22" rx="8" fill="#E1F3E7" stroke="#9FD3B1"/>
-<circle cx="516" cy="373" r="4" fill="#087F36"/><circle cx="530" cy="373" r="4" fill="#8F5B00"/><circle cx="544" cy="373" r="4" fill="#C8102E"/>
-<text class="tg" x="556" y="376" fill="#3F5348">good  warn  bad</text>
-<text class="ds" x="502" y="408" fill="#10201A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">Bright green, red marks</text>
-<text class="tg" x="502" y="424" fill="#586C60">M-Pesa colours</text>
-</g>
-<rect x="488.5" y="240.5" width="223" height="195" rx="14" fill="none" stroke="#B9C9BE"/>
-<rect class="ring" style="animation-delay:14.00s" x="485" y="237" width="230" height="202" rx="17" fill="none" stroke="#2BD576" stroke-width="3"/>
-</g><g class="in" style="animation-delay:0.72s">
-<clipPath id="k8"><rect x="728" y="240" width="224" height="196" rx="14"/></clipPath>
-<g clip-path="url(#k8)">
-<rect x="728" y="240" width="224" height="196" fill="#F4F4F5"/>
-<rect x="728" y="240" width="224" height="38" fill="#FFFFFF"/><rect x="728" y="277" width="224" height="1" fill="#C8001A"/>
-<text class="hd" x="742" y="264" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#17171A">Lipa</text>
-<circle cx="932" cy="259" r="5" fill="#C8001A"/>
-<rect x="742" y="292" width="118" height="26" rx="10" fill="#FFFFFF" stroke="#E2E2E5"/>
-<rect x="750" y="302" width="70" height="5" rx="2.5" fill="#676770" fill-opacity=".6"/>
-<rect x="834" y="326" width="104" height="26" rx="10" fill="#C8001A"/>
-<rect x="844" y="336" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
-<rect x="742" y="362" width="196" height="22" rx="8" fill="#FBE6E9" stroke="#F0A8B1"/>
-<circle cx="756" cy="373" r="4" fill="#0A7A3B"/><circle cx="770" cy="373" r="4" fill="#8F5B00"/><circle cx="784" cy="373" r="4" fill="#C8001A"/>
-<text class="tg" x="796" y="376" fill="#4F4F57">good  warn  bad</text>
-<text class="ds" x="742" y="408" fill="#17171A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">White with a red lead</text>
-<text class="tg" x="742" y="424" fill="#676770">M-Pesa colours</text>
-</g>
-<rect x="728.5" y="240.5" width="223" height="195" rx="14" fill="none" stroke="#C8C8CE"/>
-<rect class="ring" style="animation-delay:16.00s" x="725" y="237" width="230" height="202" rx="17" fill="none" stroke="#2BD576" stroke-width="3"/>
-</g><g class="in" style="animation-delay:0.81s">
-<clipPath id="k9"><rect x="968" y="240" width="224" height="196" rx="14"/></clipPath>
-<g clip-path="url(#k9)">
-<rect x="968" y="240" width="224" height="196" fill="#ECEBE6"/>
-<rect x="968" y="240" width="224" height="38" fill="#FBFBF8"/><rect x="968" y="277" width="224" height="1" fill="#1D1D1B"/>
-<text class="hd" x="982" y="264" font-family="'Courier New', Courier, monospace" fill="#1D1D1B">Receipt</text>
-<circle cx="1172" cy="259" r="5" fill="#0B6B2E"/>
-<rect x="982" y="292" width="118" height="26" rx="10" fill="#FBFBF8" stroke="#B5B4AE"/>
-<rect x="990" y="302" width="70" height="5" rx="2.5" fill="#62625C" fill-opacity=".6"/>
-<rect x="1074" y="326" width="104" height="26" rx="10" fill="#0B6B2E"/>
-<rect x="1084" y="336" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
-<rect x="982" y="362" width="196" height="22" rx="8" fill="#E4EEE2" stroke="#9DBE9A"/>
-<circle cx="996" cy="373" r="4" fill="#0B6B2E"/><circle cx="1010" cy="373" r="4" fill="#8A5300"/><circle cx="1024" cy="373" r="4" fill="#B3001B"/>
-<text class="tg" x="1036" y="376" fill="#45453F">good  warn  bad</text>
-<text class="ds" x="982" y="408" fill="#1D1D1B" font-family="'Courier New', Courier, monospace">Paper slip, typewriter type</text>
-<text class="tg" x="982" y="424" fill="#62625C">M-Pesa colours</text>
-</g>
-<rect x="968.5" y="240.5" width="223" height="195" rx="14" fill="none" stroke="#6B6A65"/>
-<rect class="ring" style="animation-delay:18.00s" x="965" y="237" width="230" height="202" rx="17" fill="none" stroke="#2BD576" stroke-width="3"/>
-</g>
+:root { --bg:#F6F7F4; --pn:#FFFFFF; --ink:#14211A; --mut:#5B6A62; --rule:#D8DDD6; --grn:#17803D; --amb:#A8650A; --red:#B3261E; --blu:#1F5FBF; --dot:#C9D0C8; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0F1512; --pn:#151D19; --ink:#E7EDE9; --mut:#8D9C94; --rule:#2A352F; --grn:#47C27A; --amb:#E0A84A; --red:#FF7B72; --blu:#6EA8FF; --dot:#26312B; } }
+text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+:where(text:not([fill])) { fill: var(--ink); }
+.m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+.mut { fill: var(--mut); }
+.bg { fill: var(--bg); stroke: var(--rule); }
+.pn { fill: var(--pn); stroke: var(--rule); }
+.hl { stroke: var(--rule); fill: none; }
+.hf { fill: var(--rule); }
+.g { fill: var(--grn); } .gs { stroke: var(--grn); fill: none; }
+.ms { stroke: var(--mut); fill: none; }
+.wt { fill: #fff; } .w8 { fill: #fff; fill-opacity: .82; } .w6 { fill: #fff; fill-opacity: .6; }
+.halo { paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.fu { opacity: 0; animation: fu .8s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes fu { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+.lf { animation: lf .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lf { from { fill-opacity: 0; fill: #47C27A } to { fill-opacity: 1; fill: #fff } }
+.wipe { animation: wipe 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes wipe { from { clip-path: inset(-12% 100% -12% 0) } to { clip-path: inset(-12% -3% -12% 0) } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } .fu { opacity: 1 !important; } }
+
+.ci { opacity: 0; animation: cin .7s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes cin { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: translateY(0) } }
+.sel { opacity: 0; animation: sel 20s linear infinite; }
+@keyframes sel { 0% { opacity: 1 } 9.5% { opacity: 1 } 10%,100% { opacity: 0 } }
+@media (prefers-reduced-motion: reduce) { .ci { opacity: 1 !important; } }
+</style>
+<rect width="1200" height="476" class="bg" style="stroke:none"/><rect width="1200" height="476" fill="url(#tg)"/><rect class="hl" x=".5" y=".5" width="1199" height="475" rx="10"/><g class="ci" style="animation-delay:0.00s"><clipPath id="k0"><rect x="20" y="20" width="224" height="196" rx="8"/></clipPath>
+<g clip-path="url(#k0)"><rect x="20" y="20" width="224" height="196" fill="#F3F4F7"/>
+<rect x="20" y="20" width="224" height="38" fill="#FFFFFF"/><rect x="20" y="57" width="224" height="1" fill="#E1E4EA"/>
+<text x="34" y="44" font-size="14" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#11151B">Daylight</text>
+<circle cx="224" cy="39" r="5" fill="#2457D6"/>
+<rect x="34" y="72" width="118" height="26" rx="8" fill="#FFFFFF" stroke="#E1E4EA"/><rect x="42" y="82" width="70" height="5" rx="2.5" fill="#646E7F" fill-opacity=".6"/>
+<rect x="126" y="106" width="104" height="26" rx="8" fill="#2457D6"/><rect x="136" y="116" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
+<rect x="34" y="142" width="196" height="22" rx="6" fill="#E7EDFC" stroke="#B6C8F4"/>
+<circle cx="48" cy="153" r="4" fill="#137A4A"/><circle cx="62" cy="153" r="4" fill="#9A5D00"/><circle cx="76" cy="153" r="4" fill="#C42B3A"/>
+<text x="88" y="157" font-size="10.5" style="fill:#4A5362">good  warn  bad</text>
+<text x="34" y="188" font-size="11.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#11151B">Light, cool grey, cobalt</text>
+<text x="34" y="204" font-size="10.5" style="fill:#646E7F">Everyday</text></g>
+<rect x="20.5" y="20.5" width="223" height="195" rx="8" fill="none" stroke="#C9CED8"/>
+<rect class="gs sel" style="animation-delay:0s" x="16" y="16" width="232" height="204" rx="11" stroke-width="3"/></g><g class="ci" style="animation-delay:0.08s"><clipPath id="k1"><rect x="256" y="20" width="224" height="196" rx="8"/></clipPath>
+<g clip-path="url(#k1)"><rect x="256" y="20" width="224" height="196" fill="#0D0F12"/>
+<rect x="256" y="20" width="224" height="38" fill="#101317"/><rect x="256" y="57" width="224" height="1" fill="#242932"/>
+<text x="270" y="44" font-size="14" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#E7E9EE">Graphite</text>
+<circle cx="460" cy="39" r="5" fill="#F0A63A"/>
+<rect x="270" y="72" width="118" height="26" rx="8" fill="#14171C" stroke="#242932"/><rect x="278" y="82" width="70" height="5" rx="2.5" fill="#808895" fill-opacity=".6"/>
+<rect x="362" y="106" width="104" height="26" rx="8" fill="#F0A63A"/><rect x="372" y="116" width="62" height="5" rx="2.5" fill="#1B1304" fill-opacity=".85"/>
+<rect x="270" y="142" width="196" height="22" rx="6" fill="#2A2110" stroke="#5A4318"/>
+<circle cx="284" cy="153" r="4" fill="#52C68F"/><circle cx="298" cy="153" r="4" fill="#F0A63A"/><circle cx="312" cy="153" r="4" fill="#F07272"/>
+<text x="324" y="157" font-size="10.5" style="fill:#A0A8B5">good  warn  bad</text>
+<text x="270" y="188" font-size="11.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#E7E9EE">Dark, neutral, amber</text>
+<text x="270" y="204" font-size="10.5" style="fill:#808895">Everyday</text></g>
+<rect x="256.5" y="20.5" width="223" height="195" rx="8" fill="none" stroke="#343B46"/>
+<rect class="gs sel" style="animation-delay:2s" x="252" y="16" width="232" height="204" rx="11" stroke-width="3"/></g><g class="ci" style="animation-delay:0.16s"><clipPath id="k2"><rect x="492" y="20" width="224" height="196" rx="8"/></clipPath>
+<g clip-path="url(#k2)"><rect x="492" y="20" width="224" height="196" fill="#EDF3F3"/>
+<rect x="492" y="20" width="224" height="38" fill="#0A5C66"/><rect x="492" y="57" width="224" height="1" fill="#0A5C66"/>
+<text x="506" y="44" font-size="14" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#FFFFFF">Pwani</text>
+<circle cx="696" cy="39" r="5" fill="#0A7480"/>
+<rect x="506" y="72" width="118" height="26" rx="8" fill="#FFFFFF" stroke="#D3E0E0"/><rect x="514" y="82" width="70" height="5" rx="2.5" fill="#567078" fill-opacity=".6"/>
+<rect x="598" y="106" width="104" height="26" rx="8" fill="#0A7480"/><rect x="608" y="116" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
+<rect x="506" y="142" width="196" height="22" rx="6" fill="#D9EEF0" stroke="#8FC6CC"/>
+<circle cx="520" cy="153" r="4" fill="#0B6B4B"/><circle cx="534" cy="153" r="4" fill="#8A4B1F"/><circle cx="548" cy="153" r="4" fill="#B3261E"/>
+<text x="560" y="157" font-size="10.5" style="fill:#3B5961">good  warn  bad</text>
+<text x="506" y="188" font-size="11.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#0F2B33">Coastal teal, soft white</text>
+<text x="506" y="204" font-size="10.5" style="fill:#567078">Everyday</text></g>
+<rect x="492.5" y="20.5" width="223" height="195" rx="8" fill="none" stroke="#AEC6C7"/>
+<rect class="gs sel" style="animation-delay:4s" x="488" y="16" width="232" height="204" rx="11" stroke-width="3"/></g><g class="ci" style="animation-delay:0.24s"><clipPath id="k3"><rect x="728" y="20" width="224" height="196" rx="8"/></clipPath>
+<g clip-path="url(#k3)"><rect x="728" y="20" width="224" height="196" fill="#FFFFFF"/>
+<rect x="728" y="20" width="224" height="38" fill="#FFFFFF"/><rect x="728" y="57" width="224" height="1" fill="#000000"/>
+<text x="742" y="44" font-size="14" font-weight="700" font-family="Georgia, 'Times New Roman', serif" style="fill:#000000">Mono</text>
+<circle cx="932" cy="39" r="5" fill="#000000"/>
+<rect x="742" y="72" width="118" height="26" rx="8" fill="#FFFFFF" stroke="#111111"/><rect x="750" y="82" width="70" height="5" rx="2.5" fill="#5C5C5C" fill-opacity=".6"/>
+<rect x="834" y="106" width="104" height="26" rx="8" fill="#000000"/><rect x="844" y="116" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
+<rect x="742" y="142" width="196" height="22" rx="6" fill="#ECECEC" stroke="#000000"/>
+<circle cx="756" cy="153" r="4" fill="#0A6A2C"/><circle cx="770" cy="153" r="4" fill="#8A5300"/><circle cx="784" cy="153" r="4" fill="#B00020"/>
+<text x="796" y="157" font-size="10.5" style="fill:#2E2E2E">good  warn  bad</text>
+<text x="742" y="188" font-size="11.5" font-family="Georgia, 'Times New Roman', serif" style="fill:#000000">Black on white, serif type</text>
+<text x="742" y="204" font-size="10.5" style="fill:#5C5C5C">Everyday</text></g>
+<rect x="728.5" y="20.5" width="223" height="195" rx="8" fill="none" stroke="#111111"/>
+<rect class="gs sel" style="animation-delay:6s" x="724" y="16" width="232" height="204" rx="11" stroke-width="3"/></g><g class="ci" style="animation-delay:0.32s"><clipPath id="k4"><rect x="964" y="20" width="224" height="196" rx="8"/></clipPath>
+<g clip-path="url(#k4)"><rect x="964" y="20" width="224" height="196" fill="#FFD400"/>
+<rect x="964" y="20" width="224" height="38" fill="#111111"/><rect x="964" y="57" width="224" height="1" fill="#D4002A"/>
+<text x="978" y="44" font-size="14" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#FFD400">Matatu</text>
+<circle cx="1168" cy="39" r="5" fill="#D4002A"/>
+<rect x="978" y="72" width="118" height="26" rx="8" fill="#FFFFFF" stroke="#111111"/><rect x="986" y="82" width="70" height="5" rx="2.5" fill="#4A4400" fill-opacity=".6"/>
+<rect x="1070" y="106" width="104" height="26" rx="8" fill="#D4002A"/><rect x="1080" y="116" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
+<rect x="978" y="142" width="196" height="22" rx="6" fill="#FFE7A1" stroke="#111111"/>
+<circle cx="992" cy="153" r="4" fill="#0A6B2F"/><circle cx="1006" cy="153" r="4" fill="#7A4A00"/><circle cx="1020" cy="153" r="4" fill="#B00020"/>
+<text x="1032" y="157" font-size="10.5" style="fill:#2B2B2B">good  warn  bad</text>
+<text x="978" y="188" font-size="11.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#111111">Street yellow, black, red</text>
+<text x="978" y="204" font-size="10.5" style="fill:#4A4400">Everyday</text></g>
+<rect x="964.5" y="20.5" width="223" height="195" rx="8" fill="none" stroke="#111111"/>
+<rect class="gs sel" style="animation-delay:8s" x="960" y="16" width="232" height="204" rx="11" stroke-width="3"/></g><g class="ci" style="animation-delay:0.40s"><clipPath id="k5"><rect x="20" y="252" width="224" height="196" rx="8"/></clipPath>
+<g clip-path="url(#k5)"><rect x="20" y="252" width="224" height="196" fill="#1B1410"/>
+<rect x="20" y="252" width="224" height="38" fill="#140E0B"/><rect x="20" y="289" width="224" height="1" fill="#3A2D24"/>
+<text x="34" y="276" font-size="14" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#F3E9DC">Kahawa</text>
+<circle cx="224" cy="271" r="5" fill="#6CC4B5"/>
+<rect x="34" y="304" width="118" height="26" rx="8" fill="#251C16" stroke="#3A2D24"/><rect x="42" y="314" width="70" height="5" rx="2.5" fill="#A8927B" fill-opacity=".6"/>
+<rect x="126" y="338" width="104" height="26" rx="8" fill="#6CC4B5"/><rect x="136" y="348" width="62" height="5" rx="2.5" fill="#0D1F1C" fill-opacity=".85"/>
+<rect x="34" y="374" width="196" height="22" rx="6" fill="#17302C" stroke="#2F6B62"/>
+<circle cx="48" cy="385" r="4" fill="#86D0A0"/><circle cx="62" cy="385" r="4" fill="#E6B450"/><circle cx="76" cy="385" r="4" fill="#F08A7C"/>
+<text x="88" y="389" font-size="10.5" style="fill:#CDBBA6">good  warn  bad</text>
+<text x="34" y="420" font-size="11.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#F3E9DC">Espresso brown, teal</text>
+<text x="34" y="436" font-size="10.5" style="fill:#A8927B">Everyday</text></g>
+<rect x="20.5" y="252.5" width="223" height="195" rx="8" fill="none" stroke="#5A4636"/>
+<rect class="gs sel" style="animation-delay:10s" x="16" y="248" width="232" height="204" rx="11" stroke-width="3"/></g><g class="ci" style="animation-delay:0.48s"><clipPath id="k6"><rect x="256" y="252" width="224" height="196" rx="8"/></clipPath>
+<g clip-path="url(#k6)"><rect x="256" y="252" width="224" height="196" fill="#0E2A47"/><path d="M276 288V448" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M296 288V448" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M316 288V448" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M336 288V448" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M356 288V448" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M376 288V448" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M396 288V448" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M416 288V448" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M436 288V448" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M456 288V448" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M256 288H480" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M256 308H480" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M256 328H480" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M256 348H480" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M256 368H480" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M256 388H480" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M256 408H480" stroke="#2D5B8C" stroke-opacity=".35"/><path d="M256 428H480" stroke="#2D5B8C" stroke-opacity=".35"/>
+<rect x="256" y="252" width="224" height="38" fill="#0A2037"/><rect x="256" y="289" width="224" height="1" fill="#2D5B8C"/>
+<text x="270" y="276" font-size="14" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#E8F1FB">Blueprint</text>
+<circle cx="460" cy="271" r="5" fill="#7FD6FF"/>
+<rect x="270" y="304" width="118" height="26" rx="8" fill="#123354" stroke="#2D5B8C"/><rect x="278" y="314" width="70" height="5" rx="2.5" fill="#93B3D4" fill-opacity=".6"/>
+<rect x="362" y="338" width="104" height="26" rx="8" fill="#7FD6FF"/><rect x="372" y="348" width="62" height="5" rx="2.5" fill="#06223A" fill-opacity=".85"/>
+<rect x="270" y="374" width="196" height="22" rx="6" fill="#16436E" stroke="#3D7DB3"/>
+<circle cx="284" cy="385" r="4" fill="#7BE0A8"/><circle cx="298" cy="385" r="4" fill="#FFD24A"/><circle cx="312" cy="385" r="4" fill="#FF8F8F"/>
+<text x="324" y="389" font-size="10.5" style="fill:#B4CDE6">good  warn  bad</text>
+<text x="270" y="420" font-size="11.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#E8F1FB">Drafting navy, grid, cyan</text>
+<text x="270" y="436" font-size="10.5" style="fill:#93B3D4">Everyday</text></g>
+<rect x="256.5" y="252.5" width="223" height="195" rx="8" fill="none" stroke="#4A7DB3"/>
+<rect class="gs sel" style="animation-delay:12s" x="252" y="248" width="232" height="204" rx="11" stroke-width="3"/></g><g class="ci" style="animation-delay:0.56s"><clipPath id="k7"><rect x="492" y="252" width="224" height="196" rx="8"/></clipPath>
+<g clip-path="url(#k7)"><rect x="492" y="252" width="224" height="196" fill="#F6F8F5"/>
+<rect x="492" y="252" width="224" height="38" fill="#087F36"/><rect x="492" y="289" width="224" height="1" fill="#087F36"/>
+<text x="506" y="276" font-size="14" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#FFFFFF">Savanna</text>
+<circle cx="696" cy="271" r="5" fill="#087F36"/>
+<rect x="506" y="304" width="118" height="26" rx="8" fill="#FFFFFF" stroke="#DCE5DE"/><rect x="514" y="314" width="70" height="5" rx="2.5" fill="#586C60" fill-opacity=".6"/>
+<rect x="598" y="338" width="104" height="26" rx="8" fill="#087F36"/><rect x="608" y="348" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
+<rect x="506" y="374" width="196" height="22" rx="6" fill="#E1F3E7" stroke="#9FD3B1"/>
+<circle cx="520" cy="385" r="4" fill="#087F36"/><circle cx="534" cy="385" r="4" fill="#8F5B00"/><circle cx="548" cy="385" r="4" fill="#C8102E"/>
+<text x="560" y="389" font-size="10.5" style="fill:#3F5348">good  warn  bad</text>
+<text x="506" y="420" font-size="11.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#10201A">Bright green, red marks</text>
+<text x="506" y="436" font-size="10.5" style="fill:#586C60">M-Pesa colours</text></g>
+<rect x="492.5" y="252.5" width="223" height="195" rx="8" fill="none" stroke="#B9C9BE"/>
+<rect class="gs sel" style="animation-delay:14s" x="488" y="248" width="232" height="204" rx="11" stroke-width="3"/></g><g class="ci" style="animation-delay:0.64s"><clipPath id="k8"><rect x="728" y="252" width="224" height="196" rx="8"/></clipPath>
+<g clip-path="url(#k8)"><rect x="728" y="252" width="224" height="196" fill="#F4F4F5"/>
+<rect x="728" y="252" width="224" height="38" fill="#FFFFFF"/><rect x="728" y="289" width="224" height="1" fill="#C8001A"/>
+<text x="742" y="276" font-size="14" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#17171A">Lipa</text>
+<circle cx="932" cy="271" r="5" fill="#C8001A"/>
+<rect x="742" y="304" width="118" height="26" rx="8" fill="#FFFFFF" stroke="#E2E2E5"/><rect x="750" y="314" width="70" height="5" rx="2.5" fill="#676770" fill-opacity=".6"/>
+<rect x="834" y="338" width="104" height="26" rx="8" fill="#C8001A"/><rect x="844" y="348" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
+<rect x="742" y="374" width="196" height="22" rx="6" fill="#FBE6E9" stroke="#F0A8B1"/>
+<circle cx="756" cy="385" r="4" fill="#0A7A3B"/><circle cx="770" cy="385" r="4" fill="#8F5B00"/><circle cx="784" cy="385" r="4" fill="#C8001A"/>
+<text x="796" y="389" font-size="10.5" style="fill:#4F4F57">good  warn  bad</text>
+<text x="742" y="420" font-size="11.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" style="fill:#17171A">White with a red lead</text>
+<text x="742" y="436" font-size="10.5" style="fill:#676770">M-Pesa colours</text></g>
+<rect x="728.5" y="252.5" width="223" height="195" rx="8" fill="none" stroke="#C8C8CE"/>
+<rect class="gs sel" style="animation-delay:16s" x="724" y="248" width="232" height="204" rx="11" stroke-width="3"/></g><g class="ci" style="animation-delay:0.72s"><clipPath id="k9"><rect x="964" y="252" width="224" height="196" rx="8"/></clipPath>
+<g clip-path="url(#k9)"><rect x="964" y="252" width="224" height="196" fill="#ECEBE6"/>
+<rect x="964" y="252" width="224" height="38" fill="#FBFBF8"/><rect x="964" y="289" width="224" height="1" fill="#1D1D1B"/>
+<text x="978" y="276" font-size="14" font-weight="700" font-family="'Courier New', Courier, monospace" style="fill:#1D1D1B">Receipt</text>
+<circle cx="1168" cy="271" r="5" fill="#0B6B2E"/>
+<rect x="978" y="304" width="118" height="26" rx="8" fill="#FBFBF8" stroke="#B5B4AE"/><rect x="986" y="314" width="70" height="5" rx="2.5" fill="#62625C" fill-opacity=".6"/>
+<rect x="1070" y="338" width="104" height="26" rx="8" fill="#0B6B2E"/><rect x="1080" y="348" width="62" height="5" rx="2.5" fill="#FFFFFF" fill-opacity=".85"/>
+<rect x="978" y="374" width="196" height="22" rx="6" fill="#E4EEE2" stroke="#9DBE9A"/>
+<circle cx="992" cy="385" r="4" fill="#0B6B2E"/><circle cx="1006" cy="385" r="4" fill="#8A5300"/><circle cx="1020" cy="385" r="4" fill="#B3001B"/>
+<text x="1032" y="389" font-size="10.5" style="fill:#45453F">good  warn  bad</text>
+<text x="978" y="420" font-size="11.5" font-family="'Courier New', Courier, monospace" style="fill:#1D1D1B">Paper slip, typewriter type</text>
+<text x="978" y="436" font-size="10.5" style="fill:#62625C">M-Pesa colours</text></g>
+<rect x="964.5" y="252.5" width="223" height="195" rx="8" fill="none" stroke="#6B6A65"/>
+<rect class="gs sel" style="animation-delay:18s" x="960" y="248" width="232" height="204" rx="11" stroke-width="3"/></g>
 </svg>

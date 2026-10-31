@@ -48,10 +48,10 @@ internal:
 payment:
   base-url: ${PAYMENT_BASE_URL:http://localhost:8083}
 
-# Private address of companion-api, and the public address customers' phones open from links in chat
-companion:
-  base-url: ${COMPANION_BASE_URL:http://localhost:8084}
-  public-url: ${COMPANION_PUBLIC_BASE_URL:http://localhost:8084}
+# Private address of ganji-api, and the public address customers' phones open from links in chat
+ganji:
+  base-url: ${GANJI_BASE_URL:http://localhost:8084}
+  public-url: ${GANJI_PUBLIC_BASE_URL:http://localhost:8084}
 
 anthropic:
   api-key: ${ANTHROPIC_API_KEY}
@@ -99,11 +99,11 @@ agent:
   # Largest file a customer can attach in the chat
   max-upload-bytes: 20971520
   max-text-chars: 20000
-  # Off: the agent only prepares requests for the customer's own M-Pesa (companion-api).
+  # Off: the agent only prepares requests for the customer's own M-Pesa (ganji-api).
   # On: also offers the business tools that need payment-service (Daraja): paying the business by STK Push,
   # refunds, payouts, staff roles. Needs payment-service and its Daraja credentials.
   business-payments: ${AGENT_BUSINESS_PAYMENTS:false}
 
 logging:
   level:
-    com.mpesaagent: INFO
+    com.mganji: INFO

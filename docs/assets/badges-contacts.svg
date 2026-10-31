@@ -1,0 +1,47 @@
+<!-- PLACE THIS FILE AT: m-ganji/docs/assets/badges-contacts.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="880" height="44" viewBox="0 0 880 44" role="img" aria-label="Flutter 3.22 or later, Google People API, Microsoft Graph, sign-in with PKCE and no secret, the address book stays on the phone.">
+<title>Flutter 3.22 or later, Google People API, Microsoft Graph, sign-in with PKCE and no secret, the address book stays on the phone.</title>
+<defs><clipPath id="c207"><rect width="207" height="42" rx="6"/></clipPath><clipPath id="c115"><rect width="115" height="42" rx="6"/></clipPath><clipPath id="c147"><rect width="147" height="42" rx="6"/></clipPath><clipPath id="c183"><rect width="183" height="42" rx="6"/></clipPath><clipPath id="c159"><rect width="159" height="42" rx="6"/></clipPath><clipPath id="cl"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z"/></clipPath><clipPath id="od"><rect x="-1" y="21" width="10" height="17"/></clipPath></defs>
+<style>
+:root { --bg:#F6F7F4; --pn:#FFFFFF; --ink:#14211A; --mut:#5B6A62; --rule:#D8DDD6; --grn:#17803D; --amb:#A8650A; --red:#B3261E; --blu:#1F5FBF; --dot:#C9D0C8; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0F1512; --pn:#151D19; --ink:#E7EDE9; --mut:#8D9C94; --rule:#2A352F; --grn:#47C27A; --amb:#E0A84A; --red:#FF7B72; --blu:#6EA8FF; --dot:#26312B; } }
+text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+:where(text:not([fill])) { fill: var(--ink); }
+.m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+.mut { fill: var(--mut); }
+.bg { fill: var(--bg); stroke: var(--rule); }
+.pn { fill: var(--pn); stroke: var(--rule); }
+.hl { stroke: var(--rule); fill: none; }
+.hf { fill: var(--rule); }
+.g { fill: var(--grn); } .gs { stroke: var(--grn); fill: none; }
+.ms { stroke: var(--mut); fill: none; }
+.wt { fill: #fff; } .w8 { fill: #fff; fill-opacity: .82; } .w6 { fill: #fff; fill-opacity: .6; }
+.halo { paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.fu { opacity: 0; animation: fu .8s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes fu { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+.lf { animation: lf .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lf { from { fill-opacity: 0; fill: #47C27A } to { fill-opacity: 1; fill: #fff } }
+.wipe { animation: wipe 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes wipe { from { clip-path: inset(-12% 100% -12% 0) } to { clip-path: inset(-12% -3% -12% 0) } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } .fu { opacity: 1 !important; } }
+
+.pp { animation: pp .5s cubic-bezier(.2,.9,.3,1.3) both; transform-box: fill-box; transform-origin: center; }
+@keyframes pp { from { opacity: 0; transform: translate(0,0) scale(.4) } to { opacity: 1 } }
+.dr * { stroke-dasharray: 1; animation: dr .9s ease-in-out both; animation-delay: inherit; }
+.dr { }
+@keyframes dr { from { stroke-dashoffset: 1; opacity: 0 } 6% { opacity: 1 } to { stroke-dashoffset: 0; opacity: 1 } }
+.sh { animation: sh 9s ease-in-out infinite both; }
+@keyframes sh { 0% { transform: translateX(0) skewX(-18deg) } 9% { transform: translateX(110px) skewX(-18deg) } 100% { transform: translateX(110px) skewX(-18deg) } }
+.ac { transform-box: fill-box; transform-origin: left center; animation: ac .8s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes ac { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+.rg { transform-box: fill-box; transform-origin: center; animation: rg 2.4s ease-out infinite; }
+@keyframes rg { 0% { transform: scale(1); opacity: .8 } 100% { transform: scale(2.6); opacity: 0 } }
+.od { animation: od 1.3s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes od { from { transform: translateY(0) } }
+@media (prefers-reduced-motion: reduce) { .sh, .rg { display: none; } .dr *, .pp, .ac { animation: none !important; } }
+</style>
+<g transform="translate(17.9,1)"><g class="fu" style="animation-delay:0.15s"><rect class="pn" x=".5" y=".5" width="158.4" height="41" rx="6"/><g clip-path="url(#c159)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#02569B"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g class="pp" style="animation-delay:0.40s"><path d="M14.314 0L2.3 12 6 15.7 21.684.013h-7.357zm.014 11.072L7.857 17.53l6.47 6.47H21.7l-6.46-6.468 6.46-6.46h-7.37z" fill="#fff"/></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:1.35s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.50s" x="42" y="39" width="117.4" height="3" fill="#02569B"/><text x="54" y="17" font-size="10.5" class="mut">Flutter</text><text x="54" y="34" font-size="13.5" font-weight="700">3.22 or later</text></g></g></g><g transform="translate(185.2,1)"><g class="fu" style="animation-delay:0.22s"><rect class="pn" x=".5" y=".5" width="146.3" height="41" rx="6"/><g clip-path="url(#c147)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#4285F4"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g class="pp" style="animation-delay:0.47s"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" fill="#fff"/></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:1.82s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.57s" x="42" y="39" width="105.3" height="3" fill="#4285F4"/><text x="54" y="17" font-size="10.5" class="mut">Google</text><text x="54" y="34" font-size="13.5" font-weight="700">People API</text></g></g></g><g transform="translate(340.5,1)"><g class="fu" style="animation-delay:0.29s"><rect class="pn" x=".5" y=".5" width="114.1" height="41" rx="6"/><g clip-path="url(#c115)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#1F5FBF"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.54s"><path pathLength="1" d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" />
+  <rect pathLength="1" x="2" y="4" width="20" height="16" rx="2" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:2.29s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.64s" x="42" y="39" width="73.1" height="3" fill="#1F5FBF"/><text x="54" y="17" font-size="10.5" class="mut">Microsoft</text><text x="54" y="34" font-size="13.5" font-weight="700">Graph</text></g></g></g><g transform="translate(463.6,1)"><g class="fu" style="animation-delay:0.36s"><rect class="pn" x=".5" y=".5" width="182.0" height="41" rx="6"/><g clip-path="url(#c183)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#2B3A32"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.61s"><path pathLength="1" d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" />
+  <circle pathLength="1" cx="16.5" cy="7.5" r=".5" fill="currentColor" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:2.76s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.71s" x="42" y="39" width="141.0" height="3" fill="#2B3A32"/><text x="54" y="17" font-size="10.5" class="mut">Sign in</text><text x="54" y="34" font-size="13.5" font-weight="700">PKCE, no secret</text></g></g></g><g transform="translate(654.7,1)"><g class="fu" style="animation-delay:0.43s"><rect class="pn" x=".5" y=".5" width="206.5" height="41" rx="6"/><g clip-path="url(#c207)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#17803D"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.68s"><rect pathLength="1" width="14" height="20" x="5" y="2" rx="2" ry="2" />
+  <path pathLength="1" d="M12 18h.01" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:3.23s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.78s" x="42" y="39" width="165.5" height="3" fill="#17803D"/><text x="54" y="17" font-size="10.5" class="mut">Address book</text><text x="54" y="34" font-size="13.5" font-weight="700">stays on the phone</text></g></g></g>
+</svg>

@@ -1,5 +1,5 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/console/README.md
-     Replace the existing file if there is one. The SVG images it uses go in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
+<!-- PLACE THIS FILE AT: m-ganji/console/README.md
+     Replace the existing file if there is one. The SVG images it uses go in m-ganji/docs/assets/. You can delete this comment. -->
 
 <div align="center">
 
@@ -7,7 +7,7 @@
 
 <br/>
 
-<img alt="HTML" src="https://img.shields.io/badge/HTML-single%20file-14231C?style=flat-square&logo=html5&logoColor=FF7A45"/> <img alt="Build%20step" src="https://img.shields.io/badge/Build%20step-none-087F36?style=flat-square"/> <img alt="Themes" src="https://img.shields.io/badge/Themes-10-087F36?style=flat-square"/> <img alt="Endpoints" src="https://img.shields.io/badge/Endpoints-78-14231C?style=flat-square"/> <img alt="Palette" src="https://img.shields.io/badge/Palette-Ctrl%2BK-14231C?style=flat-square"/>
+<img src="../docs/assets/badges-console.svg" alt="A single HTML file with no build step, ten looks, 78 endpoints, and a Ctrl+K palette." width="880"/>
 
 <br/><br/>
 
@@ -44,15 +44,15 @@ Open **Settings** (the sliders icon, top right) to set the service addresses, th
 
 | Tab | What it does |
 |---|---|
-| **Journey** | Runs a whole request from chat to message check and draws it as a trace across five parties: customer, agent, companion API, phone app and M-Pesa. Solid lines are real calls, dashed lines are steps the console can only pretend (a fingerprint, the PIN, the M-Pesa message). Press any solid line to read its exact request and answer. You can make the M-Pesa message show a different number or account to see it refused. It needs no AI, because it uses the agent-side endpoints of companion-api |
+| **Journey** | Runs a whole request from chat to message check and draws it as a trace across five parties: customer, agent, M-Ganji API, phone app and M-Pesa. Solid lines are real calls, dashed lines are steps the console can only pretend (a fingerprint, the PIN, the M-Pesa message). Press any solid line to read its exact request and answer. You can make the M-Pesa message show a different number or account to see it refused. It needs no AI, because it uses the agent-side endpoints of ganji-api |
 | **Chat** | The real chat with the real agent. Sign in with a phone number and the 6 digit code. The plus button opens the attach menu: photo, camera, video, record a video, audio file, document, contact and location. The microphone button records a voice note with a timer, live level, cancel and send. You can drag a file onto the chat or paste one. Buttons and menus the assistant sends can be tapped, and **Find in contacts** opens the contact finder. The chat is read every 1.5 seconds |
-| **Phone** | The companion app on a phone: sign in, list, approve with a fingerprint, open M-Pesa, report, and check an M-Pesa message. Messages from M-Pesa are simulated and kept in this browser |
+| **Phone** | The M-Ganji app on a phone: sign in, list, approve with a fingerprint, open M-Pesa, report, and check an M-Pesa message. Messages from M-Pesa are simulated and kept in this browser |
 | **Explorer** | Every endpoint (78 of them) with an editable path, query and body, a send button, and the answer as body, headers, request and curl. Saved values such as the request id and phone token are filled in for you |
 
 The dock at the bottom lists every call made, with its full request and answer. Press **Ctrl+K** (or Cmd+K) for the command palette: jump to a view, run the journey, switch theme or open any of the 78 endpoints by name.
 
 > [!NOTE]
-> For the console to receive the sign-in code, start companion-api with `CODE_DELIVERY=dev`. Otherwise read it from the companion-api log or your SMS.
+> For the console to receive the sign-in code, start ganji-api with `CODE_DELIVERY=dev`. Otherwise read it from the ganji-api log or your SMS.
 
 ## Ten looks
 
@@ -78,11 +78,11 @@ The finder in Chat and in the Phone tab searches:
 | A `.vcf` or `.csv` file | Nothing to set up |
 | Typing the number | Nothing to set up |
 
-Contacts are searched in the browser. Only the contact you choose is sent, and only as a chat message. Tokens stay in memory. See [`../companion-app/docs/CONTACTS.md`](../companion-app/docs/CONTACTS.md).
+Contacts are searched in the browser. Only the contact you choose is sent, and only as a chat message. Tokens stay in memory. See [`../ganji-app/docs/CONTACTS.md`](../ganji-app/docs/CONTACTS.md).
 
 ## Files and voice notes in Chat
 
-Files you attach are uploaded to companion-api (`POST /api/chat/media`) and then named in the message you send, exactly as the app does. Chrome and Edge record voice notes as WebM and Safari as MP4. Check that your transcription step accepts WebM or MP4.
+Files you attach are uploaded to ganji-api (`POST /api/chat/media`) and then named in the message you send, exactly as the app does. Chrome and Edge record voice notes as WebM and Safari as MP4. Check that your transcription step accepts WebM or MP4.
 
 ## Be careful
 

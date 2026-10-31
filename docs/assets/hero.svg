@@ -1,105 +1,100 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/hero.svg  (create the docs/assets folder if it does not exist) -->
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-label="M-Pesa AI Agent: chat, approve, pay inside M-Pesa">
-<title>M-Pesa AI Agent: chat, approve, pay inside M-Pesa</title>
-<defs>
-<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#07110C"/><stop offset="1" stop-color="#0D2217"/></linearGradient>
-<linearGradient id="shine" gradientUnits="userSpaceOnUse" x1="-600" y1="0" x2="0" y2="0">
-  <stop offset="0" stop-color="#2BD576"/><stop offset="0.35" stop-color="#EFFFF5"/><stop offset="0.7" stop-color="#4FD1C5"/><stop offset="1" stop-color="#2BD576"/>
-  <animate attributeName="x1" values="-600;600" dur="6s" repeatCount="indefinite"/><animate attributeName="x2" values="0;1200" dur="6s" repeatCount="indefinite"/>
-</linearGradient>
-<radialGradient id="o1"><stop offset="0" stop-color="#2BD576" stop-opacity=".34"/><stop offset="1" stop-color="#2BD576" stop-opacity="0"/></radialGradient>
-<radialGradient id="o2"><stop offset="0" stop-color="#4FD1C5" stop-opacity=".22"/><stop offset="1" stop-color="#4FD1C5" stop-opacity="0"/></radialGradient>
-<pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#ffffff" stroke-opacity=".05"/>
-  <animateTransform attributeName="patternTransform" type="translate" from="0 0" to="36 36" dur="9s" repeatCount="indefinite"/></pattern>
-<clipPath id="card"><rect width="1200" height="380" rx="20"/></clipPath></defs>
+<!-- PLACE THIS FILE AT: m-ganji/docs/assets/hero.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="392" viewBox="0 0 1200 392" role="img" aria-label="M-Ganji. A request slip moves from created to approved, handed off and recorded, with a ticker of what the assistant can prepare.">
+<title>M-Ganji. A request slip moves from created to approved, handed off and recorded, with a ticker of what the assistant can prepare.</title>
+<defs><clipPath id="hc"><rect width="1200" height="392" rx="10"/></clipPath><clipPath id="tk"><rect x="0" y="340" width="1200" height="52"/></clipPath><pattern id="hw" width="48" height="48" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="48" height="5" fill="#fff" fill-opacity="0.05"/><rect x="0" y="22" width="48" height="2" fill="#fff" fill-opacity="0.035"/><rect x="0" y="0" width="5" height="48" fill="#fff" fill-opacity="0.05"/><rect x="22" y="0" width="2" height="48" fill="#fff" fill-opacity="0.035"/><rect x="0" y="0" width="5" height="5" fill="#fff" fill-opacity="0.05"/></pattern></defs>
 <style>
-.pill { opacity: 0; animation: rise .7s ease-out forwards; }
-@keyframes rise { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
-.title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 800; font-size: 70px; letter-spacing: -1.5px; }
-.sub { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 17px; fill: #8DA89A; }
-.blink { animation: blink 1.4s ease-in-out infinite; }
-@keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
-.orb1 { animation: drift1 14s ease-in-out infinite alternate; }
-.orb2 { animation: drift2 17s ease-in-out infinite alternate; }
-@keyframes drift1 { from { transform: translate(0,0) } to { transform: translate(120px, 30px) } }
-@keyframes drift2 { from { transform: translate(0,0) } to { transform: translate(-90px, -26px) } }
-/* chat mock: one 15 second loop */
-.m1 { animation: m1 15s ease-in-out infinite; opacity: 0; }
-.m2 { animation: m2 15s ease-in-out infinite; opacity: 0; }
-.s1 { animation: s1 15s ease-in-out infinite; opacity: 0; }
-.s2 { animation: s2 15s ease-in-out infinite; opacity: 0; }
-.s3 { animation: s3 15s ease-in-out infinite; opacity: 0; }
-.s4 { animation: s4 15s ease-in-out infinite; opacity: 0; }
-@keyframes m1 { 0%,3% { opacity: 0; transform: translateY(10px) } 7%,92% { opacity: 1; transform: translateY(0) } 97%,100% { opacity: 0 } }
-@keyframes m2 { 0%,12% { opacity: 0; transform: translateY(10px) } 17%,92% { opacity: 1; transform: translateY(0) } 97%,100% { opacity: 0 } }
-@keyframes s1 { 0%,20% { opacity: 0 } 24%,38% { opacity: 1 } 42%,100% { opacity: 0 } }
-@keyframes s2 { 0%,40% { opacity: 0 } 44%,58% { opacity: 1 } 62%,100% { opacity: 0 } }
-@keyframes s3 { 0%,60% { opacity: 0 } 64%,78% { opacity: 1 } 82%,100% { opacity: 0 } }
-@keyframes s4 { 0%,80% { opacity: 0 } 84%,94% { opacity: 1 } 98%,100% { opacity: 0 } }
-@media (prefers-reduced-motion: reduce) { .m1,.m2,.s1 { opacity: 1; } }
-@keyframes h0 { 0% { width: 0 } 0.00% { width: 0 } 11.50% { width: 476.8px } 22.00% { width: 476.8px } 24.00% { width: 0 } 100% { width: 0 } }
-@keyframes h0c { 0% { transform: translateX(0); opacity: 1 } 0.01% { transform: translateX(0); opacity: 1 } 11.50% { transform: translateX(476.8px); opacity: 1 } 22.00% { transform: translateX(476.8px); opacity: 1 } 24.00% { transform: translateX(476.8px); opacity: 1 } 24.02% { transform: translateX(0); opacity: 0 } 100% { transform: translateX(0); opacity: 0 } }
-.h0 { animation: h0 18.4s steps(33, end) infinite; }
-.h0c { animation: h0c 18.4s steps(33, end) infinite; }
-@media (prefers-reduced-motion: reduce) { .h0 { width: 476.8px; } .h0c { transform: translateX(476.8px); } }
-@keyframes h1 { 0% { width: 0 } 25.00% { width: 0 } 36.50% { width: 621.3px } 47.00% { width: 621.3px } 49.00% { width: 0 } 100% { width: 0 } }
-@keyframes h1c { 0% { transform: translateX(0); opacity: 0 } 24.98% { transform: translateX(0); opacity: 0 } 25.01% { transform: translateX(0); opacity: 1 } 36.50% { transform: translateX(621.3px); opacity: 1 } 47.00% { transform: translateX(621.3px); opacity: 1 } 49.00% { transform: translateX(621.3px); opacity: 1 } 49.02% { transform: translateX(0); opacity: 0 } 100% { transform: translateX(0); opacity: 0 } }
-.h1 { animation: h1 18.4s steps(43, end) infinite; }
-.h1c { animation: h1c 18.4s steps(43, end) infinite; }
-@media (prefers-reduced-motion: reduce) { .h1 { width: 621.3px; } .h1c { transform: translateX(621.3px); } }
-@keyframes h2 { 0% { width: 0 } 50.00% { width: 0 } 61.50% { width: 534.6px } 72.00% { width: 534.6px } 74.00% { width: 0 } 100% { width: 0 } }
-@keyframes h2c { 0% { transform: translateX(0); opacity: 0 } 49.98% { transform: translateX(0); opacity: 0 } 50.01% { transform: translateX(0); opacity: 1 } 61.50% { transform: translateX(534.6px); opacity: 1 } 72.00% { transform: translateX(534.6px); opacity: 1 } 74.00% { transform: translateX(534.6px); opacity: 1 } 74.02% { transform: translateX(0); opacity: 0 } 100% { transform: translateX(0); opacity: 0 } }
-.h2 { animation: h2 18.4s steps(37, end) infinite; }
-.h2c { animation: h2c 18.4s steps(37, end) infinite; }
-@media (prefers-reduced-motion: reduce) { .h2 { width: 534.6px; } .h2c { transform: translateX(534.6px); } }
-@keyframes h3 { 0% { width: 0 } 75.00% { width: 0 } 86.50% { width: 491.2px } 97.00% { width: 491.2px } 99.00% { width: 0 } 100% { width: 0 } }
-@keyframes h3c { 0% { transform: translateX(0); opacity: 0 } 74.98% { transform: translateX(0); opacity: 0 } 75.01% { transform: translateX(0); opacity: 1 } 86.50% { transform: translateX(491.2px); opacity: 1 } 97.00% { transform: translateX(491.2px); opacity: 1 } 99.00% { transform: translateX(491.2px); opacity: 1 } 99.02% { transform: translateX(0); opacity: 0 } 100% { transform: translateX(0); opacity: 0 } }
-.h3 { animation: h3 18.4s steps(34, end) infinite; }
-.h3c { animation: h3c 18.4s steps(34, end) infinite; }
-@media (prefers-reduced-motion: reduce) { .h3 { width: 491.2px; } .h3c { transform: translateX(491.2px); } }
-@media (prefers-reduced-motion: reduce) { #h1g { display: none; } #h2g { display: none; } #h3g { display: none; } }
-
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }</style>
-
-<g clip-path="url(#card)">
-<rect width="1200" height="380" fill="url(#bg)"/>
-<rect width="1200" height="380" fill="url(#grid)"/>
-<circle class="orb1" cx="160" cy="80" r="260" fill="url(#o1)"/>
-<circle class="orb2" cx="1020" cy="330" r="280" fill="url(#o2)"/>
-<rect x=".5" y=".5" width="1199" height="379" rx="20" fill="none" stroke="#22372C"/>
-
-<g transform="translate(60 52)">
-  <rect width="46" height="46" rx="12" fill="#087F36"/>
-  <g transform="translate(11 11) scale(1.0000)" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h12v3"/><path d="M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H5a2 2 0 0 1-2-1"/><path d="M16.5 14h.01"/></g>
-  <circle class="blink" cx="38" cy="8" r="4" fill="#2BD576"/>
+:root { --bg:#F6F7F4; --pn:#FFFFFF; --ink:#14211A; --mut:#5B6A62; --rule:#D8DDD6; --grn:#17803D; --amb:#A8650A; --red:#B3261E; --blu:#1F5FBF; --dot:#C9D0C8; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0F1512; --pn:#151D19; --ink:#E7EDE9; --mut:#8D9C94; --rule:#2A352F; --grn:#47C27A; --amb:#E0A84A; --red:#FF7B72; --blu:#6EA8FF; --dot:#26312B; } }
+text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+:where(text:not([fill])) { fill: var(--ink); }
+.m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+.mut { fill: var(--mut); }
+.bg { fill: var(--bg); stroke: var(--rule); }
+.pn { fill: var(--pn); stroke: var(--rule); }
+.hl { stroke: var(--rule); fill: none; }
+.hf { fill: var(--rule); }
+.g { fill: var(--grn); } .gs { stroke: var(--grn); fill: none; }
+.ms { stroke: var(--mut); fill: none; }
+.wt { fill: #fff; } .w8 { fill: #fff; fill-opacity: .82; } .w6 { fill: #fff; fill-opacity: .6; }
+.halo { paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.fu { opacity: 0; animation: fu .8s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes fu { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+.lf { animation: lf .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lf { from { fill-opacity: 0; fill: #47C27A } to { fill-opacity: 1; fill: #fff } }
+.wipe { animation: wipe 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes wipe { from { clip-path: inset(-12% 100% -12% 0) } to { clip-path: inset(-12% -3% -12% 0) } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } .fu { opacity: 1 !important; } }
+@keyframes dhw { to { transform: translate(48px, 48px) } }
+.dhw { animation: dhw 30s linear infinite; }
+@keyframes tick { to { transform: translateX(-1126px) } }
+.tick { animation: tick 29.6s linear infinite; }
+@keyframes sg0 { 0%,0.1% { transform: scaleX(0); opacity: 1 } 3.0%,94% { transform: scaleX(1); opacity: 1 } 98%,100% { transform: scaleX(1); opacity: 0 } }
+.sg0 { transform-box: fill-box; transform-origin: left center; transform: scaleX(0); animation: sg0 16s ease-out infinite; }
+@keyframes tx0 { 0%,0% { opacity: 0; transform: translateY(5px) } 2%,24% { opacity: 1; transform: translateY(0) } 25.5%,100% { opacity: 0 } }
+.tx0 { opacity: 0; animation: tx0 16s ease-out infinite; }
+@keyframes sg1 { 0%,25.1% { transform: scaleX(0); opacity: 1 } 28.0%,94% { transform: scaleX(1); opacity: 1 } 98%,100% { transform: scaleX(1); opacity: 0 } }
+.sg1 { transform-box: fill-box; transform-origin: left center; transform: scaleX(0); animation: sg1 16s ease-out infinite; }
+@keyframes tx1 { 0%,25% { opacity: 0; transform: translateY(5px) } 27%,49% { opacity: 1; transform: translateY(0) } 50.5%,100% { opacity: 0 } }
+.tx1 { opacity: 0; animation: tx1 16s ease-out infinite; }
+@keyframes sg2 { 0%,50.1% { transform: scaleX(0); opacity: 1 } 53.0%,94% { transform: scaleX(1); opacity: 1 } 98%,100% { transform: scaleX(1); opacity: 0 } }
+.sg2 { transform-box: fill-box; transform-origin: left center; transform: scaleX(0); animation: sg2 16s ease-out infinite; }
+@keyframes tx2 { 0%,50% { opacity: 0; transform: translateY(5px) } 52%,74% { opacity: 1; transform: translateY(0) } 75.5%,100% { opacity: 0 } }
+.tx2 { opacity: 0; animation: tx2 16s ease-out infinite; }
+@keyframes sg3 { 0%,75.1% { transform: scaleX(0); opacity: 1 } 78.0%,94% { transform: scaleX(1); opacity: 1 } 98%,100% { transform: scaleX(1); opacity: 0 } }
+.sg3 { transform-box: fill-box; transform-origin: left center; transform: scaleX(0); animation: sg3 16s ease-out infinite; }
+@keyframes tx3 { 0%,75% { opacity: 0; transform: translateY(5px) } 77%,94% { opacity: 1; transform: translateY(0) } 95.5%,100% { opacity: 0 } }
+.tx3 { opacity: 0; animation: tx3 16s ease-out infinite; }
+@keyframes stamp { 0%,74% { opacity: 0; transform: scale(1.7) rotate(-9deg) } 79% { opacity: 1; transform: scale(.94) rotate(-9deg) } 82%,94% { opacity: 1; transform: scale(1) rotate(-9deg) } 98%,100% { opacity: 0; transform: scale(1) rotate(-9deg) } }
+.stamp { transform-box: fill-box; transform-origin: center; transform: rotate(-9deg); opacity: 0; animation: stamp 16s ease-out infinite; }
+.t1 { animation-delay: .35s; } .t2 { animation-delay: .6s; } .t3 { animation-delay: .85s; }
+@media (prefers-reduced-motion: reduce) { .sg0,.sg1,.sg2,.sg3 { transform: scaleX(1) !important; } .tx3 { opacity: 1 !important; } .stamp { opacity: 1 !important; } }
+@keyframes ty0 { 0%,0.00% { clip-path: inset(-30% 100% -30% 0); animation-timing-function: steps(16,end) } 8.00%,17.20% { clip-path: inset(-30% -2% -30% 0); animation-timing-function: steps(6,end) } 19.00%,100% { clip-path: inset(-30% 100% -30% 0) } }
+@keyframes cr0 { 0%,0.00% { transform: translateX(0); opacity: 0 } 0.01% { opacity: 1; animation-timing-function: steps(16,end) } 8.00% { transform: translateX(153.6px); opacity: 1 } 17.20% { transform: translateX(153.6px); opacity: 1; animation-timing-function: steps(6,end) } 19.00% { transform: translateX(0); opacity: 1 } 19.50%,100% { transform: translateX(0); opacity: 0 } }
+.ty0 { clip-path: inset(-30% 100% -30% 0); animation: ty0 21.0s linear infinite both; animation-delay: 1.4s; }
+.cr0 { opacity: 0; animation: cr0 21.0s linear infinite both; animation-delay: 1.4s; }
+@keyframes ty1 { 0%,20.00% { clip-path: inset(-30% 100% -30% 0); animation-timing-function: steps(31,end) } 28.00%,37.20% { clip-path: inset(-30% -2% -30% 0); animation-timing-function: steps(6,end) } 39.00%,100% { clip-path: inset(-30% 100% -30% 0) } }
+@keyframes cr1 { 0%,20.00% { transform: translateX(0); opacity: 0 } 20.01% { opacity: 1; animation-timing-function: steps(31,end) } 28.00% { transform: translateX(297.6px); opacity: 1 } 37.20% { transform: translateX(297.6px); opacity: 1; animation-timing-function: steps(6,end) } 39.00% { transform: translateX(0); opacity: 1 } 39.50%,100% { transform: translateX(0); opacity: 0 } }
+.ty1 { clip-path: inset(-30% 100% -30% 0); animation: ty1 21.0s linear infinite both; animation-delay: 1.4s; }
+.cr1 { opacity: 0; animation: cr1 21.0s linear infinite both; animation-delay: 1.4s; }
+@keyframes ty2 { 0%,40.00% { clip-path: inset(-30% 100% -30% 0); animation-timing-function: steps(14,end) } 48.00%,57.20% { clip-path: inset(-30% -2% -30% 0); animation-timing-function: steps(6,end) } 59.00%,100% { clip-path: inset(-30% 100% -30% 0) } }
+@keyframes cr2 { 0%,40.00% { transform: translateX(0); opacity: 0 } 40.01% { opacity: 1; animation-timing-function: steps(14,end) } 48.00% { transform: translateX(134.4px); opacity: 1 } 57.20% { transform: translateX(134.4px); opacity: 1; animation-timing-function: steps(6,end) } 59.00% { transform: translateX(0); opacity: 1 } 59.50%,100% { transform: translateX(0); opacity: 0 } }
+.ty2 { clip-path: inset(-30% 100% -30% 0); animation: ty2 21.0s linear infinite both; animation-delay: 1.4s; }
+.cr2 { opacity: 0; animation: cr2 21.0s linear infinite both; animation-delay: 1.4s; }
+@keyframes ty3 { 0%,60.00% { clip-path: inset(-30% 100% -30% 0); animation-timing-function: steps(23,end) } 68.00%,77.20% { clip-path: inset(-30% -2% -30% 0); animation-timing-function: steps(6,end) } 79.00%,100% { clip-path: inset(-30% 100% -30% 0) } }
+@keyframes cr3 { 0%,60.00% { transform: translateX(0); opacity: 0 } 60.01% { opacity: 1; animation-timing-function: steps(23,end) } 68.00% { transform: translateX(220.8px); opacity: 1 } 77.20% { transform: translateX(220.8px); opacity: 1; animation-timing-function: steps(6,end) } 79.00% { transform: translateX(0); opacity: 1 } 79.50%,100% { transform: translateX(0); opacity: 0 } }
+.ty3 { clip-path: inset(-30% 100% -30% 0); animation: ty3 21.0s linear infinite both; animation-delay: 1.4s; }
+.cr3 { opacity: 0; animation: cr3 21.0s linear infinite both; animation-delay: 1.4s; }
+@keyframes ty4 { 0%,80.00% { clip-path: inset(-30% 100% -30% 0); animation-timing-function: steps(20,end) } 88.00%,97.20% { clip-path: inset(-30% -2% -30% 0); animation-timing-function: steps(6,end) } 99.00%,100% { clip-path: inset(-30% 100% -30% 0) } }
+@keyframes cr4 { 0%,80.00% { transform: translateX(0); opacity: 0 } 80.01% { opacity: 1; animation-timing-function: steps(20,end) } 88.00% { transform: translateX(192.0px); opacity: 1 } 97.20% { transform: translateX(192.0px); opacity: 1; animation-timing-function: steps(6,end) } 99.00% { transform: translateX(0); opacity: 1 } 99.50%,100% { transform: translateX(0); opacity: 0 } }
+.ty4 { clip-path: inset(-30% 100% -30% 0); animation: ty4 21.0s linear infinite both; animation-delay: 1.4s; }
+.cr4 { opacity: 0; animation: cr4 21.0s linear infinite both; animation-delay: 1.4s; }
+@media (prefers-reduced-motion: reduce) { .ty0 { clip-path: none !important; } .ty1,.ty2,.ty3,.ty4,.cr0,.cr1,.cr2,.cr3,.cr4 { display: none; } }
+</style>
+<g clip-path="url(#hc)"><rect width="1200" height="392" style="fill:#0B3D24"/>
+<polygon points="690,0 1200,0 1200,392 520,392" style="fill:#0F5132" fill-opacity=".55"/>
+<g clip-path="url(#hc)"><g class="dhw"><rect x="-48" y="-48" width="1296" height="436" fill="url(#hw)"/></g></g>
+<rect x="0" y="340" width="1200" height="52" style="fill:#07281A"/><rect x="0" y="340" width="1200" height="1" fill="#fff" fill-opacity=".12"/>
+<g clip-path="url(#tk)"><g class="tick">
+<text class="m" x="0" y="372" font-size="14" textLength="1126" lengthAdjust="spacingAndGlyphs" fill="#fff" fill-opacity=".72" xml:space="preserve">Send money  /  Pay a Paybill  /  Pay a Till  /  Pochi la Biashara  /  Buy airtime  /  Set up a Ratiba  /  Check my M-Pesa message  /  </text>
+<text class="m" x="1126" y="372" font-size="14" textLength="1126" lengthAdjust="spacingAndGlyphs" fill="#fff" fill-opacity=".72" xml:space="preserve">Send money  /  Pay a Paybill  /  Pay a Till  /  Pochi la Biashara  /  Buy airtime  /  Set up a Ratiba  /  Check my M-Pesa message  /  </text>
+<text class="m" x="2251" y="372" font-size="14" textLength="1126" lengthAdjust="spacingAndGlyphs" fill="#fff" fill-opacity=".72" xml:space="preserve">Send money  /  Pay a Paybill  /  Pay a Till  /  Pochi la Biashara  /  Buy airtime  /  Set up a Ratiba  /  Check my M-Pesa message  /  </text>
+</g></g>
+<text x="64" y="150" font-size="68" font-weight="800" letter-spacing="-2.4" fill="#fff" ><tspan class="lf" style="animation-delay:0.200s">M</tspan><tspan class="lf" style="animation-delay:0.250s">-</tspan><tspan class="lf" style="animation-delay:0.300s">G</tspan><tspan class="lf" style="animation-delay:0.350s">a</tspan><tspan class="lf" style="animation-delay:0.400s">n</tspan><tspan class="lf" style="animation-delay:0.450s">j</tspan><tspan class="lf" style="animation-delay:0.500s">i</tspan></text>
+<g class="fu" style="animation-delay:1.1s"><rect x="344" y="104" width="148" height="28" rx="4" fill="#000" fill-opacity=".3" stroke="#fff" stroke-opacity=".4"/><text class="m" x="358" y="123" font-size="13" fill="#fff">AI for M-Pesa</text></g>
+<rect class="fu" style="animation-delay:.9s;fill:#47C27A" x="66" y="170" width="64" height="4" rx="2"/>
+<text class="fu t1" x="64" y="214" font-size="21" fill="#fff" fill-opacity=".92">Customers chat in the app. The assistant prepares the request.</text>
+<text class="fu t2" x="64" y="244" font-size="21" fill="#fff" fill-opacity=".92">Only the customer can move the money, inside M-Pesa.</text>
+<rect class="fu t3" x="64" y="266" width="590" height="50" rx="6" fill="#000" fill-opacity=".30" stroke="#fff" stroke-opacity=".16"/><text class="m fu t3" x="82" y="297" font-size="16" font-weight="700" fill="#47C27A">$</text><text class="m ty0" x="102" y="297" font-size="16" fill="#fff" textLength="153.6" lengthAdjust="spacing" xml:space="preserve">send 500 to Mama</text><rect class="cr0" x="102" y="282" width="9.6" height="20" style="fill:#47C27A" fill-opacity=".85"/><text class="m ty1" x="102" y="297" font-size="16" fill="#fff" textLength="297.6" lengthAdjust="spacing" xml:space="preserve">pay Paybill 888880 account 1234</text><rect class="cr1" x="102" y="282" width="9.6" height="20" style="fill:#47C27A" fill-opacity=".85"/><text class="m ty2" x="102" y="297" font-size="16" fill="#fff" textLength="134.4" lengthAdjust="spacing" xml:space="preserve">buy 50 airtime</text><rect class="cr2" x="102" y="282" width="9.6" height="20" style="fill:#47C27A" fill-opacity=".85"/><text class="m ty3" x="102" y="297" font-size="16" fill="#fff" textLength="220.8" lengthAdjust="spacing" xml:space="preserve">set up a monthly Ratiba</text><rect class="cr3" x="102" y="282" width="9.6" height="20" style="fill:#47C27A" fill-opacity=".85"/><text class="m ty4" x="102" y="297" font-size="16" fill="#fff" textLength="192.0" lengthAdjust="spacing" xml:space="preserve">nitumie 500 kwa Mama</text><rect class="cr4" x="102" y="282" width="9.6" height="20" style="fill:#47C27A" fill-opacity=".85"/>
+<path d="M770 30 H1140 V318 L1130 326 L1120 318 L1110 326 L1100 318 L1090 326 L1080 318 L1070 326 L1060 318 L1050 326 L1040 318 L1030 326 L1020 318 L1010 326 L1000 318 L990 326 L980 318 L970 326 L960 318 L950 326 L940 318 L930 326 L920 318 L910 326 L900 318 L890 326 L880 318 L870 326 L860 318 L850 326 L840 318 L830 326 L820 318 L810 326 L800 318 L790 326 L780 318 L770 326 Z" style="fill:#FFFFFF;stroke:#D8DDD6"/>
+<text x="794" y="72" font-size="13.5" font-weight="700" style="fill:#14211A">Send money</text>
+<text class="m" x="1116" y="72" font-size="12" text-anchor="end" style="fill:#5B6A62">request a7f3</text>
+<text x="794" y="130" font-size="46" font-weight="800" letter-spacing="-1" style="fill:#14211A">KES 500</text>
+<text x="794" y="160" font-size="15" style="fill:#14211A">to Mama</text>
+<text class="m" x="794" y="182" font-size="13.5" style="fill:#5B6A62">0712 345 678</text>
+<rect x="794" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="800" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="806" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="812" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="818" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="824" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="830" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="836" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="842" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="848" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="854" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="860" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="866" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="872" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="878" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="884" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="890" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="896" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="902" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="908" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="914" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="920" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="926" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="932" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="938" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="944" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="950" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="956" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="962" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="968" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="974" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="980" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="986" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="992" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="998" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1004" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1010" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1016" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1022" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1028" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1034" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1040" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1046" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1052" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1058" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1064" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1070" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1076" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1082" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1088" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1094" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1100" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1106" y="206" width="3" height="3" fill="#D8DDD6"/><rect x="1112" y="206" width="3" height="3" fill="#D8DDD6"/>
+<line x1="794" y1="218" x2="1116" y2="218" style="stroke:#D8DDD6"/>
+<rect x="794" y="236" width="76" height="6" rx="3" fill="#D8DDD6"/><rect class="sg0" x="794" y="236" width="76" height="6" rx="3" fill="#17803D"/><text x="794" y="262" font-size="11.5" style="fill:#5B6A62">Created</text><text class="tx0" x="794" y="296" font-size="13.5" style="fill:#14211A">Waiting for your approval</text><rect x="876" y="236" width="76" height="6" rx="3" fill="#D8DDD6"/><rect class="sg1" x="876" y="236" width="76" height="6" rx="3" fill="#17803D"/><text x="876" y="262" font-size="11.5" style="fill:#5B6A62">Approved</text><text class="tx1" x="794" y="296" font-size="13.5" style="fill:#14211A">Approved with the phone lock</text><rect x="958" y="236" width="76" height="6" rx="3" fill="#D8DDD6"/><rect class="sg2" x="958" y="236" width="76" height="6" rx="3" fill="#17803D"/><text x="958" y="262" font-size="11.5" style="fill:#5B6A62">Handed off</text><text class="tx2" x="794" y="296" font-size="13.5" style="fill:#14211A">Open M-Pesa. The PIN is typed only there.</text><rect x="1040" y="236" width="76" height="6" rx="3" fill="#D8DDD6"/><rect class="sg3" x="1040" y="236" width="76" height="6" rx="3" fill="#17803D"/><text x="1040" y="262" font-size="11.5" style="fill:#5B6A62">Recorded</text><text class="tx3" x="794" y="296" font-size="13.5" style="fill:#14211A">Reported. Matches the message on the phone.</text>
+<g class="stamp"><rect x="978" y="132" width="132" height="42" rx="5" fill="none" stroke="#17803D" stroke-width="2.5"/><text class="m" x="1044" y="160" font-size="18" font-weight="700" text-anchor="middle" letter-spacing="1" style="fill:#17803D">Recorded</text></g>
 </g>
-<text x="122" y="84" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#8DA89A">Reference build for an M-Pesa assistant</text>
-<text class="title" x="58" y="168" fill="url(#shine)">M-Pesa AI Agent</text>
-<g id="h0g"><clipPath id="h0clip"><rect class="h0" x="60" y="208" width="0" height="34"/></clipPath><text x="60" y="232" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="24" fill="#E8F4EC" clip-path="url(#h0clip)" xml:space="preserve">Chat. Approve. Pay inside M-Pesa.</text><rect class="h0c" x="60" y="212.3" width="12.0" height="24.0" fill="#2BD576" rx="1"/></g><g id="h1g"><clipPath id="h1clip"><rect class="h1" x="60" y="208" width="0" height="34"/></clipPath><text x="60" y="232" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="24" fill="#E8F4EC" clip-path="url(#h1clip)" xml:space="preserve">The assistant prepares. You move the money.</text><rect class="h1c" x="60" y="212.3" width="12.0" height="24.0" fill="#2BD576" rx="1"/></g><g id="h2g"><clipPath id="h2clip"><rect class="h2" x="60" y="208" width="0" height="34"/></clipPath><text x="60" y="232" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="24" fill="#E8F4EC" clip-path="url(#h2clip)" xml:space="preserve">No PIN stored. No customer keys held.</text><rect class="h2c" x="60" y="212.3" width="12.0" height="24.0" fill="#2BD576" rx="1"/></g><g id="h3g"><clipPath id="h3clip"><rect class="h3" x="60" y="208" width="0" height="34"/></clipPath><text x="60" y="232" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="24" fill="#E8F4EC" clip-path="url(#h3clip)" xml:space="preserve">Spring Boot 4, Flutter and Claude.</text><rect class="h3c" x="60" y="212.3" width="12.0" height="24.0" fill="#2BD576" rx="1"/></g>
-<g class="pill" style="animation-delay:0.20s"><rect x="60" y="276" width="139" height="30" rx="15" fill="#14231C" stroke="#22372C"/><text x="130" y="296" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#8DA89A">Spring Boot 4.1</text></g><g class="pill" style="animation-delay:0.32s"><rect x="209.0" y="276" width="80" height="30" rx="15" fill="#14231C" stroke="#22372C"/><text x="249" y="296" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#8DA89A">Flutter</text></g><g class="pill" style="animation-delay:0.44s"><rect x="298.8" y="276" width="72" height="30" rx="15" fill="#14231C" stroke="#22372C"/><text x="335" y="296" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#8DA89A">Claude</text></g><g class="pill" style="animation-delay:0.56s"><rect x="381.20000000000005" y="276" width="87" height="30" rx="15" fill="#14231C" stroke="#22372C"/><text x="425" y="296" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#8DA89A">RabbitMQ</text></g><g class="pill" style="animation-delay:0.68s"><rect x="478.40000000000003" y="276" width="65" height="30" rx="15" fill="#14231C" stroke="#22372C"/><text x="511" y="296" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#8DA89A">Redis</text></g><g class="pill" style="animation-delay:0.80s"><rect x="553.4000000000001" y="276" width="220" height="30" rx="15" fill="#14231C" stroke="#22372C"/><text x="664" y="296" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#8DA89A">MongoDB  PostgreSQL  MySQL</text></g>
-<text class="sub" x="60" y="338">Customers chat. The assistant prepares. Only the customer can move the money.</text>
-
-<g transform="translate(790 46)">
-  <rect width="344" height="290" rx="22" fill="#0F1A15" stroke="#22372C"/>
-  <rect width="344" height="54" rx="22" fill="#14231C"/><rect y="30" width="344" height="24" fill="#14231C"/>
-  <circle cx="30" cy="27" r="14" fill="#087F36"/><g transform="translate(21 18) scale(0.7500)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/><path d="M7 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"/><path d="M10 10h4v4h-4z"/></g>
-  <text x="54" y="25" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#E8F4EC">Assistant</text>
-  <circle class="blink" cx="58" cy="37" r="3.4" fill="#2BD576"/><text x="67" y="41" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#8DA89A">online</text>
-  <g class="m1"><rect x="150" y="76" width="178" height="38" rx="14" fill="#087F36"/>
-    <text x="239" y="100" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#fff">send 500 to Mama</text></g>
-  <g class="m2"><rect x="16" y="126" width="244" height="58" rx="14" fill="#14231C" stroke="#22372C"/>
-    <text x="30" y="150" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#E8F4EC">Prepared: send KES 500 to Mama.</text>
-    <text x="30" y="170" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#8DA89A">Open the app to approve it.</text></g>
-  <g transform="translate(16 206)">
-    <g class="s1"><rect width="312" height="62" rx="14" fill="#2A2110" stroke="#F2B544" stroke-opacity=".5"/><circle cx="26" cy="31" r="7" fill="#F2B544"/>
-      <text x="44" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#F2B544">Waiting for approval</text><text x="44" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#8DA89A">Fingerprint, face or phone lock</text></g>
-    <g class="s2"><rect width="312" height="62" rx="14" fill="#0E2A22" stroke="#4FD1C5" stroke-opacity=".5"/><circle cx="26" cy="31" r="7" fill="#4FD1C5"/>
-      <text x="44" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#4FD1C5">Approved on the phone</text><text x="44" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#8DA89A">The owner of the phone said yes</text></g>
-    <g class="s3"><rect width="312" height="62" rx="14" fill="#10243A" stroke="#6EA8FF" stroke-opacity=".5"/><circle cx="26" cy="31" r="7" fill="#6EA8FF"/>
-      <text x="44" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#6EA8FF">Handed off to M-Pesa</text><text x="44" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#8DA89A">The PIN is typed only inside M-Pesa</text></g>
-    <g class="s4"><rect width="312" height="62" rx="14" fill="#0E2E1B" stroke="#2BD576" stroke-opacity=".6"/><circle cx="26" cy="31" r="7" fill="#2BD576"/>
-      <text x="44" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#2BD576">Recorded</text><text x="44" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#8DA89A">Matches the message on the phone</text></g>
-  </g>
-</g>
-</g>
+<rect x=".5" y=".5" width="1199" height="391" rx="10" fill="none" stroke="#fff" stroke-opacity=".14"/>
 </svg>

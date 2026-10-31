@@ -1,26 +1,13 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/README.md
-     Replace the existing file if there is one. The SVG images it uses go in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
+<!-- PLACE THIS FILE AT: m-ganji/README.md
+     Replace the existing file if there is one. The SVG images it uses go in m-ganji/docs/assets/. You can delete this comment. -->
 
 <div align="center">
 
-<img src="docs/assets/hero.svg" alt="M-Pesa AI Agent: chat, approve, pay inside M-Pesa" width="100%"/>
+<img src="docs/assets/hero.svg" alt="M-Ganji: chat, approve, pay inside M-Pesa" width="100%"/>
 
 <br/>
 
-<img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1.2-087F36?style=for-the-badge&logo=springboot&logoColor=white"/>
-<img alt="Java" src="https://img.shields.io/badge/Java-21-0F1A15?style=for-the-badge&logo=openjdk&logoColor=2BD576"/>
-<img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.22%2B-0F1A15?style=for-the-badge&logo=flutter&logoColor=4FD1C5"/>
-<img alt="Claude" src="https://img.shields.io/badge/Claude-tool%20use-0F1A15?style=for-the-badge&logo=anthropic&logoColor=F2B544"/>
-<img alt="Status" src="https://img.shields.io/badge/status-reference%20build-F2B544?style=for-the-badge"/>
-
-<img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-default-14231C?style=flat-square&logo=mongodb&logoColor=2BD576"/>
-<img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-supported-14231C?style=flat-square&logo=postgresql&logoColor=6EA8FF"/>
-<img alt="MySQL" src="https://img.shields.io/badge/MySQL-supported-14231C?style=flat-square&logo=mysql&logoColor=F2B544"/>
-<img alt="Redis" src="https://img.shields.io/badge/Redis-chat%20state-14231C?style=flat-square&logo=redis&logoColor=FF5468"/>
-<img alt="RabbitMQ" src="https://img.shields.io/badge/RabbitMQ-events-14231C?style=flat-square&logo=rabbitmq&logoColor=FF7A45"/>
-<img alt="Flyway" src="https://img.shields.io/badge/Flyway-12-14231C?style=flat-square&logo=flyway&logoColor=FF5468"/>
-<img alt="Docker" src="https://img.shields.io/badge/Docker-compose-14231C?style=flat-square&logo=docker&logoColor=6EA8FF"/>
-<img alt="Postman" src="https://img.shields.io/badge/Postman-93%20requests-14231C?style=flat-square&logo=postman&logoColor=FF7A45"/>
+<img src="docs/assets/badges-root.svg" alt="Spring Boot 4.1.2, Java 21, Flutter 3.22 or later, Claude with tool use, status reference build. Databases MongoDB, PostgreSQL and MySQL, Redis, RabbitMQ, Flyway 12, Docker compose, Postman with 93 requests." width="880"/>
 
 <br/><br/>
 
@@ -34,8 +21,16 @@
 
 Customers chat with an assistant in the app or on the web, in English or Swahili, by text, voice note, photo, video, file, shared contact or shared location. The assistant understands requests such as "send 500 to Mama", "pay Paybill 888880 account 1234" or "buy 50 airtime", and **prepares** them. The customer then approves on their own phone and finishes inside M-Pesa, using the system that already works.
 
+> [!NOTE]
+> **About the name.** *Ganji* is Sheng for money. M-Ganji is an assistant that helps people use their own M-Pesa, in a chat they already know how to use.
+> M-Pesa and Daraja are Safaricom's names. This project uses them only to say what it works with.
+
 <div align="center">
 <img src="docs/assets/flow.svg" alt="Request flow: ask, prepare, approve, hand off, record" width="100%"/>
+</div>
+
+<div align="center">
+<img src="docs/assets/capabilities.svg" alt="What the assistant can prepare: send money, Paybill, Till, Pochi la Biashara, airtime, Ratiba, voice and photos, contact search" width="880"/>
 </div>
 
 <br/>
@@ -45,6 +40,10 @@ Customers chat with an assistant in the app or on the web, in English or Swahili
 > It holds no M-Pesa API keys for customers, so it cannot move anyone's money. Only the customer can, inside M-Pesa.
 > It never sees, asks for or stores the M-Pesa PIN. The assistant is told to refuse it if someone sends it.
 > It cannot get a confirmation from Safaricom. The result is recorded as *reported by the customer* or *matches the message on the customer's phone*. Either way it is a record, not proof.
+
+<div align="center">
+<img src="docs/assets/safety.svg" alt="Safety built in: no PIN, phone lock approval, whitelist checks, read-back, scam warnings, one phone one chat, rate limits, 30 minute expiry" width="880"/>
+</div>
 
 <br/>
 
@@ -58,8 +57,8 @@ Customers chat with an assistant in the app or on the web, in English or Swahili
 <table>
 <tr>
 <td><a href="agent-service/README.md"><img src="docs/assets/card-agent.svg" alt="agent-service" width="384"/></a></td>
-<td><a href="companion-api/README.md"><img src="docs/assets/card-companion-api.svg" alt="companion-api" width="384"/></a></td>
-<td><a href="companion-app/README.md"><img src="docs/assets/card-companion-app.svg" alt="companion-app" width="384"/></a></td>
+<td><a href="ganji-api/README.md"><img src="docs/assets/card-ganji-api.svg" alt="ganji-api" width="384"/></a></td>
+<td><a href="ganji-app/README.md"><img src="docs/assets/card-ganji-app.svg" alt="ganji-app" width="384"/></a></td>
 </tr>
 <tr>
 <td><a href="payment-service/README.md"><img src="docs/assets/card-payment.svg" alt="payment-service" width="384"/></a></td>
@@ -72,8 +71,8 @@ Customers chat with an assistant in the app or on the web, in English or Swahili
 | Part | Port | Job | Needed |
 |---|---|---|---|
 | agent-service | 8082 | Talks to Claude, keeps each customer's chat and files, prepares requests with tools | Yes |
-| companion-api | 8084 | Signs customers in by SMS code, relays the chat to the agent, stores prepared requests, serves the app and its link files | Yes |
-| companion-app | none | Flutter app for Android and iOS: chat, find contacts, approve, hand over to M-Pesa, report | Yes |
+| ganji-api | 8084 | Signs customers in by SMS code, relays the chat to the agent, stores prepared requests, serves the app and its link files | Yes |
+| ganji-app | none | Flutter app for Android and iOS: chat, find contacts, approve, hand over to M-Pesa, report | Yes |
 | payment-service | 8083 | Daraja for a **business**: STK Push to your own shortcode, refunds, payouts, staff roles | Optional, off by default |
 | console | 8000 | One HTML file that behaves like a frontend for every endpoint | For testing |
 | postman | none | Collection and environment for every endpoint | For testing |
@@ -87,7 +86,7 @@ All Java services share the same layered packages: `controller`, `service`, `rep
 ## Architecture
 
 <div align="center">
-<img src="docs/assets/architecture.svg" alt="Architecture: app, companion-api, agent-service, Claude, infrastructure and the optional payment-service" width="100%"/>
+<img src="docs/assets/architecture.svg" alt="Architecture: app, ganji-api, agent-service, Claude, infrastructure and the optional payment-service" width="100%"/>
 </div>
 
 <br/>
@@ -98,8 +97,8 @@ A single request, end to end:
 sequenceDiagram
     autonumber
     participant C as Customer
-    participant A as Companion app
-    participant API as companion-api
+    participant A as M-Ganji app
+    participant API as ganji-api
     participant AG as agent-service
     participant M as M-Pesa on the phone
 
@@ -173,9 +172,9 @@ None of these is a Safaricom confirmation. A message can also correct a request 
 ## Quick start
 
 > [!WARNING]
-> **Status: a reference build.** The code was written and then migrated to Spring Boot 4.1.2 with Jackson 3. agent-service has been seen starting on Boot 4 (Tomcat 11, RabbitMQ connected). payment-service and companion-api are migrated but have not yet been confirmed running end to end. Nothing has been through a full end to end test. Verify the M-Pesa hand-off values and the SMS wording on real phones before relying on any of it.
+> **Status: a reference build.** The code was written and then migrated to Spring Boot 4.1.2 with Jackson 3. agent-service has been seen starting on Boot 4 (Tomcat 11, RabbitMQ connected). payment-service and ganji-api are migrated but have not yet been confirmed running end to end. Nothing has been through a full end to end test. Verify the M-Pesa hand-off values and the SMS wording on real phones before relying on any of it.
 
-**1. Prerequisites.** Java 21, Maven 3.9 or later, Docker, Flutter 3.22 or later, an Anthropic API key, and a public HTTPS address for companion-api (a Cloudflare Tunnel is fine for testing). Real sign-in codes need an Africa's Talking account.
+**1. Prerequisites.** Java 21, Maven 3.9 or later, Docker, Flutter 3.22 or later, an Anthropic API key, and a public HTTPS address for ganji-api (a Cloudflare Tunnel is fine for testing). Real sign-in codes need an Africa's Talking account.
 
 **2. Configure.** Copy each `.env.example` to `.env` in its own folder. Use the **same** `INTERNAL_KEY` everywhere.
 
@@ -190,19 +189,19 @@ docker compose up --build
 ```bash
 docker compose up -d redis rabbitmq        # plus a database, see below
 cd agent-service && mvn spring-boot:run
-cd companion-api && mvn spring-boot:run
+cd ganji-api && mvn spring-boot:run
 ```
 
 **5. Check the build before trusting it.**
 
 ```bash
-cd agent-service    && mvn clean verify
-cd companion-api    && mvn clean verify
-cd payment-service  && mvn clean verify
-cd companion-app    && ./setup.sh your.reverse.domain && flutter analyze && flutter test
+cd agent-service   && mvn clean verify
+cd ganji-api       && mvn clean verify
+cd payment-service && mvn clean verify
+cd ganji-app       && ./setup.sh your.reverse.domain && flutter analyze && flutter test
 ```
 
-**6. Try it without a phone.** Start companion-api with `CODE_DELIVERY=dev`, then open the console.
+**6. Try it without a phone.** Start ganji-api with `CODE_DELIVERY=dev`, then open the console.
 
 ```bash
 cd console && python3 -m http.server 8000     # then open http://localhost:8000/console.html
@@ -218,7 +217,7 @@ Pick the database with `DATABASE_TYPE` (`mongodb`, `postgresql` or `mysql`). pay
 If PostgreSQL already has a data volume from an earlier run, the init script is skipped, so create the database once by hand:
 
 ```bash
-docker compose exec postgres createdb -U app companion
+docker compose exec postgres createdb -U app ganji
 ```
 
 </details>
@@ -232,7 +231,7 @@ docker compose exec postgres createdb -U app companion
 
 | Value | Behaviour | Use it |
 |---|---|---|
-| `log` | Writes the code to the companion-api log. This is the default | Developer machine |
+| `log` | Writes the code to the ganji-api log. This is the default | Developer machine |
 | `dev` | Also returns the code to the app and console so a test can sign in alone | Local testing only |
 | `sms` | Sends a text through Africa's Talking (`SMS_USERNAME`, `SMS_API_KEY`, `SMS_SENDER_ID`) | Real use |
 
@@ -246,7 +245,7 @@ docker compose exec postgres createdb -U app companion
 
 <br/>
 
-The app can dial a code with the details already typed in, or open the M-Pesa app. Those values are **not hard coded** because they were not verified. They live in the companion-api `.env`:
+The app can dial a code with the details already typed in, or open the M-Pesa app. Those values are **not hard coded** because they were not verified. They live in the ganji-api `.env`:
 
 ```properties
 HANDOFF_USSD_MAIN=*334#
@@ -281,9 +280,9 @@ The Flutter app and the browser console share the same ten looks. Seven are ever
 |---|---|---|
 | `INTERNAL_KEY` | every service | Shared secret sent as `X-Internal-Key` between services. Use the same value everywhere |
 | `ANTHROPIC_API_KEY` | agent-service | Lets the assistant answer. Without it, messages are accepted but nothing replies |
-| `COMPANION_TOKEN_SECRET` | companion-api | 32 or more random characters, signs phone sessions |
-| `COMPANION_PUBLIC_BASE_URL` | agent-service, companion-api | Public HTTPS address of companion-api |
-| `CODE_DELIVERY` | companion-api | `log`, `dev` or `sms` |
+| `GANJI_TOKEN_SECRET` | ganji-api | 32 or more random characters, signs phone sessions |
+| `GANJI_PUBLIC_BASE_URL` | agent-service, ganji-api | Public HTTPS address of ganji-api |
+| `CODE_DELIVERY` | ganji-api | `log`, `dev` or `sms` |
 | `DATABASE_TYPE` | services with a database | `mongodb`, `postgresql` or `mysql` |
 | `MONGODB_URI` | when using MongoDB | Include `serverSelectionTimeoutMS=5000` so a missing database fails fast |
 | `CORS_ALLOWED_ORIGINS` | any service the console calls | Leave empty in production. A wildcard is ignored on purpose |
@@ -320,7 +319,7 @@ The retry and timeout values sit in the profile ymls, so they are easy to tune.
 |---|---|---|
 | Dialler with the code filled in | Opens the dialler, the customer presses call | Same, with a system confirmation |
 | Open the M-Pesa app | Possible by package name (not verified) | Only if it has a URL scheme (not verified) |
-| Matching the M-Pesa SMS to a request | On request, with permission. See [`companion-app/docs/SMS.md`](companion-app/docs/SMS.md). Google Play restricts this permission | Not possible. The customer sends the message in the chat |
+| Matching the M-Pesa SMS to a request | On request, with permission. See [`ganji-app/docs/SMS.md`](ganji-app/docs/SMS.md). Google Play restricts this permission | Not possible. The customer sends the message in the chat |
 | Approval | Fingerprint, face or phone lock | Face ID, Touch ID or passcode |
 
 ## Voice, images and files
@@ -354,15 +353,15 @@ With the switch off, the assistant is told nothing about these tools, the code r
 - Request expiry is checked when a request is read, not by a timer. A request opened in M-Pesa never expires on its own.
 - The chat is read by polling about every 1.5 seconds while the app is open. There is no push notification yet.
 - SIM swap is a risk for any SMS sign-in.
-- The Google and Microsoft contact sign-ins need your own OAuth client ids and were not run against real accounts. See [`companion-app/docs/CONTACTS.md`](companion-app/docs/CONTACTS.md).
+- The Google and Microsoft contact sign-ins need your own OAuth client ids and were not run against real accounts. See [`ganji-app/docs/CONTACTS.md`](ganji-app/docs/CONTACTS.md).
 - The phone check protects our approval step only. Whether a biometric or the device lock was used is a best guess recorded for the audit trail.
-- The M-Pesa SMS patterns in `companion-app/lib/models/mpesa_sms.dart` were written from memory. Test them with real messages.
-- 503 handling is in payment-service. agent-service and companion-api still need the same treatment in their exception handlers.
+- The M-Pesa SMS patterns in `ganji-app/lib/models/mpesa_sms.dart` were written from memory. Test them with real messages.
+- 503 handling is in payment-service. agent-service and ganji-api still need the same treatment in their exception handlers.
 - No admin dashboard, offline mode or Swahili text in the app screens yet. The assistant itself replies in the customer's language.
 
 ## Security notes
 
-- Only the companion-api HTTPS paths (`/a/*`, `/api/*`, `/.well-known/*`) should be public. Keep agent-service (8082) private, and block `/internal/*` on companion-api at your proxy.
+- Only the ganji-api HTTPS paths (`/a/*`, `/api/*`, `/.well-known/*`) should be public. Keep agent-service (8082) private, and block `/internal/*` on ganji-api at your proxy.
 - Every call between services carries `X-Internal-Key`.
 - Phone sessions are signed tokens (30 days by default) that are revoked by signing the phone out.
 - There are no M-Pesa customer secrets to leak because none are held.
@@ -373,9 +372,9 @@ With the switch off, the assistant is told nothing about these tools, the code r
 |---|---|
 | [`FEATURES.md`](FEATURES.md) | Everything the system does today, for customers and for operators |
 | [`docs/DATABASES.md`](docs/DATABASES.md) | PostgreSQL, MySQL and MongoDB: setup, trade-offs, what was tested |
-| [`companion-app/docs/CONTACTS.md`](companion-app/docs/CONTACTS.md) | Contact search and the Google and Microsoft sign-ins |
-| [`companion-app/docs/SMS.md`](companion-app/docs/SMS.md) | How the M-Pesa message check works and what it sends |
-| [`companion-app/docs/PLATFORM_SETUP.md`](companion-app/docs/PLATFORM_SETUP.md) | Android and iOS settings, signing and app links |
+| [`ganji-app/docs/CONTACTS.md`](ganji-app/docs/CONTACTS.md) | Contact search and the Google and Microsoft sign-ins |
+| [`ganji-app/docs/SMS.md`](ganji-app/docs/SMS.md) | How the M-Pesa message check works and what it sends |
+| [`ganji-app/docs/PLATFORM_SETUP.md`](ganji-app/docs/PLATFORM_SETUP.md) | Android and iOS settings, signing and app links |
 
 <div align="center">
 <br/>

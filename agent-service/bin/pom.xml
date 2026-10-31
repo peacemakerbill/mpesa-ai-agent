@@ -11,11 +11,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.mpesaagent</groupId>
+    <groupId>com.mganji</groupId>
     <artifactId>agent-service</artifactId>
     <version>0.1.0</version>
     <name>agent-service</name>
-    <description>The AI brain of the M-Pesa assistant: Claude, tools, voice, files, the in-app chat and notifications</description>
+    <description>The AI brain of M-Ganji: Claude, tools, voice, files, the in-app chat and notifications</description>
 
     <properties>
         <java.version>21</java.version>

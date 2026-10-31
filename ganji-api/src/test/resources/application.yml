@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:ganji;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration/postgresql
+  autoconfigure:
+    exclude:
+      # Spring Boot 4 class names (they moved out of org.springframework.boot.autoconfigure)
+      - org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration
+      - org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration
+      - org.springframework.boot.data.mongodb.autoconfigure.DataMongoRepositoriesAutoConfiguration
+      - org.springframework.boot.mongodb.autoconfigure.health.MongoHealthContributorAutoConfiguration
+  rabbitmq:
+    host: localhost
+  jackson:
+    default-property-inclusion: non_null
+
+internal:
+  key: test-internal-key
+
+ganji:
+  token-secret: test-token-secret-with-at-least-32-characters
+  token-ttl: P30D
+  link-code-ttl: PT10M
+  link-max-attempts: 5
+  link-codes-per-hour: 3
+  action-ttl: PT30M
+  max-open-actions: 10
+  max-amount: 250000
+  min-airtime: 5
+  public-base-url: https://app.example.test
+  hand-off:
+    ussd-main: "*334#"

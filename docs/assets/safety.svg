@@ -1,0 +1,67 @@
+<!-- PLACE THIS FILE AT: m-ganji/docs/assets/safety.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="880" height="288" viewBox="0 0 880 288" role="img" aria-label="Safety built in: no PIN, phone lock approval, whitelist checks, read-back, scam warnings, one phone one chat, rate limits and a 30 minute expiry.">
+<title>Safety built in: no PIN, phone lock approval, whitelist checks, read-back, scam warnings, one phone one chat, rate limits and a 30 minute expiry.</title>
+<defs></defs>
+<style>
+:root { --bg:#F6F7F4; --pn:#FFFFFF; --ink:#14211A; --mut:#5B6A62; --rule:#D8DDD6; --grn:#17803D; --amb:#A8650A; --red:#B3261E; --blu:#1F5FBF; --dot:#C9D0C8; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0F1512; --pn:#151D19; --ink:#E7EDE9; --mut:#8D9C94; --rule:#2A352F; --grn:#47C27A; --amb:#E0A84A; --red:#FF7B72; --blu:#6EA8FF; --dot:#26312B; } }
+text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+:where(text:not([fill])) { fill: var(--ink); }
+.m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+.mut { fill: var(--mut); }
+.bg { fill: var(--bg); stroke: var(--rule); }
+.pn { fill: var(--pn); stroke: var(--rule); }
+.hl { stroke: var(--rule); fill: none; }
+.hf { fill: var(--rule); }
+.g { fill: var(--grn); } .gs { stroke: var(--grn); fill: none; }
+.ms { stroke: var(--mut); fill: none; }
+.wt { fill: #fff; } .w8 { fill: #fff; fill-opacity: .82; } .w6 { fill: #fff; fill-opacity: .6; }
+.halo { paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.fu { opacity: 0; animation: fu .8s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes fu { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+.lf { animation: lf .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lf { from { fill-opacity: 0; fill: #47C27A } to { fill-opacity: 1; fill: #fff } }
+.wipe { animation: wipe 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes wipe { from { clip-path: inset(-12% 100% -12% 0) } to { clip-path: inset(-12% -3% -12% 0) } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } .fu { opacity: 1 !important; } }
+
+.tl { animation: tl .5s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes tl { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
+.tt { animation: tt .6s steps(var(--n), end) both; clip-path: inset(-30% -2% -30% 0); }
+@keyframes tt { from { clip-path: inset(-30% 100% -30% 0) } to { clip-path: inset(-30% -2% -30% 0) } }
+.tb { transform-box: fill-box; transform-origin: left center; animation: ac .8s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes ac { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+.ti * { stroke-dasharray: 1; animation: dr 1s ease-in-out both; animation-delay: inherit; }
+@keyframes dr { from { stroke-dashoffset: 1; opacity: 0 } 6% { opacity: 1 } to { stroke-dashoffset: 0; opacity: 1 } }
+.hc { opacity: 0; animation: hc 19.2s ease-in-out infinite; }
+@keyframes hc { 0% { opacity: 0 } 2%,11% { opacity: 1 } 13%,100% { opacity: 0 } }
+@media (prefers-reduced-motion: reduce) { .tt,.tb,.ti *,.tl { animation: none !important; } .hc { display: none; } .tt { clip-path: none; } }
+</style>
+<g transform="translate(1.0,2)"><g class="tl" style="animation-delay:0.20s"><rect class="pn" x=".5" y=".5" width="206.5" height="133" rx="8"/><rect class="tb" style="animation-delay:0.35s;fill:var(--blu)" x="1" y="1" width="205.5" height="3" /><g transform="translate(18,20) scale(1.25)"><g class="ti" fill="none" style="stroke:var(--blu);animation-delay:0.40s" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect pathLength="1" width="18" height="11" x="3" y="11" rx="2" ry="2" />
+  <path pathLength="1" d="M7 11V7a5 5 0 0 1 10 0v4" /></g></g><text class="tt" style="--n:15;animation-delay:0.70s;animation-duration:0.53s" x="18" y="82" font-size="14.5" font-weight="700">No PIN, no keys</text><text class="mut" x="18" y="103" font-size="12">A PIN is refused. The</text><text class="mut" x="18" y="120" font-size="12">system never sees one.</text><rect class="hc" style="animation-delay:3.0s;stroke:var(--blu)" fill="none" stroke-width="2" x="1" y="1" width="205.5" height="132" rx="7.5"/></g></g><g transform="translate(224.5,2)"><g class="tl" style="animation-delay:0.34s"><rect class="pn" x=".5" y=".5" width="206.5" height="133" rx="8"/><rect class="tb" style="animation-delay:0.49s;fill:var(--blu)" x="1" y="1" width="205.5" height="3" /><g transform="translate(18,20) scale(1.25)"><g class="ti" fill="none" style="stroke:var(--blu);animation-delay:0.54s" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" />
+  <path pathLength="1" d="M14 13.12c0 2.38 0 6.38-1 8.88" />
+  <path pathLength="1" d="M17.29 21.02c.12-.6.43-2.3.5-3.02" />
+  <path pathLength="1" d="M2 12a10 10 0 0 1 18-6" />
+  <path pathLength="1" d="M2 16h.01" />
+  <path pathLength="1" d="M21.8 16c.2-2 .131-5.354 0-6" />
+  <path pathLength="1" d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2" />
+  <path pathLength="1" d="M8.65 22c.21-.66.45-1.32.57-2" />
+  <path pathLength="1" d="M9 6.8a6 6 0 0 1 9 5.2v2" /></g></g><text class="tt" style="--n:19;animation-delay:0.84s;animation-duration:0.67s" x="18" y="82" font-size="14.5" font-weight="700">Phone lock approval</text><text class="mut" x="18" y="103" font-size="12">Fingerprint, face or lock</text><text class="mut" x="18" y="120" font-size="12">approves each request.</text><rect class="hc" style="animation-delay:5.4s;stroke:var(--blu)" fill="none" stroke-width="2" x="1" y="1" width="205.5" height="132" rx="7.5"/></g></g><g transform="translate(448.0,2)"><g class="tl" style="animation-delay:0.48s"><rect class="pn" x=".5" y=".5" width="206.5" height="133" rx="8"/><rect class="tb" style="animation-delay:0.63s;fill:var(--blu)" x="1" y="1" width="205.5" height="3" /><g transform="translate(18,20) scale(1.25)"><g class="ti" fill="none" style="stroke:var(--blu);animation-delay:0.68s" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M13 5h8" />
+  <path pathLength="1" d="M13 12h8" />
+  <path pathLength="1" d="M13 19h8" />
+  <path pathLength="1" d="m3 17 2 2 4-4" />
+  <path pathLength="1" d="m3 7 2 2 4-4" /></g></g><text class="tt" style="--n:16;animation-delay:0.98s;animation-duration:0.56s" x="18" y="82" font-size="14.5" font-weight="700">Whitelist checks</text><text class="mut" x="18" y="103" font-size="12">Fields and numbers are</text><text class="mut" x="18" y="120" font-size="12">validated per request.</text><rect class="hc" style="animation-delay:7.8s;stroke:var(--blu)" fill="none" stroke-width="2" x="1" y="1" width="205.5" height="132" rx="7.5"/></g></g><g transform="translate(671.5,2)"><g class="tl" style="animation-delay:0.62s"><rect class="pn" x=".5" y=".5" width="206.5" height="133" rx="8"/><rect class="tb" style="animation-delay:0.77s;fill:var(--blu)" x="1" y="1" width="205.5" height="3" /><g transform="translate(18,20) scale(1.25)"><g class="ti" fill="none" style="stroke:var(--blu);animation-delay:0.82s" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M3 7V5a2 2 0 0 1 2-2h2" />
+  <path pathLength="1" d="M17 3h2a2 2 0 0 1 2 2v2" />
+  <path pathLength="1" d="M21 17v2a2 2 0 0 1-2 2h-2" />
+  <path pathLength="1" d="M7 21H5a2 2 0 0 1-2-2v-2" />
+  <circle pathLength="1" cx="12" cy="12" r="1" />
+  <path pathLength="1" d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0" /></g></g><text class="tt" style="--n:14;animation-delay:1.12s;animation-duration:0.50s" x="18" y="82" font-size="14.5" font-weight="700">Read-back rule</text><text class="mut" x="18" y="103" font-size="12">Details from voice or</text><text class="mut" x="18" y="120" font-size="12">photos are read back.</text><rect class="hc" style="animation-delay:10.2s;stroke:var(--blu)" fill="none" stroke-width="2" x="1" y="1" width="205.5" height="132" rx="7.5"/></g></g><g transform="translate(1.0,152)"><g class="tl" style="animation-delay:0.76s"><rect class="pn" x=".5" y=".5" width="206.5" height="133" rx="8"/><rect class="tb" style="animation-delay:0.91s;fill:var(--blu)" x="1" y="1" width="205.5" height="3" /><g transform="translate(18,20) scale(1.25)"><g class="ti" fill="none" style="stroke:var(--blu);animation-delay:0.96s" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+  <path pathLength="1" d="M12 9v4" />
+  <path pathLength="1" d="M12 17h.01" /></g></g><text class="tt" style="--n:13;animation-delay:1.26s;animation-duration:0.50s" x="18" y="82" font-size="14.5" font-weight="700">Scam warnings</text><text class="mut" x="18" y="103" font-size="12">Prizes, loans, jobs and</text><text class="mut" x="18" y="120" font-size="12">release fee stories.</text><rect class="hc" style="animation-delay:12.6s;stroke:var(--blu)" fill="none" stroke-width="2" x="1" y="1" width="205.5" height="132" rx="7.5"/></g></g><g transform="translate(224.5,152)"><g class="tl" style="animation-delay:0.90s"><rect class="pn" x=".5" y=".5" width="206.5" height="133" rx="8"/><rect class="tb" style="animation-delay:1.05s;fill:var(--blu)" x="1" y="1" width="205.5" height="3" /><g transform="translate(18,20) scale(1.25)"><g class="ti" fill="none" style="stroke:var(--blu);animation-delay:1.10s" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M19 16v-2a2 2 0 0 0-4 0v2" />
+  <path pathLength="1" d="M9.5 15H7a4 4 0 0 0-4 4v2" />
+  <circle pathLength="1" cx="10" cy="7" r="4" />
+  <rect pathLength="1" x="13" y="16" width="8" height="5" rx=".899" /></g></g><text class="tt" style="--n:19;animation-delay:1.40s;animation-duration:0.67s" x="18" y="82" font-size="14.5" font-weight="700">One phone, one chat</text><text class="mut" x="18" y="103" font-size="12">Requests and files belong</text><text class="mut" x="18" y="120" font-size="12">to one phone number.</text><rect class="hc" style="animation-delay:15.0s;stroke:var(--blu)" fill="none" stroke-width="2" x="1" y="1" width="205.5" height="132" rx="7.5"/></g></g><g transform="translate(448.0,152)"><g class="tl" style="animation-delay:1.04s"><rect class="pn" x=".5" y=".5" width="206.5" height="133" rx="8"/><rect class="tb" style="animation-delay:1.19s;fill:var(--blu)" x="1" y="1" width="205.5" height="3" /><g transform="translate(18,20) scale(1.25)"><g class="ti" fill="none" style="stroke:var(--blu);animation-delay:1.24s" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="m12 14 4-4" />
+  <path pathLength="1" d="M3.34 19a10 10 0 1 1 17.32 0" /></g></g><text class="tt" style="--n:11;animation-delay:1.54s;animation-duration:0.50s" x="18" y="82" font-size="14.5" font-weight="700">Rate limits</text><text class="mut" x="18" y="103" font-size="12">Open requests, messages</text><text class="mut" x="18" y="120" font-size="12">and codes are capped.</text><rect class="hc" style="animation-delay:17.4s;stroke:var(--blu)" fill="none" stroke-width="2" x="1" y="1" width="205.5" height="132" rx="7.5"/></g></g><g transform="translate(671.5,152)"><g class="tl" style="animation-delay:1.18s"><rect class="pn" x=".5" y=".5" width="206.5" height="133" rx="8"/><rect class="tb" style="animation-delay:1.33s;fill:var(--blu)" x="1" y="1" width="205.5" height="3" /><g transform="translate(18,20) scale(1.25)"><g class="ti" fill="none" style="stroke:var(--blu);animation-delay:1.38s" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line pathLength="1" x1="10" x2="14" y1="2" y2="2" />
+  <line pathLength="1" x1="12" x2="15" y1="14" y2="11" />
+  <circle pathLength="1" cx="12" cy="14" r="8" /></g></g><text class="tt" style="--n:16;animation-delay:1.68s;animation-duration:0.56s" x="18" y="82" font-size="14.5" font-weight="700">30 minute expiry</text><text class="mut" x="18" y="103" font-size="12">A request expires before</text><text class="mut" x="18" y="120" font-size="12">it is approved.</text><rect class="hc" style="animation-delay:19.8s;stroke:var(--blu)" fill="none" stroke-width="2" x="1" y="1" width="205.5" height="132" rx="7.5"/></g></g>
+</svg>

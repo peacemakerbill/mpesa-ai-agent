@@ -1,0 +1,88 @@
+server:
+  port: ${SERVER_PORT:8084}
+  # Behind a load balancer or tunnel, so rate limits see the real caller address
+  forward-headers-strategy: native
+
+spring:
+  profiles:
+    # Which database this service uses: postgresql, mysql or mongodb.
+    # Change the word after the colon, or set DATABASE_TYPE in the environment.
+    # The settings for each live in application-postgresql.yml, application-mysql.yml and application-mongodb.yml.
+    active: ${DATABASE_TYPE:postgresql}
+  application:
+    name: ganji-api
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  jackson:
+    default-property-inclusion: non_null
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# Private address of agent-service, which keeps the chat. Only this service talks to it.
+agent:
+  base-url: ${AGENT_BASE_URL:http://localhost:8082}
+
+# Only used when ganji.code-delivery is sms
+sms:
+  username: ${SMS_USERNAME:sandbox}
+  api-key: ${SMS_API_KEY:}
+  sender-id: ${SMS_SENDER_ID:}
+  base-url: ${SMS_BASE_URL:https://api.sandbox.africastalking.com}
+
+# Shared secret between our own services (X-Internal-Key header). Only agent-service calls /internal/**.
+# Browser access for the test console (console/console.html). Empty means off. Never set this in production.
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+
+internal:
+  key: ${INTERNAL_KEY}
+
+ganji:
+  # Signs the phone app's login tokens and hashes link codes. At least 32 random characters.
+  token-secret: ${GANJI_TOKEN_SECRET}
+  token-ttl: ${GANJI_TOKEN_TTL:P30D}
+  link-code-ttl: PT10M
+  link-max-attempts: 5
+  link-codes-per-hour: ${GANJI_CODES_PER_HOUR:5}
+  action-ttl: ${GANJI_ACTION_TTL:PT30M}
+  max-open-actions: 10
+  # M-Pesa's own limits still apply on the phone. These only stop obviously wrong requests.
+  max-amount: ${GANJI_MAX_AMOUNT:250000}
+  min-airtime: 5
+  # Public HTTPS address of this service. Links shown in the chat look like PUBLIC_BASE_URL/a/ACTION_ID
+  public-base-url: ${GANJI_PUBLIC_BASE_URL:http://localhost:8084}
+  # For app links that open the app directly. Leave blank until the app is published.
+  android-package: ${GANJI_ANDROID_PACKAGE:}
+  android-sha256: ${GANJI_ANDROID_SHA256:}
+  ios-app-id: ${GANJI_IOS_APP_ID:}
+  # How sign-in codes reach people: log (written to this service's log, for a developer), dev (also returned to the
+  # app, for a test console only, never on a real system) or sms (sent through Africa's Talking, see the sms block).
+  code-delivery: ${CODE_DELIVERY:log}
+  # Name shown in the sign-in SMS
+  app-name: ${GANJI_APP_NAME:M-Ganji}
+  hand-off:
+    # Verify every value below with the M-Pesa team before relying on it. The app falls back to guided steps
+    # when a template is empty. Placeholders: {amount} {phone} {paybill} {account} {till}
+    ussd-main: ${HANDOFF_USSD_MAIN:*334#}
+    mpesa-android-package: ${HANDOFF_MPESA_ANDROID_PACKAGE:}
+    mpesa-ios-url: ${HANDOFF_MPESA_IOS_URL:}
+    ussd-templates:
+      SEND_MONEY: ${HANDOFF_USSD_SEND_MONEY:}
+      PAY_BILL: ${HANDOFF_USSD_PAY_BILL:}
+      PAY_TILL: ${HANDOFF_USSD_PAY_TILL:}
+      BUY_AIRTIME: ${HANDOFF_USSD_BUY_AIRTIME:}
+
+logging:
+  level:
+    com.mganji: INFO

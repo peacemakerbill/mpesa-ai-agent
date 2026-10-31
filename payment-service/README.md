@@ -1,5 +1,5 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/payment-service/README.md
-     Replace the existing file if there is one. The SVG images it uses go in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
+<!-- PLACE THIS FILE AT: m-ganji/payment-service/README.md
+     Replace the existing file if there is one. The SVG images it uses go in m-ganji/docs/assets/. You can delete this comment. -->
 
 <div align="center">
 
@@ -7,7 +7,7 @@
 
 <br/>
 
-<img alt="Spring%20Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1.2-087F36?style=flat-square&logo=springboot&logoColor=white"/> <img alt="Java" src="https://img.shields.io/badge/Java-21-14231C?style=flat-square&logo=openjdk&logoColor=2BD576"/> <img alt="Maven" src="https://img.shields.io/badge/Maven-3.9+-14231C?style=flat-square&logo=apachemaven&logoColor=F2B544"/> <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-default-14231C?style=flat-square&logo=mongodb&logoColor=2BD576"/> <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-supported-14231C?style=flat-square&logo=postgresql&logoColor=6EA8FF"/> <img alt="MySQL" src="https://img.shields.io/badge/MySQL-supported-14231C?style=flat-square&logo=mysql&logoColor=F2B544"/> <img alt="Flyway" src="https://img.shields.io/badge/Flyway-12-14231C?style=flat-square&logo=flyway&logoColor=FF5468"/> <img alt="RabbitMQ" src="https://img.shields.io/badge/RabbitMQ-events-14231C?style=flat-square&logo=rabbitmq&logoColor=FF7A45"/> <img alt="Daraja" src="https://img.shields.io/badge/Daraja-optional-087F36?style=flat-square"/>
+<img src="../docs/assets/badges-payment.svg" alt="Spring Boot 4.1.2, Java 21, Maven 3.9 or later, MongoDB, PostgreSQL or MySQL, Flyway 12, RabbitMQ, optional Daraja module, port 8083." width="880"/>
 
 <br/><br/>
 
@@ -39,7 +39,7 @@ The AI agent never moves money. It asks this service for a payment after the cus
 ## Package layout
 
 ```text
-com.mpesaagent.payment
+com.mganji.payment
   PaymentServiceApplication
   controller/   InternalPaymentController, MpesaCallbackController      (HTTP in and out)
   service/      PaymentService, PaymentStateService, MpesaClient        (business rules, Daraja calls)
@@ -91,7 +91,7 @@ The default database when run directly is **MongoDB**. Set `DATABASE_TYPE=postgr
 
 | Variable | Meaning |
 |---|---|
-| `INTERNAL_KEY` | Shared secret sent as `X-Internal-Key` by agent-service and companion-api |
+| `INTERNAL_KEY` | Shared secret sent as `X-Internal-Key` by agent-service and ganji-api |
 | `MPESA_BASE_URL` | Sandbox `https://sandbox.safaricom.co.ke`, production `https://api.safaricom.co.ke` |
 | `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET` | Daraja app credentials |
 | `MPESA_SHORTCODE` | Sandbox 174379, production your Paybill or Till |

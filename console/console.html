@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Assistant Console</title>
-<meta name="description" content="Try every API of the M-Pesa assistant from one page: a request trace, a chat, a phone and an API explorer.">
+<title>M-Ganji Console</title>
+<meta name="description" content="Try every API of M-Ganji from one page: a request trace, a chat, a phone and an API explorer.">
 <style>
 /* =====================================================================
    Ten themes. They share one structure and differ in material.
@@ -630,7 +630,7 @@ dialog.find-dlg { width: min(620px, calc(100vw - 20px)); }
   <header class="bar">
     <div class="brand" id="brandMark">
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="21" height="21" rx="5" stroke="currentColor" stroke-width="1.6"/><path d="M6 16.5V8l6 6 6-6v8.5" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Assistant Console</span>
+      <span>M-Ganji Console</span>
     </div>
     <nav class="tabs-nav" id="nav" aria-label="Views"></nav>
     <div class="sp"></div>
@@ -780,7 +780,7 @@ function highlight(value) {
 
 /* ------------------------------------------------------------------ settings and saved values */
 const DEFAULTS = {
-  agentUrl: 'http://localhost:8082', paymentUrl: 'http://localhost:8083', companionUrl: 'http://localhost:8084',
+  agentUrl: 'http://localhost:8082', paymentUrl: 'http://localhost:8083', ganjiUrl: 'http://localhost:8084',
   internalKey: 'change-me-to-a-long-random-string',
   customerPhone: '254700000001', staffPhone: '254700000002', approverPhone: '254700000003', adminPhone: '254700000004',
   callbackSecret: 'your-mpesa-callback-secret', deviceId: 'console-device-0001',
@@ -883,7 +883,7 @@ async function ping(svc) {
   const t0 = performance.now();
   const probe = {
     agent: { method: 'POST', path: '/internal/inbound', auth: 'internal', body: {} },
-    companion: { method: 'GET', path: '/api/config', auth: 'none' },
+    ganji: { method: 'GET', path: '/api/config', auth: 'none' },
     payment: { method: 'GET', path: '/internal/staff/' + cfg.customerPhone, auth: 'internal' },
   }[svc];
   const r = await http(Object.assign({ svc, silent: true, timeout: 3500 }, probe));
@@ -900,8 +900,8 @@ async function ping(svc) {
 /* ------------------------------------------------------------------ every endpoint of the three services */
 const CATALOG = [];
 const E = (id, svc, group, name, method, path, o = {}) => CATALOG.push(Object.assign({ id, svc, group, name, method, path, auth: 'none' }, o));
-const SVC_NAME = { agent: 'AI agent', companion: 'Companion API', payment: 'Payments (optional)' };
-const SVC_PORT = { agent: 8082, companion: 8084, payment: 8083 };
+const SVC_NAME = { agent: 'AI agent', ganji: 'M-Ganji API', payment: 'Payments (optional)' };
+const SVC_PORT = { agent: 8082, ganji: 8084, payment: 8083 };
 
 const inbound = (fields) => Object.assign({ messageId: '{{msgid}}', from: '{{customerPhone}}', senderName: 'Test Customer', timestamp: 0, kind: 'TEXT' }, fields);
 const action = (type, amount, details, extra = {}) => Object.assign({ idempotencyKey: '{{idem}}', phone: '{{customerPhone}}', type, amount, source: 'TEXT', details }, extra);
@@ -924,14 +924,14 @@ inb('ag.cancel', 'Cancel button tap', { kind: 'BUTTON_REPLY', actionId: 'WCAN:{{
 E('ag.bad', 'agent', 'Customer messages', 'Bad message', 'POST', '/internal/inbound', { auth: 'internal', body: { from: '', kind: 'TEXT' }, note: 'Expect 400.' });
 
 const CHAT = '/internal/chat/{{customerPhone}}';
-E('ag.ch.list', 'agent', 'Customer chat (the apps use these through the companion API)', 'Read the chat', 'GET', CHAT + '/messages', { auth: 'internal', query: { after: '0', limit: '50' }, note: 'Everything after message number `after`, plus whether the assistant is typing.' });
-E('ag.ch.send', 'agent', 'Customer chat (the apps use these through the companion API)', 'Send a chat message', 'POST', CHAT + '/send', { auth: 'internal', body: { clientMessageId: '{{msgid}}', kind: 'TEXT', text: 'hi' }, note: '202 means accepted. Sending the same clientMessageId twice is safe, the second is ignored.' });
-E('ag.ch.media', 'agent', 'Customer chat (the apps use these through the companion API)', 'Upload a file', 'POST', CHAT + '/media', { auth: 'internal', headers: { 'Content-Type': 'text/plain', 'X-File-Name': 'hello.txt' }, body: 'Hello from the console', save: { mediaId: 'mediaId' }, note: 'The body is the raw file. The answer has the media id to use in a later message of kind DOCUMENT, IMAGE, AUDIO or VIDEO.' });
-E('ag.ch.media.get', 'agent', 'Customer chat (the apps use these through the companion API)', 'Download a chat file', 'GET', CHAT + '/media/{{mediaId}}', { auth: 'internal', note: 'Works for files from either side. Another customer\'s file answers 404.' });
-E('ag.ch.clear', 'agent', 'Customer chat (the apps use these through the companion API)', 'Clear the chat', 'DELETE', CHAT + '/messages', { auth: 'internal' });
+E('ag.ch.list', 'agent', 'Customer chat (the apps use these through the M-Ganji API)', 'Read the chat', 'GET', CHAT + '/messages', { auth: 'internal', query: { after: '0', limit: '50' }, note: 'Everything after message number `after`, plus whether the assistant is typing.' });
+E('ag.ch.send', 'agent', 'Customer chat (the apps use these through the M-Ganji API)', 'Send a chat message', 'POST', CHAT + '/send', { auth: 'internal', body: { clientMessageId: '{{msgid}}', kind: 'TEXT', text: 'hi' }, note: '202 means accepted. Sending the same clientMessageId twice is safe, the second is ignored.' });
+E('ag.ch.media', 'agent', 'Customer chat (the apps use these through the M-Ganji API)', 'Upload a file', 'POST', CHAT + '/media', { auth: 'internal', headers: { 'Content-Type': 'text/plain', 'X-File-Name': 'hello.txt' }, body: 'Hello from the console', save: { mediaId: 'mediaId' }, note: 'The body is the raw file. The answer has the media id to use in a later message of kind DOCUMENT, IMAGE, AUDIO or VIDEO.' });
+E('ag.ch.media.get', 'agent', 'Customer chat (the apps use these through the M-Ganji API)', 'Download a chat file', 'GET', CHAT + '/media/{{mediaId}}', { auth: 'internal', note: 'Works for files from either side. Another customer\'s file answers 404.' });
+E('ag.ch.clear', 'agent', 'Customer chat (the apps use these through the M-Ganji API)', 'Clear the chat', 'DELETE', CHAT + '/messages', { auth: 'internal' });
 
-// 2 Companion API
-const mk = (id, name, type, amount, details, extra, note) => E(id, 'companion', 'Agent side: prepare requests', name, 'POST', '/internal/actions', { auth: 'internal', body: action(type, amount, details, extra), save: { actionId: 'id' }, note });
+// 2 M-Ganji API
+const mk = (id, name, type, amount, details, extra, note) => E(id, 'ganji', 'Agent side: prepare requests', name, 'POST', '/internal/actions', { auth: 'internal', body: action(type, amount, details, extra), save: { actionId: 'id' }, note });
 mk('co.c.send', 'Send money to a number', 'SEND_MONEY', 500, { recipientPhone: '0712345678', recipientName: 'John' });
 mk('co.c.contact', 'Send money to a contact (name only)', 'SEND_MONEY', 500, { contactName: 'Mama' }, { source: 'VOICE' }, 'The server never sees the contact\'s number. The app finds it on the phone.');
 mk('co.c.bill', 'Pay a Paybill', 'PAY_BILL', 1200, { paybill: '888880', account: '123456', businessName: 'KPLC' }, { label: 'Electricity' });
@@ -940,34 +940,34 @@ mk('co.c.pochi', 'Pay Pochi la Biashara', 'PAY_POCHI', 250, { pochiPhone: '07220
 mk('co.c.air', 'Buy airtime (own number)', 'BUY_AIRTIME', 50, {});
 mk('co.c.air2', 'Buy airtime for another number', 'BUY_AIRTIME', 100, { airtimePhone: '0722000111' });
 mk('co.c.ratiba', 'Set up a Ratiba', 'SCHEDULE_RATIBA', 2000, { target: 'PAY_BILL', paybill: '888880', account: '123456', frequency: 'MONTHLY', startDate: '{{tomorrow}}' }, {}, 'The start date must be today or later and within a year.');
-E('co.c.bad', 'companion', 'Agent side: prepare requests', 'Prepare with bad details', 'POST', '/internal/actions', { auth: 'internal', body: action('PAY_BILL', 100, { paybill: '12', account: 'x' }), note: 'Expect 400: a Paybill number has 5 to 7 digits.' });
-E('co.i.list', 'companion', 'Agent side: read and change', 'List requests', 'GET', '/internal/actions', { auth: 'internal', query: { phone: '{{customerPhone}}', limit: '10' } });
-E('co.i.get', 'companion', 'Agent side: read and change', 'Get one request', 'GET', '/internal/actions/' + ID, { auth: 'internal', query: { phone: '{{customerPhone}}' }, note: 'Another customer\'s request answers 404.' });
-E('co.i.cancel', 'companion', 'Agent side: read and change', 'Cancel a waiting request', 'POST', `/internal/actions/${ID}/cancel`, { auth: 'internal', body: { phone: '{{customerPhone}}' } });
-E('co.i.receipt', 'companion', 'Agent side: read and change', 'Attach an M-Pesa code', 'POST', `/internal/actions/${ID}/receipt`, { auth: 'internal', body: { phone: '{{customerPhone}}', receipt: 'SGL1234567' }, note: 'A different code on a request that already has one answers 409.' });
-E('co.a.code', 'companion', 'Sign in', 'Ask for a sign-in code', 'POST', '/api/auth/request-code', { body: { phone: '{{customerPhone}}' }, save: { linkCode: 'devCode' }, note: 'Sends a 6 digit code by SMS. With CODE_DELIVERY=dev the answer also holds the code as devCode (tests only). With CODE_DELIVERY=log the code is in the companion API log.' });
-E('co.i.link', 'companion', 'Sign in', 'Make a code without sending it', 'POST', '/internal/link-codes', { auth: 'internal', body: { phone: '{{customerPhone}}' }, save: { linkCode: 'code' }, note: 'For tests and support. Needs the internal key.' });
-E('co.a.verify', 'companion', 'Sign in', 'Sign in with the code', 'POST', '/api/auth/verify', { body: { phone: '{{customerPhone}}', code: '{{linkCode}}', deviceId: '{{deviceId}}', deviceName: 'Console' }, save: { deviceToken: 'token' }, note: 'Saves the device token for the app calls below.' });
-E('co.a.signout', 'companion', 'Sign in', 'Sign out this phone', 'DELETE', '/api/devices/me', { auth: 'bearer' });
-E('co.a.config', 'companion', 'App side', 'Hand-off settings', 'GET', '/api/config', { note: 'Public. USSD codes and M-Pesa app ids.' });
-E('co.a.list', 'companion', 'App side', 'List my requests', 'GET', '/api/actions', { auth: 'bearer' });
-E('co.a.get', 'companion', 'App side', 'Open a request', 'GET', '/api/actions/' + ID, { auth: 'bearer' });
-E('co.a.approve', 'companion', 'App side', 'Approve', 'POST', `/api/actions/${ID}/approve`, { auth: 'bearer', body: { method: 'BIOMETRIC' }, note: 'method is BIOMETRIC or DEVICE_CREDENTIAL.' });
-E('co.a.handoff', 'companion', 'App side', 'Hand off to M-Pesa', 'POST', `/api/actions/${ID}/handoff`, { auth: 'bearer' });
-E('co.a.done', 'companion', 'App side', 'Report done', 'POST', `/api/actions/${ID}/report`, { auth: 'bearer', body: { outcome: 'DONE', receipt: 'SGL1234567' } });
-E('co.a.notdone', 'companion', 'App side', 'Report not done', 'POST', `/api/actions/${ID}/report`, { auth: 'bearer', body: { outcome: 'NOT_DONE' } });
-E('co.a.sms', 'companion', 'App side', 'Send M-Pesa message evidence', 'POST', `/api/actions/${ID}/sms-evidence`, { auth: 'bearer', body: { code: 'QWE9876543', kind: 'BILL', amount: 1200, payee: 'KPLC PREPAID', account: '123456', smsAt: '{{nowMs}}' }, note: 'Amount, kind, time and account are checked. Change the code to run it again.' });
-E('co.a.decline', 'companion', 'App side', 'Decline', 'POST', `/api/actions/${ID}/decline`, { auth: 'bearer' });
+E('co.c.bad', 'ganji', 'Agent side: prepare requests', 'Prepare with bad details', 'POST', '/internal/actions', { auth: 'internal', body: action('PAY_BILL', 100, { paybill: '12', account: 'x' }), note: 'Expect 400: a Paybill number has 5 to 7 digits.' });
+E('co.i.list', 'ganji', 'Agent side: read and change', 'List requests', 'GET', '/internal/actions', { auth: 'internal', query: { phone: '{{customerPhone}}', limit: '10' } });
+E('co.i.get', 'ganji', 'Agent side: read and change', 'Get one request', 'GET', '/internal/actions/' + ID, { auth: 'internal', query: { phone: '{{customerPhone}}' }, note: 'Another customer\'s request answers 404.' });
+E('co.i.cancel', 'ganji', 'Agent side: read and change', 'Cancel a waiting request', 'POST', `/internal/actions/${ID}/cancel`, { auth: 'internal', body: { phone: '{{customerPhone}}' } });
+E('co.i.receipt', 'ganji', 'Agent side: read and change', 'Attach an M-Pesa code', 'POST', `/internal/actions/${ID}/receipt`, { auth: 'internal', body: { phone: '{{customerPhone}}', receipt: 'SGL1234567' }, note: 'A different code on a request that already has one answers 409.' });
+E('co.a.code', 'ganji', 'Sign in', 'Ask for a sign-in code', 'POST', '/api/auth/request-code', { body: { phone: '{{customerPhone}}' }, save: { linkCode: 'devCode' }, note: 'Sends a 6 digit code by SMS. With CODE_DELIVERY=dev the answer also holds the code as devCode (tests only). With CODE_DELIVERY=log the code is in the M-Ganji API log.' });
+E('co.i.link', 'ganji', 'Sign in', 'Make a code without sending it', 'POST', '/internal/link-codes', { auth: 'internal', body: { phone: '{{customerPhone}}' }, save: { linkCode: 'code' }, note: 'For tests and support. Needs the internal key.' });
+E('co.a.verify', 'ganji', 'Sign in', 'Sign in with the code', 'POST', '/api/auth/verify', { body: { phone: '{{customerPhone}}', code: '{{linkCode}}', deviceId: '{{deviceId}}', deviceName: 'Console' }, save: { deviceToken: 'token' }, note: 'Saves the device token for the app calls below.' });
+E('co.a.signout', 'ganji', 'Sign in', 'Sign out this phone', 'DELETE', '/api/devices/me', { auth: 'bearer' });
+E('co.a.config', 'ganji', 'App side', 'Hand-off settings', 'GET', '/api/config', { note: 'Public. USSD codes and M-Pesa app ids.' });
+E('co.a.list', 'ganji', 'App side', 'List my requests', 'GET', '/api/actions', { auth: 'bearer' });
+E('co.a.get', 'ganji', 'App side', 'Open a request', 'GET', '/api/actions/' + ID, { auth: 'bearer' });
+E('co.a.approve', 'ganji', 'App side', 'Approve', 'POST', `/api/actions/${ID}/approve`, { auth: 'bearer', body: { method: 'BIOMETRIC' }, note: 'method is BIOMETRIC or DEVICE_CREDENTIAL.' });
+E('co.a.handoff', 'ganji', 'App side', 'Hand off to M-Pesa', 'POST', `/api/actions/${ID}/handoff`, { auth: 'bearer' });
+E('co.a.done', 'ganji', 'App side', 'Report done', 'POST', `/api/actions/${ID}/report`, { auth: 'bearer', body: { outcome: 'DONE', receipt: 'SGL1234567' } });
+E('co.a.notdone', 'ganji', 'App side', 'Report not done', 'POST', `/api/actions/${ID}/report`, { auth: 'bearer', body: { outcome: 'NOT_DONE' } });
+E('co.a.sms', 'ganji', 'App side', 'Send M-Pesa message evidence', 'POST', `/api/actions/${ID}/sms-evidence`, { auth: 'bearer', body: { code: 'QWE9876543', kind: 'BILL', amount: 1200, payee: 'KPLC PREPAID', account: '123456', smsAt: '{{nowMs}}' }, note: 'Amount, kind, time and account are checked. Change the code to run it again.' });
+E('co.a.decline', 'ganji', 'App side', 'Decline', 'POST', `/api/actions/${ID}/decline`, { auth: 'bearer' });
 const CC = 'Chat (app side)';
-E('co.ch.list', 'companion', CC, 'Read the chat', 'GET', '/api/chat/messages', { auth: 'bearer', query: { after: '0', limit: '50' }, note: 'The app calls this every second or two while the chat is open.' });
-E('co.ch.send', 'companion', CC, 'Send a chat message', 'POST', '/api/chat/messages', { auth: 'bearer', body: { clientMessageId: '{{msgid}}', kind: 'TEXT', text: 'send 500 to 0712345678' }, note: 'kind is TEXT, IMAGE, DOCUMENT, AUDIO, VIDEO, LOCATION, CONTACTS, BUTTON_REPLY or LIST_REPLY. The number comes from the token.' });
-E('co.ch.contact', 'companion', CC, 'Share a contact', 'POST', '/api/chat/messages', { auth: 'bearer', body: { clientMessageId: '{{msgid}}', kind: 'CONTACTS', contactsSummary: 'Mama 0712345678' }, note: 'What the app sends after the customer picks a person in the contact finder.' });
-E('co.ch.media', 'companion', CC, 'Upload a file', 'POST', '/api/chat/media', { auth: 'bearer', headers: { 'Content-Type': 'text/plain', 'X-File-Name': 'hello.txt' }, body: 'Hello from the console', save: { mediaId: 'mediaId' }, note: 'The body is the raw file, up to 20 MB. Send a message that names the returned media id next.' });
-E('co.ch.media.get', 'companion', CC, 'Download a chat file', 'GET', '/api/chat/media/{{mediaId}}', { auth: 'bearer' });
-E('co.ch.clear', 'companion', CC, 'Clear the chat', 'DELETE', '/api/chat/messages', { auth: 'bearer' });
-E('co.p.landing', 'companion', 'Public pages', 'Link landing page', 'GET', '/a/' + ID, { note: 'The page behind the link the assistant puts in the chat.' });
-E('co.p.android', 'companion', 'Public pages', 'Android app links file', 'GET', '/.well-known/assetlinks.json', { note: '404 until the Android package and fingerprint are set.' });
-E('co.p.ios', 'companion', 'Public pages', 'iOS app links file', 'GET', '/.well-known/apple-app-site-association', { note: '404 until the iOS app id is set.' });
+E('co.ch.list', 'ganji', CC, 'Read the chat', 'GET', '/api/chat/messages', { auth: 'bearer', query: { after: '0', limit: '50' }, note: 'The app calls this every second or two while the chat is open.' });
+E('co.ch.send', 'ganji', CC, 'Send a chat message', 'POST', '/api/chat/messages', { auth: 'bearer', body: { clientMessageId: '{{msgid}}', kind: 'TEXT', text: 'send 500 to 0712345678' }, note: 'kind is TEXT, IMAGE, DOCUMENT, AUDIO, VIDEO, LOCATION, CONTACTS, BUTTON_REPLY or LIST_REPLY. The number comes from the token.' });
+E('co.ch.contact', 'ganji', CC, 'Share a contact', 'POST', '/api/chat/messages', { auth: 'bearer', body: { clientMessageId: '{{msgid}}', kind: 'CONTACTS', contactsSummary: 'Mama 0712345678' }, note: 'What the app sends after the customer picks a person in the contact finder.' });
+E('co.ch.media', 'ganji', CC, 'Upload a file', 'POST', '/api/chat/media', { auth: 'bearer', headers: { 'Content-Type': 'text/plain', 'X-File-Name': 'hello.txt' }, body: 'Hello from the console', save: { mediaId: 'mediaId' }, note: 'The body is the raw file, up to 20 MB. Send a message that names the returned media id next.' });
+E('co.ch.media.get', 'ganji', CC, 'Download a chat file', 'GET', '/api/chat/media/{{mediaId}}', { auth: 'bearer' });
+E('co.ch.clear', 'ganji', CC, 'Clear the chat', 'DELETE', '/api/chat/messages', { auth: 'bearer' });
+E('co.p.landing', 'ganji', 'Public pages', 'Link landing page', 'GET', '/a/' + ID, { note: 'The page behind the link the assistant puts in the chat.' });
+E('co.p.android', 'ganji', 'Public pages', 'Android app links file', 'GET', '/.well-known/assetlinks.json', { note: '404 until the Android package and fingerprint are set.' });
+E('co.p.ios', 'ganji', 'Public pages', 'iOS app links file', 'GET', '/.well-known/apple-app-site-association', { note: '404 until the iOS app id is set.' });
 
 // 3 Payments (optional Daraja module)
 E('py.create', 'payment', 'Payments (STK Push)', 'Create a payment', 'POST', '/internal/payments', { auth: 'internal', body: { idempotencyKey: '{{paykey}}', phone: '{{customerPhone}}', amount: 10, accountReference: 'ORD-1' }, save: { paymentId: 'id', checkoutRequestId: 'checkoutRequestId' }, note: 'Sends an M-Pesa prompt. Needs Daraja credentials.' });
@@ -1001,7 +1001,7 @@ cb('py.cb.c2bc', 'C2B confirmation', '/api/callbacks/c2b/confirmation', { Transa
 const send = (id, extra = {}) => { const e = CATALOG.find((x) => x.id === id); return http(Object.assign({}, e, extra)); };
 
 /* ------------------------------------------------------------------ small shared pieces */
-const SERVICES = ['agent', 'companion', 'payment'];
+const SERVICES = ['agent', 'ganji', 'payment'];
 const fmtKes = (n) => Number(n).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const tone = (s) => (s >= 200 && s < 300 ? 'good' : s >= 400 && s < 500 ? 'warn' : s >= 500 || s === 0 ? 'bad' : 'info');
 const errText = (r) => r.error || (r.json && (r.json.message || r.json.error)) || r.text || ('Status ' + r.status);
@@ -1084,7 +1084,7 @@ function show(id) {
   if (!VIEWS.some((v) => v.id === id)) id = 'route';
   VIEWS.forEach((v) => { $('#v-' + v.id).hidden = v.id !== id; });
   $$('#nav button').forEach((b) => { if (b.dataset.id === id) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
-  document.title = VIEWS.find((v) => v.id === id).title + ' | Assistant Console';
+  document.title = VIEWS.find((v) => v.id === id).title + ' | M-Ganji Console';
   store.set('view', id);
   try { history.replaceState(null, '', '#' + id); } catch (e) { /* file or sandbox */ }
   (onShow[id] || (() => {}))();
@@ -1098,7 +1098,7 @@ function initNav() {
 /* ------------------------------------------------------------------ service status */
 const STATE = {};
 const STATE_TEXT = { up: 'Reachable', blocked: 'Running, but this page is not allowed to call it (CORS)', down: 'Not reachable', unknown: 'Checking' };
-const SHORT = { agent: 'Agent', companion: 'Companion', payment: 'Payments' };
+const SHORT = { agent: 'Agent', ganji: 'Ganji', payment: 'Payments' };
 function renderPills() {
   $('#pills').innerHTML = SERVICES.map((s) => `<button type="button" class="svc-chip" data-svc="${s}" title="${esc(SVC_NAME[s])}: ${STATE_TEXT[(STATE[s] || {}).state || 'unknown']}. Press to check again."><i class="dot ${(STATE[s] || {}).state || ''}"></i><b>${SHORT[s]}</b></button>`).join('');
   $$('.svc-state').forEach((el) => {
@@ -1148,7 +1148,7 @@ $$('dialog').forEach((d) => {
 
 /* ------------------------------------------------------------------ settings */
 const CFG_FIELDS = [
-  ['Services', [['agentUrl', 'AI agent address'], ['companionUrl', 'Companion API address'], ['paymentUrl', 'Payments address (optional)']]],
+  ['Services', [['agentUrl', 'AI agent address'], ['ganjiUrl', 'M-Ganji API address'], ['paymentUrl', 'Payments address (optional)']]],
   ['Keys and secrets', [['internalKey', 'Internal key (X-Internal-Key)', 1], ['callbackSecret', 'M-Pesa callback secret in the URL', 1]]],
   ['Contact search (optional)', [['googleClientId', 'Google OAuth client ID (web application)'], ['microsoftClientId', 'Microsoft app (client) ID, single page app']]],
   ['People', [['customerPhone', 'Customer phone (the number you sign in with)'], ['staffPhone', 'Staff phone (payments)'], ['approverPhone', 'Approver phone (payments)'], ['adminPhone', 'Admin phone (payments)'], ['deviceId', 'Device id the phone app uses']]],
@@ -1342,7 +1342,7 @@ const SCEN = [
   { id: 'air', label: 'Buy airtime for another number', say: 'buy 100 airtime for 0722000111', ep: 'co.c.air2' },
   { id: 'pochi', label: 'Pay Pochi la Biashara', say: 'pochi 250 to 0722000111', ep: 'co.c.pochi' },
 ];
-const LANES = [['Customer', 'In-app chat'], ['Agent', 'Prepares the request'], ['Companion API', 'Keeps the request'], ['Phone app', 'Customer approves'], ['M-Pesa', 'PIN is typed there only']];
+const LANES = [['Customer', 'In-app chat'], ['Agent', 'Prepares the request'], ['M-Ganji API', 'Keeps the request'], ['Phone app', 'Customer approves'], ['M-Pesa', 'PIN is typed there only']];
 const RT = { busy: false, open: null };
 
 function drawRoute() {
@@ -1443,7 +1443,7 @@ async function runRoute() {
     } else await evNote(1, 2, `Customer writes: ${sc.say}`, 'Simulated, no AI used');
     // 2 the agent prepares the request
     const made = await evCall(2, 3, 'Agent prepares the request', send(sc.ep));
-    if (!made.ok) return stop('The request was not created. Check the companion address and the internal key in Settings.');
+    if (!made.ok) return stop('The request was not created. Check the ganji address and the internal key in Settings.');
     const id = made.json.id; vars.actionId = id; saveVars();
     // 3 the phone is signed in and opens it
     let got = vars.deviceToken ? await send('co.a.get', { silent: true, path: `/api/actions/${id}` }) : { ok: false };
@@ -1519,7 +1519,7 @@ async function authRun(kind, box) {
   if (kind === 'request') {
     const r = await send('co.a.code', { body: { phone } });
     if (!r.ok) AU.err = errText(r);
-    else AU.info = r.json && r.json.devCode ? `The code ${r.json.devCode} is filled in below (the companion API runs with CODE_DELIVERY=dev, for tests only).` : 'A code is on its way by SMS. If the companion API runs with CODE_DELIVERY=log, read the code in its log.';
+    else AU.info = r.json && r.json.devCode ? `The code ${r.json.devCode} is filled in below (the M-Ganji API runs with CODE_DELIVERY=dev, for tests only).` : 'A code is on its way by SMS. If the M-Ganji API runs with CODE_DELIVERY=log, read the code in its log.';
   } else {
     if (!/^\d{6}$/.test(code)) { AU.busy = false; AU.err = 'The code has 6 digits.'; return redrawAuth(); }
     vars.linkCode = code; saveVars();
@@ -1864,7 +1864,7 @@ function drawChat() {
     <section class="panel signin-panel" id="chSign" hidden aria-label="Sign in"><div class="ph"><h2>Sign in to chat</h2></div><div class="pb" id="chSignBody"></div></section>
     <div class="two" id="chMain">
       <section class="panel chat" id="chPanel" aria-label="Chat with the assistant">
-        <div class="chat-head"><div class="avatar" id="chAvatar" aria-hidden="true">M</div><div class="grow"><b>M-Pesa Assistant</b><div class="muted small" id="chWho"></div></div>
+        <div class="chat-head"><div class="avatar" id="chAvatar" aria-hidden="true">M</div><div class="grow"><b>M-Ganji</b><div class="muted small" id="chWho"></div></div>
           <div class="more-wrap"><button type="button" class="round" id="chMenuBtn" aria-label="Chat options" aria-haspopup="menu">${icon('more')}</button>
             <div class="attach-pop more-pop" id="chMore" role="menu" hidden>
               <button type="button" role="menuitem" data-more="find"><i class="ic c6">${icon('user')}</i><span>Find a contact<small>Google, Microsoft, a file</small></span></button>
@@ -1910,7 +1910,7 @@ function drawChat() {
       </section>
       <aside class="stack">
         <section class="panel"><div class="ph"><h3>This customer's requests</h3><button type="button" class="btn sm" id="chRefresh">Refresh</button></div><div class="pb" id="chReqs"></div></section>
-        <div class="callout">Files and voice notes go to the agent over the companion API, up to 20 MB each. A voice note is recorded as WebM or MP4, so the agent's speech to text service must accept that format.</div>
+        <div class="callout">Files and voice notes go to the agent over the M-Ganji API, up to 20 MB each. A voice note is recorded as WebM or MP4, so the agent's speech to text service must accept that format.</div>
         <div class="callout">When the assistant needs a phone number it asks for a contact. Press <b>Find in contacts</b> on that message to search Google, Outlook or a file. Only the person you pick is sent.</div>
       </aside>
     </div>`;
@@ -2161,7 +2161,7 @@ const MEDIA = new Map();
 async function mediaUrl(id) {
   if (MEDIA.has(id)) return MEDIA.get(id);
   const p = (async () => {
-    const res = await fetch(String(cfg.companionUrl).replace(/\/+$/, '') + '/api/chat/media/' + encodeURIComponent(id), { headers: { Authorization: 'Bearer ' + (vars.deviceToken || '') } });
+    const res = await fetch(String(cfg.ganjiUrl).replace(/\/+$/, '') + '/api/chat/media/' + encodeURIComponent(id), { headers: { Authorization: 'Bearer ' + (vars.deviceToken || '') } });
     if (res.status === 401 || res.status === 403) { dropSession('Your sign-in ended. Sign in again.'); throw new Error('signed out'); }
     if (!res.ok) throw new Error('The file is no longer available (' + res.status + ').');
     return URL.createObjectURL(await res.blob());
@@ -2228,15 +2228,15 @@ async function postChat(fields) {
 }
 /** Uploads one file to the chat and returns the media id, or null. */
 async function uploadMedia(a) {
-  const url = String(cfg.companionUrl).replace(/\/+$/, '') + '/api/chat/media';
+  const url = String(cfg.ganjiUrl).replace(/\/+$/, '') + '/api/chat/media';
   const headers = { 'Content-Type': a.mime || 'application/octet-stream', Authorization: 'Bearer ' + (vars.deviceToken || ''), 'X-File-Name': String(a.name || 'file').replace(/[^\x20-\x7e]/g, '_') };
-  const r = { method: 'POST', url, svc: 'companion', path: '/api/chat/media', reqHeaders: headers, reqBody: `(${a.size} bytes of ${a.mime})`, at: new Date(), ms: 0, status: 0, ok: false };
+  const r = { method: 'POST', url, svc: 'ganji', path: '/api/chat/media', reqHeaders: headers, reqBody: `(${a.size} bytes of ${a.mime})`, at: new Date(), ms: 0, status: 0, ok: false };
   const t0 = performance.now();
   try {
     const res = await fetch(url, { method: 'POST', headers, body: a.blob });
     r.status = res.status; r.ok = res.ok; r.resHeaders = Array.from(res.headers.entries()); r.text = await res.text();
     try { r.json = JSON.parse(r.text); } catch (e) { /* not JSON */ }
-  } catch (e) { r.error = `Cannot reach ${cfg.companionUrl}. Is the companion API running with CORS_ALLOWED_ORIGINS=${location.origin}?`; }
+  } catch (e) { r.error = `Cannot reach ${cfg.ganjiUrl}. Is the M-Ganji API running with CORS_ALLOWED_ORIGINS=${location.origin}?`; }
   r.ms = Math.round(performance.now() - t0);
   LOG.unshift(r); renderLogBar();
   return r;
@@ -2275,10 +2275,10 @@ async function pollChat(force) {
   CH.polling = true;
   try {
     for (let round = 0; round < 5; round++) {
-      const r = await http({ svc: 'companion', method: 'GET', path: '/api/chat/messages', query: { after: String(CH.after), limit: '200' }, auth: 'bearer', silent: true, timeout: 6000 });
+      const r = await http({ svc: 'ganji', method: 'GET', path: '/api/chat/messages', query: { after: String(CH.after), limit: '200' }, auth: 'bearer', silent: true, timeout: 6000 });
       if (r.status === 401 || r.status === 403) { dropSession('Your sign-in ended. Sign in again.'); return; }
       if (r.error) { if (!CH.errShown) { CH.errShown = true; sys('Cannot read the chat. ' + r.error); } return; }
-      if (!r.ok || !r.json) { if (!CH.errShown) { CH.errShown = true; sys(`The companion API answered ${r.status}: ${errText(r)}`); } return; }
+      if (!r.ok || !r.json) { if (!CH.errShown) { CH.errShown = true; sys(`The M-Ganji API answered ${r.status}: ${errText(r)}`); } return; }
       CH.errShown = false;
       const msgs = r.json.messages || [], first = CH.after === 0;
       msgs.forEach((m) => { if (!$(`#chMsgs [data-mid="${m.id}"]`)) addMessage(m); CH.after = Math.max(CH.after, m.id); });
@@ -2291,7 +2291,7 @@ async function pollChat(force) {
 }
 async function pollReqs() {
   if (!signedIn()) return;
-  const r = await http({ svc: 'companion', method: 'GET', path: '/api/actions', auth: 'bearer', silent: true, timeout: 5000 });
+  const r = await http({ svc: 'ganji', method: 'GET', path: '/api/actions', auth: 'bearer', silent: true, timeout: 5000 });
   if (r.status === 401 || r.status === 403) { dropSession('Your sign-in ended. Sign in again.'); return; }
   const box = $('#chReqs'); if (!box || !r.ok || !Array.isArray(r.json)) return;
   CH.reqs = r.json;
@@ -2315,17 +2315,17 @@ setInterval(() => pollChat(false), 1500);
 setInterval(() => { if (!$('#v-chat').hidden && !document.hidden) pollReqs(); }, 6000);
 onShow.chat = drawChat;
 
-/* ------------------------------------------------------------------ phone simulator (the companion app) */
+/* ------------------------------------------------------------------ phone simulator (the M-Ganji app) */
 const P = { screen: vars.deviceToken ? 'list' : 'link', picked: {}, id: null, a: null, list: [], sheet: null, err: '', info: '', conf: null, busy: false, wrong: false };
 const typeName = { SEND_MONEY: 'Send money', PAY_BILL: 'Pay Bill', PAY_TILL: 'Buy Goods', PAY_POCHI: 'Pochi la Biashara', BUY_AIRTIME: 'Buy airtime', SCHEDULE_RATIBA: 'Ratiba' };
-const pcall = (sub, body) => http({ svc: 'companion', method: 'POST', path: `/api/actions/${P.id}/${sub}`, auth: 'bearer', body });
+const pcall = (sub, body) => http({ svc: 'ganji', method: 'POST', path: `/api/actions/${P.id}/${sub}`, auth: 'bearer', body });
 
 function renderPhone() {
   if (!vars.deviceToken) P.screen = 'link'; else if (P.screen === 'link') { P.screen = 'list'; setTimeout(loadList, 0); }
   const root = $('#v-phone');
   if (!root.dataset.built) {
     root.dataset.built = '1';
-    root.innerHTML = `<div class="view-head"><div><h1>Phone</h1><p>The companion app, running against your companion API. It follows the theme you picked, the same ten as the Flutter app.</p></div></div><div class="phone-wrap"><div class="phone" role="group" aria-label="Phone simulator"><div class="screen" id="phScreen"></div></div><div class="stack" id="phSide"></div></div>`;
+    root.innerHTML = `<div class="view-head"><div><h1>Phone</h1><p>The M-Ganji app, running against your M-Ganji API. It follows the theme you picked, the same ten as the Flutter app.</p></div></div><div class="phone-wrap"><div class="phone" role="group" aria-label="Phone simulator"><div class="screen" id="phScreen"></div></div><div class="stack" id="phSide"></div></div>`;
     root.addEventListener('click', onPhoneClick);
   }
   $('#phScreen').innerHTML = screenHtml();
@@ -2410,7 +2410,7 @@ function sideHtml() {
   <div class="callout">The real app reads SMS on Android only, and only with the customer's permission. A message on the phone can be edited, so a match is evidence and never a Safaricom confirmation.</div>`;
 }
 async function loadList() {
-  const r = await http({ svc: 'companion', method: 'GET', path: '/api/actions', auth: 'bearer' });
+  const r = await http({ svc: 'ganji', method: 'GET', path: '/api/actions', auth: 'bearer' });
   if (r.status === 401 || r.status === 403) return unlinked('You were signed out. Sign in again.');
   if (r.ok && Array.isArray(r.json)) { P.list = r.json; P.err = ''; } else P.err = errText(r);
   renderPhone();
@@ -2418,7 +2418,7 @@ async function loadList() {
 function unlinked(msg) { dropSession(msg); }
 async function openAction(id) {
   P.id = id; P.screen = 'detail'; P.a = null; P.err = ''; P.info = ''; P.sheet = null; renderPhone();
-  const r = await http({ svc: 'companion', method: 'GET', path: '/api/actions/' + id, auth: 'bearer' });
+  const r = await http({ svc: 'ganji', method: 'GET', path: '/api/actions/' + id, auth: 'bearer' });
   if (r.status === 401 || r.status === 403) return unlinked('Sign in to open the request.');
   if (r.ok) P.a = r.json; else { P.err = errText(r); P.screen = 'list'; }
   renderPhone();

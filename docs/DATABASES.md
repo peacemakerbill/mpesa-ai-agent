@@ -1,5 +1,5 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/DATABASES.md
-     Replace the existing file. The images it uses are in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
+<!-- PLACE THIS FILE AT: m-ganji/docs/DATABASES.md
+     Replace the existing file. The images it uses are in m-ganji/docs/assets/. You can delete this comment. -->
 
 <div align="center">
 
@@ -7,15 +7,11 @@
 
 <br/>
 
-<img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-supported-14231C?style=flat-square&logo=postgresql&logoColor=6EA8FF"/>
-<img alt="MySQL" src="https://img.shields.io/badge/MySQL-supported-14231C?style=flat-square&logo=mysql&logoColor=F2B544"/>
-<img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-supported-14231C?style=flat-square&logo=mongodb&logoColor=2BD576"/>
-<img alt="Flyway" src="https://img.shields.io/badge/Flyway-12.4-14231C?style=flat-square&logo=flyway&logoColor=FF5468"/>
-<img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1.2-087F36?style=flat-square&logo=springboot&logoColor=white"/>
+<img src="assets/badges-databases.svg" alt="PostgreSQL, MySQL and MongoDB are supported. Flyway 12.4, Spring Boot 4.1.2, switch with DATABASE_TYPE." width="880"/>
 
 <br/><br/>
 
-`companion-api` and `payment-service` can each run on **PostgreSQL**, **MySQL** or **MongoDB**. You pick one word.
+`ganji-api` and `payment-service` can each run on **PostgreSQL**, **MySQL** or **MongoDB**. You pick one word.
 
 <sub><a href="../README.md">Back to the project overview</a></sub>
 
@@ -40,7 +36,7 @@ spring:
 Or leave the file alone and set `DATABASE_TYPE` in the environment or in the service's `.env`. **The environment wins.** Each service can use a different database.
 
 > [!NOTE]
-> **Defaults.** payment-service defaults to `mongodb` when you run it directly. The compose file still starts PostgreSQL unless `DATABASE_TYPE` says otherwise. If companion-api's `application.yml` still reads `${DATABASE_TYPE:postgresql}`, that is its default. Check the line above in each service so you know what you are running.
+> **Defaults.** payment-service defaults to `mongodb` when you run it directly. The compose file still starts PostgreSQL unless `DATABASE_TYPE` says otherwise. If ganji-api's `application.yml` still reads `${DATABASE_TYPE:postgresql}`, that is its default. Check the line above in each service so you know what you are running.
 
 Each service reads its local `.env` through `spring.config.import: optional:file:.env[.properties]`. Spring Boot does not read `.env` on its own, so this line must stay in `application.yml`. Real environment variables always win over the file.
 
@@ -52,7 +48,7 @@ The connection details live in three small files next to `application.yml`:
 | `application-mysql.yml` | `mysql` | `MYSQL_URL` (or `DB_URL`) |
 | `application-mongodb.yml` | `mongodb` | `MONGODB_URI` |
 
-SQL databases also read `DB_USER` and `DB_PASSWORD`. Defaults point at `localhost`, with database names `companion` and `payments`.
+SQL databases also read `DB_USER` and `DB_PASSWORD`. Defaults point at `localhost`, with database names `ganji` and `payments`.
 
 ## With Docker Compose
 
@@ -132,7 +128,7 @@ MONGODB_URI=mongodb://localhost:27017/payments?serverSelectionTimeoutMS=5000
 
 The driver gives up looking for a server after 5 seconds, so a missing database fails fast.
 
-At run time, payment-service answers **503 Service Unavailable** when a database, a query timeout or RabbitMQ fails inside a request. agent-service and companion-api do not have that handler yet.
+At run time, payment-service answers **503 Service Unavailable** when a database, a query timeout or RabbitMQ fails inside a request. agent-service and ganji-api do not have that handler yet.
 
 </td>
 </tr>
@@ -179,7 +175,7 @@ YAML map keys that contain dots or other special characters must be wrapped in b
 ```yaml
 logging:
   level:
-    "[com.mpesaagent]": INFO
+    "[com.mganji]": INFO
 spring:
   jpa:
     properties:

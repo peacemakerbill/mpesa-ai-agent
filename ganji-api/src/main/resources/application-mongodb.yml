@@ -1,0 +1,23 @@
+# Used when the database type is mongodb (MongoDB 6 or later).
+# Collections and indexes are created by the service. There are no migrations to run.
+# MongoDB mode has no multi-document transactions and no row locks. Concurrent changes to one record are
+# caught with a version number instead, and the loser gets 409 Conflict and can try again.
+spring:
+  # Spring Boot 4: the connection settings moved from spring.data.mongodb to spring.mongodb.
+  # The UUID format has no default any more, so it is set here (standard is the one every driver reads).
+  mongodb:
+    # serverSelectionTimeoutMS: stop looking for MongoDB after 5 seconds (the default is 30), so a missing database is noticed quickly
+    uri: ${MONGODB_URI:mongodb://localhost:27017/ganji?serverSelectionTimeoutMS=5000}
+    representation:
+      uuid: standard
+  data:
+    mongodb:
+      auto-index-creation: true
+  autoconfigure:
+    exclude:
+      # Spring Boot 4 class names
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration
+      - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
+      - org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
+      - org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration

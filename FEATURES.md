@@ -1,5 +1,5 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/FEATURES.md
-     Replace the existing file. The images it uses are in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
+<!-- PLACE THIS FILE AT: m-ganji/FEATURES.md
+     Replace the existing file. The images it uses are in m-ganji/docs/assets/. You can delete this comment. -->
 
 <div align="center">
 
@@ -7,12 +7,7 @@
 
 <br/>
 
-<img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1.2-087F36?style=flat-square&logo=springboot&logoColor=white"/>
-<img alt="Flutter" src="https://img.shields.io/badge/Flutter-Android%20and%20iOS-14231C?style=flat-square&logo=flutter&logoColor=4FD1C5"/>
-<img alt="Claude" src="https://img.shields.io/badge/Claude-tool%20use-14231C?style=flat-square&logo=anthropic&logoColor=F2B544"/>
-<img alt="Languages" src="https://img.shields.io/badge/Replies-English%20and%20Swahili-14231C?style=flat-square"/>
-<img alt="Looks" src="https://img.shields.io/badge/Looks-10-087F36?style=flat-square"/>
-<img alt="PIN" src="https://img.shields.io/badge/PIN-never%20seen%20by%20the%20system-FF5468?style=flat-square"/>
+<img src="docs/assets/badges-features.svg" alt="Spring Boot 4.1.2, Flutter on Android and iOS, Claude with tool use, replies in English and Swahili, ten looks, the PIN is never seen by the system." width="880"/>
 
 <br/><br/>
 
@@ -41,6 +36,10 @@ Customers chat with an AI assistant, in the app or on the web, in English or Swa
 
 ### What they can ask for
 
+<div align="center">
+<img src="docs/assets/capabilities.svg" alt="What the assistant can prepare: send money, Paybill, Till, Pochi la Biashara, airtime, Ratiba, voice and photos, contact search" width="880"/>
+</div>
+
 | Request | Details the assistant collects |
 |---|---|
 | Send money | A phone number, or a contact name from their phone, and the amount |
@@ -66,7 +65,7 @@ Customers chat with an AI assistant, in the app or on the web, in English or Swa
 ### The approval flow
 
 1. The assistant prepares the request and sends a link, plus a Cancel button, in the chat.
-2. The link opens the companion app. It shows the request in plain words with warnings.
+2. The link opens the M-Ganji app. It shows the request in plain words with warnings.
 3. The customer approves with fingerprint, face or phone lock (the phone's own check).
 4. The app opens the dialler (code typed in, customer presses call) or the M-Pesa app, and shows numbered steps with copy buttons.
 5. The customer types the M-Pesa PIN inside M-Pesa.
@@ -77,18 +76,18 @@ Customers chat with an AI assistant, in the app or on the web, in English or Swa
 <img src="docs/assets/divider.svg" alt="" width="100%"/>
 </div>
 
-## The companion app
+## The M-Ganji app
 
-Flutter, for Android and iOS. More in [`companion-app/README.md`](companion-app/README.md).
+Flutter, for Android and iOS. More in [`ganji-app/README.md`](ganji-app/README.md).
 
 - **Sign in** with the phone number and a 6 digit code sent by SMS. Sign out at any time.
 - **Chat tab** with the assistant: message bubbles, buttons and menus the assistant sends, photos, videos, documents, voice notes (record and play), shared locations and contacts, typing indicator, and a **Requests tab** beside it.
 - Request list and request detail, with warnings (details read from a voice note, photo or file are flagged).
 - Approval with biometrics or device lock. Decline with one tap.
 - Hand-off to M-Pesa: dialler, optional M-Pesa app launch, guided steps, copy buttons. Values come from the server, so they can be corrected without a new release.
-- **Contact search** across this phone (with permission, or its own chooser without one), Google contacts, Outlook contacts, a vCard or CSV file, or a typed number. Searching happens on the phone. See [`companion-app/docs/CONTACTS.md`](companion-app/docs/CONTACTS.md).
-- **M-Pesa message check (Android only):** reads only messages from the sender `MPESA`, only on request, matches on the phone, and sends the code, kind, amount and payee, never the text. See [`companion-app/docs/SMS.md`](companion-app/docs/SMS.md).
-- Deep links from `https://host/a/ID` and `mpesaagent://a/ID`.
+- **Contact search** across this phone (with permission, or its own chooser without one), Google contacts, Outlook contacts, a vCard or CSV file, or a typed number. Searching happens on the phone. See [`ganji-app/docs/CONTACTS.md`](ganji-app/docs/CONTACTS.md).
+- **M-Pesa message check (Android only):** reads only messages from the sender `MPESA`, only on request, matches on the phone, and sends the code, kind, amount and payee, never the text. See [`ganji-app/docs/SMS.md`](ganji-app/docs/SMS.md).
+- Deep links from `https://host/a/ID` and `mganji://a/ID`.
 - iPhone: no message reading is possible. Customers send the M-Pesa message in the chat instead.
 
 ### Ten looks, saved on the phone
@@ -118,6 +117,10 @@ Picked from the palette button in the app bar. The browser console offers the sa
 Request states: `CREATED`, `APPROVED`, `HANDED_OFF`, `DONE_REPORTED`, `NOT_DONE`, `DECLINED`, `CANCELLED`, `EXPIRED`.
 
 ## Safety and privacy built in
+
+<div align="center">
+<img src="docs/assets/safety.svg" alt="Safety built in: no PIN, phone lock approval, whitelist checks, read-back, scam warnings, one phone one chat, rate limits, 30 minute expiry" width="880"/>
+</div>
 
 <table>
 <tr>
@@ -180,11 +183,11 @@ Request states: `CREATED`, `APPROVED`, `HANDED_OFF`, `DONE_REPORTED`, `NOT_DONE`
 | Service | Port | What it does |
 |---|---|---|
 | [agent-service](agent-service/README.md) | 8082 | Claude model with tool use, the chat (messages and files) and conversation memory, role handling, menus, media understanding, contact lookup |
-| [companion-api](companion-api/README.md) | 8084 | Signs customers in by SMS code, relays the chat, stores requests, serves the app, matches message evidence, publishes events, serves app-link files |
-| [companion-app](companion-app/README.md) | none | The Flutter app above |
+| [ganji-api](ganji-api/README.md) | 8084 | Signs customers in by SMS code, relays the chat, stores requests, serves the app, matches message evidence, publishes events, serves app-link files |
+| [ganji-app](ganji-app/README.md) | none | The Flutter app above |
 | [payment-service](payment-service/README.md) | 8083 | **Optional** Daraja module for a business, off by default |
 
-**Infrastructure.** A database you choose with `DATABASE_TYPE` (MongoDB, PostgreSQL or MySQL, with separate `payments` and `companion` databases), Redis and RabbitMQ. payment-service defaults to MongoDB when run directly, and the compose file starts PostgreSQL unless you say otherwise. See [`docs/DATABASES.md`](docs/DATABASES.md). All Java services use the same layered packages: controller, service, repository, model, dto, exception, config.
+**Infrastructure.** A database you choose with `DATABASE_TYPE` (MongoDB, PostgreSQL or MySQL, with separate `payments` and `ganji` databases), Redis and RabbitMQ. payment-service defaults to MongoDB when run directly, and the compose file starts PostgreSQL unless you say otherwise. See [`docs/DATABASES.md`](docs/DATABASES.md). All Java services use the same layered packages: controller, service, repository, model, dto, exception, config.
 
 **Engineering features.** Flyway migrations for the SQL databases, idempotency keys, row locking on state changes, events sent only after commit, Docker Compose for everything, per-service `.env.example` files read through `spring.config.import`, and unit and integration tests for the Java services and Dart tests for the app.
 
@@ -197,7 +200,7 @@ Request states: `CREATED`, `APPROVED`, `HANDED_OFF`, `DONE_REPORTED`, `NOT_DONE`
 | Database, query timeout or RabbitMQ failure inside a payment call | payment-service answers **503 Service Unavailable** with a plain body |
 | The model API answers 408, 429, 5xx or 529 | agent-service tries up to 3 times before giving up |
 
-The 503 handler is in payment-service today. agent-service and companion-api still need the same treatment.
+The 503 handler is in payment-service today. agent-service and ganji-api still need the same treatment.
 
 <div align="center">
 <img src="docs/assets/divider.svg" alt="" width="100%"/>
@@ -238,7 +241,7 @@ One HTML file, run with `python3 -m http.server`, that simulates the frontend. I
 
 The console has:
 
-- a journey view that draws one request as a trace across customer, agent, companion API, phone and M-Pesa,
+- a journey view that draws one request as a trace across customer, agent, M-Ganji API, phone and M-Pesa,
 - a real chat against the real agent: sign in with a code, attach menu, file pickers, voice notes, camera and video recording, drag and drop, location, and contact search across Google, Microsoft, a phone picker and vCard or CSV,
 - a phone app simulator and an explorer for every endpoint,
 - a command palette (Ctrl+K), and the same ten themes as the app, with an upload slot for your own logo.

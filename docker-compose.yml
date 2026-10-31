@@ -99,19 +99,19 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  # The phone app, the browser console and the links in the chat talk to this one: sign-in, chat and requests. Put HTTPS in front of port 8084 (COMPANION_PUBLIC_BASE_URL).
+  # The phone app, the browser console and the links in the chat talk to this one: sign-in, chat and requests. Put HTTPS in front of port 8084 (GANJI_PUBLIC_BASE_URL).
   # It also serves the app link files under /.well-known/. It never holds M-Pesa keys or PINs.
-  companion-api:
-    build: ./companion-api
+  ganji-api:
+    build: ./ganji-api
     env_file:
-      - path: ./companion-api/.env
+      - path: ./ganji-api/.env
         required: false
     environment:
       # Pick the database with DATABASE_TYPE (postgresql, mysql or mongodb) in a .env file next to this compose file
       DATABASE_TYPE: ${DATABASE_TYPE:-postgresql}
-      POSTGRES_URL: jdbc:postgresql://postgres:5432/companion
-      MYSQL_URL: jdbc:mysql://mysql:3306/companion?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&preserveInstants=true&useSSL=false&allowPublicKeyRetrieval=true
-      MONGODB_URI: mongodb://mongo:27017/companion
+      POSTGRES_URL: jdbc:postgresql://postgres:5432/ganji
+      MYSQL_URL: jdbc:mysql://mysql:3306/ganji?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&preserveInstants=true&useSSL=false&allowPublicKeyRetrieval=true
+      MONGODB_URI: mongodb://mongo:27017/ganji
       RABBITMQ_HOST: rabbitmq
       AGENT_BASE_URL: http://agent-service:8082
     ports:
@@ -130,7 +130,7 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  # Not meant to be public. Keeps the chat and the conversation with the model. Only companion-api talks to it.
+  # Not meant to be public. Keeps the chat and the conversation with the model. Only ganji-api talks to it.
   agent-service:
     build: ./agent-service
     env_file:
@@ -138,7 +138,7 @@ services:
         required: false
     environment:
       PAYMENT_BASE_URL: http://payment-service:8083
-      COMPANION_BASE_URL: http://companion-api:8084
+      GANJI_BASE_URL: http://ganji-api:8084
       REDIS_HOST: redis
       RABBITMQ_HOST: rabbitmq
     ports:
@@ -148,7 +148,7 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_healthy
-      companion-api:
+      ganji-api:
         condition: service_started
 
 volumes:

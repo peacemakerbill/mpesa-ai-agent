@@ -1,0 +1,39 @@
+<!-- PLACE THIS FILE AT: m-ganji/docs/assets/card-ganji-api.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="384" height="184" viewBox="0 0 384 184" role="img" aria-label="ganji-api. Signs customers in by SMS code, relays the chat, stores requests.">
+<title>ganji-api. Signs customers in by SMS code, relays the chat, stores requests.</title>
+<defs><clipPath id="cc"><rect width="384" height="184" rx="8"/></clipPath><clipPath id="ch"><rect width="384" height="66"/></clipPath><pattern id="qapi" width="48" height="48" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="48" height="5" fill="#fff" fill-opacity="0.1"/><rect x="0" y="22" width="48" height="2" fill="#fff" fill-opacity="0.07"/><rect x="0" y="0" width="5" height="48" fill="#fff" fill-opacity="0.1"/><rect x="22" y="0" width="2" height="48" fill="#fff" fill-opacity="0.07"/><rect x="0" y="0" width="5" height="5" fill="#fff" fill-opacity="0.1"/></pattern></defs>
+<style>
+:root { --bg:#F6F7F4; --pn:#FFFFFF; --ink:#14211A; --mut:#5B6A62; --rule:#D8DDD6; --grn:#17803D; --amb:#A8650A; --red:#B3261E; --blu:#1F5FBF; --dot:#C9D0C8; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0F1512; --pn:#151D19; --ink:#E7EDE9; --mut:#8D9C94; --rule:#2A352F; --grn:#47C27A; --amb:#E0A84A; --red:#FF7B72; --blu:#6EA8FF; --dot:#26312B; } }
+text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+:where(text:not([fill])) { fill: var(--ink); }
+.m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+.mut { fill: var(--mut); }
+.bg { fill: var(--bg); stroke: var(--rule); }
+.pn { fill: var(--pn); stroke: var(--rule); }
+.hl { stroke: var(--rule); fill: none; }
+.hf { fill: var(--rule); }
+.g { fill: var(--grn); } .gs { stroke: var(--grn); fill: none; }
+.ms { stroke: var(--mut); fill: none; }
+.wt { fill: #fff; } .w8 { fill: #fff; fill-opacity: .82; } .w6 { fill: #fff; fill-opacity: .6; }
+.halo { paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.fu { opacity: 0; animation: fu .8s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes fu { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+.lf { animation: lf .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lf { from { fill-opacity: 0; fill: #47C27A } to { fill-opacity: 1; fill: #fff } }
+.wipe { animation: wipe 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes wipe { from { clip-path: inset(-12% 100% -12% 0) } to { clip-path: inset(-12% -3% -12% 0) } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } .fu { opacity: 1 !important; } }
+@keyframes dqapi { to { transform: translate(48px, 48px) } }
+.dqapi { animation: dqapi 20s linear infinite; }
+</style>
+<g clip-path="url(#cc)"><rect width="384" height="184" class="pn" style="stroke:none"/>
+<rect width="384" height="66" style="fill:#0B3D24"/><g clip-path="url(#ch)"><g class="dqapi"><rect x="-48" y="-48" width="480" height="162" fill="url(#qapi)"/></g></g>
+<text x="24" y="32" font-size="20" font-weight="700" letter-spacing="-.3" fill="#fff">ganji-api</text>
+<text class="m" x="24" y="52" font-size="12" fill="#47C27A">port 8084</text>
+<rect x="0" y="62" width="384" height="4" style="fill:#47C27A" fill-opacity=".9"/>
+<text x="24" y="98" font-size="14">Signs customers in by SMS code,</text><text x="24" y="118" font-size="14">relays the chat, stores requests.</text>
+<line class="hl" x1="24" y1="142" x2="360" y2="142"/>
+<text class="m mut" x="24" y="165" font-size="11.5" xml:space="preserve">MongoDB   PostgreSQL   MySQL</text></g>
+<rect class="hl" x=".5" y=".5" width="383" height="183" rx="8"/>
+</svg>
