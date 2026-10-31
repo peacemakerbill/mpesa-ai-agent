@@ -1,0 +1,40 @@
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/sms-flow.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="M-Pesa message check: tap, read, parse on the phone, then send fields and verify on the server">
+<title>M-Pesa message check: tap, read, parse on the phone, then send fields and verify on the server</title>
+<defs><clipPath id="c"><rect width="1200" height="300" rx="18"/></clipPath></defs>
+<style>
+.st { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 700; font-size: 17px; fill: #E8F4EC; }
+.ss { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 12px; fill: #8DA89A; }
+.bl { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 700; }
+.on { opacity: 0; animation: lit 10s ease-in-out infinite; }
+@keyframes lit { 0% { opacity: 0 } 4% { opacity: 1 } 18% { opacity: 1 } 24%,100% { opacity: 0 } }
+.trav { animation: trav 10s linear infinite; }
+@keyframes trav { from { transform: translateX(0) } to { transform: translateX(960px) } }
+@media (prefers-reduced-motion: reduce) { .on { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }</style>
+<g clip-path="url(#c)"><rect width="1200" height="300" fill="#08100D"/>
+<rect x="16" y="14" width="728" height="232" rx="14" fill="#2BD576" fill-opacity=".05" stroke="#2BD576" stroke-opacity=".35" stroke-dasharray="5 5"/>
+<rect x="756" y="14" width="428" height="232" rx="14" fill="#6EA8FF" fill-opacity=".05" stroke="#6EA8FF" stroke-opacity=".35" stroke-dasharray="5 5"/>
+<text class="bl" x="34" y="38" fill="#2BD576">On the phone. The text of the message stays here.</text>
+<text class="bl" x="774" y="38" fill="#6EA8FF">On the server</text>
+<line x1="120" y1="120" x2="1080" y2="120" stroke="#22372C" stroke-width="3"/>
+<circle cx="120" cy="120" r="40" fill="#0F1A15" stroke="#22372C" stroke-width="2"/>
+<circle class="on" style="animation-delay:0.00s" cx="120" cy="120" r="40" fill="#2BD576" fill-opacity=".14" stroke="#2BD576" stroke-width="2.4"/>
+<g transform="translate(105 105) scale(1.2500)" fill="none" stroke="#E8F4EC" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2h8a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M11 18.5h2"/><path d="M10 5.5h4"/></g>
+<text class="st" x="120" y="194" text-anchor="middle">Tap</text><text class="ss" x="120" y="215" text-anchor="middle">Customer taps the button</text><circle cx="360" cy="120" r="40" fill="#0F1A15" stroke="#22372C" stroke-width="2"/>
+<circle class="on" style="animation-delay:2.00s" cx="360" cy="120" r="40" fill="#2BD576" fill-opacity=".14" stroke="#2BD576" stroke-width="2.4"/>
+<g transform="translate(345 105) scale(1.2500)" fill="none" stroke="#E8F4EC" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-5 4v-4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8 9.5h8M8 12.5h5"/></g>
+<text class="st" x="360" y="194" text-anchor="middle">Read</text><text class="ss" x="360" y="215" text-anchor="middle">Recent MPESA messages only</text><circle cx="600" cy="120" r="40" fill="#0F1A15" stroke="#22372C" stroke-width="2"/>
+<circle class="on" style="animation-delay:4.00s" cx="600" cy="120" r="40" fill="#2BD576" fill-opacity=".14" stroke="#2BD576" stroke-width="2.4"/>
+<g transform="translate(585 105) scale(1.2500)" fill="none" stroke="#E8F4EC" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/><path d="M7 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"/><path d="M10 10h4v4h-4z"/></g>
+<text class="st" x="600" y="194" text-anchor="middle">Parse</text><text class="ss" x="600" y="215" text-anchor="middle">Code, kind, amount, payee</text><circle cx="840" cy="120" r="40" fill="#0F1A15" stroke="#22372C" stroke-width="2"/>
+<circle class="on" style="animation-delay:6.00s" cx="840" cy="120" r="40" fill="#2BD576" fill-opacity=".14" stroke="#2BD576" stroke-width="2.4"/>
+<g transform="translate(825 105) scale(1.2500)" fill="none" stroke="#E8F4EC" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L3 10.5l7 3 3 7z"/><path d="M10 13.5L21 3"/></g>
+<text class="st" x="840" y="194" text-anchor="middle">Send</text><text class="ss" x="840" y="215" text-anchor="middle">Fields only, never the text</text><circle cx="1080" cy="120" r="40" fill="#0F1A15" stroke="#22372C" stroke-width="2"/>
+<circle class="on" style="animation-delay:8.00s" cx="1080" cy="120" r="40" fill="#2BD576" fill-opacity=".14" stroke="#2BD576" stroke-width="2.4"/>
+<g transform="translate(1065 105) scale(1.2500)" fill="none" stroke="#E8F4EC" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 5-5"/></g>
+<text class="st" x="1080" y="194" text-anchor="middle">Verify</text><text class="ss" x="1080" y="215" text-anchor="middle">Checked again, level answered</text>
+<g class="trav"><circle cx="120" cy="120" r="7" fill="#2BD576"/><circle cx="120" cy="120" r="14" fill="#2BD576" fill-opacity=".25"/></g>
+<text class="ss" x="600.0" y="274" text-anchor="middle">A match is a record from the customer's own phone, not a confirmation from Safaricom.</text></g>
+<rect x=".5" y=".5" width="1199" height="299" rx="18" fill="none" stroke="#22372C"/>
+</svg>

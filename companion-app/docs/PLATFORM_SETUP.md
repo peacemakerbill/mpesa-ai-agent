@@ -1,14 +1,38 @@
-# Platform setup
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/companion-app/docs/PLATFORM_SETUP.md
+     Replace the existing file. The images it uses are in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
+
+<div align="center">
+
+<img src="../../docs/assets/banner-platform.svg" alt="" width="100%"/>
+
+<br/>
+
+<img alt="Android" src="https://img.shields.io/badge/Android-manifest%20and%20Gradle-14231C?style=flat-square&logo=android&logoColor=2BD576"/>
+<img alt="iOS" src="https://img.shields.io/badge/iOS-Info.plist%20and%20Xcode-14231C?style=flat-square&logo=apple&logoColor=E8F4EC"/>
+<img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.22%2B-14231C?style=flat-square&logo=flutter&logoColor=4FD1C5"/>
+<img alt="minSdk" src="https://img.shields.io/badge/minSdk-23-14231C?style=flat-square"/>
+<img alt="App links" src="https://img.shields.io/badge/App%20links-served%20by%20companion%20API-087F36?style=flat-square"/>
+
+<br/><br/>
 
 `./setup.sh your.reverse.domain` creates the `android/` and `ios/` folders. Then apply the changes below.
-Nothing here was built or run in the sandbox that wrote it. The package versions in `pubspec.yaml` were written from memory: run `flutter pub get`, then fix any API that changed. Treat each step as something to check on a real phone.
 
-Replace `companion.example.com` with the host in `COMPANION_PUBLIC_BASE_URL`.
+<sub><a href="../README.md">Back to the companion app</a> &nbsp;|&nbsp; <a href="../../README.md">Project overview</a></sub>
+
+<img src="../../docs/assets/divider.svg" alt="" width="100%"/>
+
+</div>
+
+> [!WARNING]
+> Nothing here was built or run in the environment that wrote it. The package versions in `pubspec.yaml` were written from memory. Run `flutter pub get`, then fix any API that changed. Treat each step as something to check on a real phone.
+
+Replace `companion.example.com` below with the host in `COMPANION_PUBLIC_BASE_URL`.
 
 ## Android
 
-### 1. `android/app/src/main/kotlin/.../MainActivity.kt`
-`local_auth` needs a fragment activity:
+### 1. Use a fragment activity
+
+In `android/app/src/main/kotlin/.../MainActivity.kt`, because `local_auth` needs a fragment activity:
 
 ```kotlin
 import io.flutter.embedding.android.FlutterFragmentActivity
@@ -16,40 +40,52 @@ import io.flutter.embedding.android.FlutterFragmentActivity
 class MainActivity : FlutterFragmentActivity()
 ```
 
-### 2. `android/app/src/main/AndroidManifest.xml`
-Inside `<manifest>`, before `<application>`:
+### 2. Edit the manifest
+
+In `android/app/src/main/AndroidManifest.xml`, inside `<manifest>` and before `<application>`, add the permissions and the queries.
+
+| Permission | Why the app asks for it |
+|---|---|
+| `INTERNET` | Talk to companion-api |
+| `USE_BIOMETRIC` | Fingerprint, face or phone lock before a request is approved |
+| `RECORD_AUDIO` | Voice notes in the chat |
+| `CAMERA` | Photos and video from the camera |
+| `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` | "Share my location" in the chat |
+| `READ_CONTACTS` | Contact search on this phone. The phone's own contact chooser works without it |
+| `READ_SMS` | Optional, for "Check my M-Pesa message". Restricted by Google Play, see [`SMS.md`](SMS.md) |
 
 ```xml
 <uses-permission android:name="android.permission.INTERNET"/>
 <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
-<!-- Chat: voice notes, photos and video from the camera, and "share my location" -->
 <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 <uses-permission android:name="android.permission.CAMERA"/>
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-<!-- Contact search on this phone. The phone's own contact chooser works without it. -->
 <uses-permission android:name="android.permission.READ_CONTACTS"/>
-<!-- Optional, for "Check my M-Pesa message". Restricted by Google Play, see SMS.md -->
 <uses-permission android:name="android.permission.READ_SMS"/>
 <queries>
     <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent>
     <intent><action android:name="android.intent.action.DIAL"/><data android:scheme="tel"/></intent>
-    <!-- Replace with the real M-Pesa package from HANDOFF_MPESA_ANDROID_PACKAGE -->
     <package android:name="REPLACE.WITH.MPESA.PACKAGE"/>
 </queries>
 ```
 
-Inside the main `<activity>`, next to the existing intent filter:
+Replace `REPLACE.WITH.MPESA.PACKAGE` with the real M-Pesa package, the same value as `HANDOFF_MPESA_ANDROID_PACKAGE`.
+
+Inside the main `<activity>`, next to the existing intent filter, add two more:
+
+| Filter | What it does |
+|---|---|
+| `https` with `autoVerify` | The https link the assistant sends in the chat. `autoVerify` makes it open the app without a chooser |
+| `mpesaagent://a` | Fallback used by the "Open the app" button on the web page |
 
 ```xml
-<!-- The https link the assistant sends in the chat. autoVerify makes it open the app without a chooser. -->
 <intent-filter android:autoVerify="true">
     <action android:name="android.intent.action.VIEW"/>
     <category android:name="android.intent.category.DEFAULT"/>
     <category android:name="android.intent.category.BROWSABLE"/>
     <data android:scheme="https" android:host="companion.example.com" android:pathPrefix="/a/"/>
 </intent-filter>
-<!-- Fallback used by the "Open the app" button on the web page. -->
 <intent-filter>
     <action android:name="android.intent.action.VIEW"/>
     <category android:name="android.intent.category.DEFAULT"/>
@@ -58,27 +94,52 @@ Inside the main `<activity>`, next to the existing intent filter:
 </intent-filter>
 ```
 
-Microsoft contact sign-in returns to the app through AppAuth. In `android/app/build.gradle`, inside `defaultConfig`, add
-`manifestPlaceholders += [appAuthRedirectScheme: 'mpesaagentauth']`. Google sign-in needs no manifest change, see `CONTACTS.md`.
+Also set `android:launchMode="singleTop"` on the activity, so a link opens the running app instead of a second copy.
 
-Set `android:launchMode="singleTop"` on the activity so a link opens the running app instead of a second copy.
+### 3. Add the Microsoft sign-in redirect
 
-### 3. App links verification
-companion-api serves `/.well-known/assetlinks.json` once `COMPANION_ANDROID_PACKAGE` and `COMPANION_ANDROID_SHA256` are set.
-Get the SHA-256 of your signing certificate with `keytool -list -v -keystore your.jks` (or from Play Console, App signing).
-Check it with `adb shell pm get-app-links your.package` after install.
+Microsoft contact sign-in returns to the app through AppAuth. In `android/app/build.gradle`, inside `defaultConfig`, add:
 
-### 4. Release build
+```groovy
+manifestPlaceholders += [appAuthRedirectScheme: 'mpesaagentauth']
+```
+
+Google sign-in needs no manifest change. See [`CONTACTS.md`](CONTACTS.md).
+
+### 4. Verify app links
+
+companion-api serves `/.well-known/assetlinks.json` once `COMPANION_ANDROID_PACKAGE` and `COMPANION_ANDROID_SHA256` are set. Get the SHA-256 of your signing certificate with `keytool -list -v -keystore your.jks`, or from Play Console, App signing. After installing, check it:
+
+```bash
+adb shell pm get-app-links your.package
+```
+
+### 5. Release build
+
 Set a real `applicationId`, a signing config, and `minSdkVersion 23` or higher (`local_auth` needs it). Build with:
 
-```
+```bash
 flutter build appbundle --dart-define=API_BASE_URL=https://companion.example.com
 ```
 
+<div align="center">
+<img src="../../docs/assets/divider.svg" alt="" width="100%"/>
+</div>
+
 ## iOS
 
-### 1. `ios/Runner/Info.plist`
-Add:
+### 1. Edit Info.plist
+
+In `ios/Runner/Info.plist`, add the usage descriptions. iOS shows these strings in the permission prompts:
+
+| Key | Text shown |
+|---|---|
+| `NSFaceIDUsageDescription` | Confirm it is really you before a request is sent to M-Pesa. |
+| `NSContactsUsageDescription` | Pick the person you want to pay. Your contacts stay on this phone. |
+| `NSMicrophoneUsageDescription` | Record a voice note for the assistant. |
+| `NSCameraUsageDescription` | Take a photo or video to send to the assistant. |
+| `NSPhotoLibraryUsageDescription` | Choose a photo or video to send to the assistant. |
+| `NSLocationWhenInUseUsageDescription` | Share your location with the assistant when you choose to. |
 
 ```xml
 <key>NSFaceIDUsageDescription</key>
@@ -97,7 +158,6 @@ Add:
 <array>
     <string>tel</string>
     <string>https</string>
-    <!-- Add the M-Pesa app scheme from HANDOFF_MPESA_IOS_URL, for example mpesa -->
 </array>
 <key>CFBundleURLTypes</key>
 <array>
@@ -105,7 +165,6 @@ Add:
         <key>CFBundleURLName</key><string>mpesaagent</string>
         <key>CFBundleURLSchemes</key><array><string>mpesaagent</string></array>
     </dict>
-    <!-- Returns from the Microsoft sign-in used for Outlook contacts -->
     <dict>
         <key>CFBundleURLName</key><string>mpesaagentauth</string>
         <key>CFBundleURLSchemes</key><array><string>mpesaagentauth</string></array>
@@ -113,26 +172,42 @@ Add:
 </array>
 ```
 
+Two more things to know about that block:
+
+- Add the M-Pesa app scheme from `HANDOFF_MPESA_IOS_URL` (for example `mpesa`) as another `<string>` in `LSApplicationQueriesSchemes`.
+- The `mpesaagentauth` entry is the return path from the Microsoft sign-in used for Outlook contacts.
+
 ### 2. Universal links
-In Xcode, Runner target, Signing and Capabilities, add **Associated Domains** with `applinks:companion.example.com`.
-companion-api serves `/.well-known/apple-app-site-association` once `COMPANION_IOS_APP_ID` (TEAMID.bundle.id) is set.
+
+In Xcode, open the Runner target, then Signing and Capabilities, and add **Associated Domains** with `applinks:companion.example.com`. companion-api serves `/.well-known/apple-app-site-association` once `COMPANION_IOS_APP_ID` (`TEAMID.bundle.id`) is set.
 
 ### 3. Build
-```
+
+```bash
 flutter build ipa --dart-define=API_BASE_URL=https://companion.example.com
 ```
+
+<div align="center">
+<img src="../../docs/assets/divider.svg" alt="" width="100%"/>
+</div>
 
 ## What differs between the two phones
 
 | | Android | iOS |
 |---|---|---|
-| Dial with the code filled in | Opens the dialler with the code typed in. The customer presses call. | Same, `tel:` links open the dialler. iOS may show a confirmation sheet first. |
-| Open the M-Pesa app | Possible if you know its package name (not verified here). | Only if the app has a URL scheme you can open (not verified here). |
-| Reading the M-Pesa SMS | On request, with permission, see `SMS.md`. Otherwise the customer sends it in the chat. | Not possible. The customer sends it in the chat. |
-| Searching contacts | This phone (with permission, or its own chooser), Google, Microsoft, a .vcf or .csv file. | Same. See `CONTACTS.md`. |
-| Biometrics | Fingerprint, face or phone lock through the system prompt. | Face ID, Touch ID or passcode. |
+| Dial with the code filled in | Opens the dialler with the code typed in. The customer presses call | Same, `tel:` links open the dialler. iOS may show a confirmation sheet first |
+| Open the M-Pesa app | Possible if you know its package name (not verified here) | Only if the app has a URL scheme you can open (not verified here) |
+| Reading the M-Pesa SMS | On request, with permission, see [`SMS.md`](SMS.md). Otherwise the customer sends it in the chat | Not possible. The customer sends it in the chat |
+| Searching contacts | This phone (with permission, or its own chooser), Google, Microsoft, a `.vcf` or `.csv` file | Same. See [`CONTACTS.md`](CONTACTS.md) |
+| Biometrics | Fingerprint, face or phone lock through the system prompt | Face ID, Touch ID or passcode |
 
 ## Not done on purpose
+
 - The app never reads SMS in the background and never dials automatically. The customer presses call and types the PIN in M-Pesa.
 - Screenshots are not blocked. To block them on Android, set `WindowManager.LayoutParams.FLAG_SECURE` in `MainActivity`.
-- There is no offline mode and no push notification yet. The chat is read every second or two while the app is open, so a reply that comes while the app is closed is seen the next time it opens.
+- There is no offline mode and no push notification yet. The chat is read about every 1.5 seconds while the app is open, so a reply that comes while the app is closed is seen the next time it opens.
+
+<div align="center">
+<img src="../../docs/assets/divider.svg" alt="" width="100%"/>
+<sub>M-Pesa is a registered mark of Safaricom. This project is not affiliated with or endorsed by Safaricom.</sub>
+</div>

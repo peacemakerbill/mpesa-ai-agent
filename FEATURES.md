@@ -12,7 +12,7 @@
 <img alt="Claude" src="https://img.shields.io/badge/Claude-tool%20use-14231C?style=flat-square&logo=anthropic&logoColor=F2B544"/>
 <img alt="Languages" src="https://img.shields.io/badge/Replies-English%20and%20Swahili-14231C?style=flat-square"/>
 <img alt="Looks" src="https://img.shields.io/badge/Looks-10-087F36?style=flat-square"/>
-<img alt="PIN" src="https://img.shields.io/badge/M--Pesa%20PIN-never%20seen-FF5468?style=flat-square"/>
+<img alt="PIN" src="https://img.shields.io/badge/PIN-never%20seen%20by%20the%20system-FF5468?style=flat-square"/>
 
 <br/><br/>
 
