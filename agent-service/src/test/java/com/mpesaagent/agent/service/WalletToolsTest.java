@@ -1,6 +1,5 @@
 package com.mpesaagent.agent.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mpesaagent.agent.TestSupport;
 import com.mpesaagent.agent.client.CompanionClient;
 import com.mpesaagent.agent.chat.ChatChannel.Button;
@@ -15,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
 import java.util.List;
@@ -74,7 +74,8 @@ class WalletToolsTest {
         return body.getValue();
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     void preparingABillSendsOnlyTheSenderNumberAndQueuesTheLinkAndCancelButton() {
         when(companion.createAction(any())).thenReturn(view("CREATED", "Pay KES 1,200 to Paybill 888880, account 123", false, null, 1200));
         ToolContext ctx = ctx("TEXT");
@@ -131,7 +132,8 @@ class WalletToolsTest {
         assertThat(WalletTools.riskier(null, null)).isEqualTo("TEXT");
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     void sendingToAContactNameKeepsTheNameOnly() {
         when(companion.createAction(any())).thenReturn(view("CREATED", "Send KES 500 to Mama (a contact on your phone)", true, null, 500));
         ToolContext ctx = ctx("TEXT");
@@ -143,7 +145,8 @@ class WalletToolsTest {
         verify(sender).text(eq(PHONE), contains("pick the contact on your phone"));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     void ratibaPassesTheScheduleThrough() {
         when(companion.createAction(any())).thenReturn(view("CREATED", "Ratiba", false, null, 15000));
 
@@ -286,8 +289,8 @@ class WalletToolsTest {
 
         var names = new java.util.ArrayList<String>();
         catalog.toolsFor(Role.ADMIN).forEach(t -> {
-            names.add(t.path("name").asText());
-            assertThat(t.path("input_schema").path("type").asText()).isEqualTo("object");
+            names.add(t.path("name").asString());
+            assertThat(t.path("input_schema").path("type").asString()).isEqualTo("object");
         });
 
         assertThat(names).contains(ToolCatalog.PREPARE_SEND_MONEY, ToolCatalog.PREPARE_PAY_BILL, ToolCatalog.PREPARE_PAY_TILL,
@@ -302,7 +305,7 @@ class WalletToolsTest {
         ToolCatalog catalog = new ToolCatalog(TestSupport.mapper(), TestSupport.props());
 
         var names = new java.util.ArrayList<String>();
-        catalog.toolsFor(Role.ADMIN).forEach(t -> names.add(t.path("name").asText()));
+        catalog.toolsFor(Role.ADMIN).forEach(t -> names.add(t.path("name").asString()));
 
         assertThat(names).contains(ToolCatalog.PREPARE_PAY_BILL, ToolCatalog.PROPOSE_PAYMENT, ToolCatalog.REQUEST_REVERSAL);
         assertThat(names).doesNotHaveDuplicates();

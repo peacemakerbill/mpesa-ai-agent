@@ -1,0 +1,46 @@
+internal:
+  key: test-internal-key
+
+payment:
+  base-url: http://localhost:9
+companion:
+  base-url: http://localhost:9
+  public-url: https://app.example.test
+
+anthropic:
+  api-key: test-key
+  base-url: http://localhost:9
+  model: claude-sonnet-5-5
+  max-tokens: 512
+  version: 2023-06-01
+
+stt:
+  enabled: false
+tts:
+  enabled: false
+
+business:
+  name: Test Shop
+  support-phone: "0700000000"
+
+agent:
+  store: memory
+  history-size: 20
+  history-ttl: PT24H
+  rate-limit-per-minute: 5
+  max-tool-rounds: 6
+  intent-ttl: PT10M
+  approval-intent-ttl: PT24H
+  escalation-phones: "254711000003"
+  max-image-bytes: 5242880
+  max-document-bytes: 15728640
+  max-audio-bytes: 16777216
+  max-upload-bytes: 20971520
+  max-text-chars: 20000
+  business-payments: false
+
+spring:
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false

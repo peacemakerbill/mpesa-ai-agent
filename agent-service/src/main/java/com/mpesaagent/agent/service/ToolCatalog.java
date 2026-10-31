@@ -1,12 +1,12 @@
 package com.mpesaagent.agent.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mpesaagent.agent.config.AgentProperties;
 import com.mpesaagent.agent.model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.List;
 import java.util.Set;
@@ -284,7 +284,7 @@ public class ToolCatalog {
     private ObjectNode props(ObjectNode... fields) {
         ObjectNode properties = mapper.createObjectNode();
         for (ObjectNode field : fields) {
-            String name = field.get("_name").asText();
+            String name = field.get("_name").asString();
             ObjectNode copy = field.deepCopy();
             copy.remove("_name");
             properties.set(name, copy);

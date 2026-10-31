@@ -1,10 +1,10 @@
 package com.mpesaagent.agent.chat;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.agent.store.StateStore;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.util.Base64;
@@ -40,7 +40,7 @@ public class ChatMedia {
                 fileName, Base64.getEncoder().encodeToString(bytes));
         try {
             store.set("chat:media:" + id, mapper.writeValueAsString(stored), KEEP);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("Could not store a file", e);
         }
         return id;
@@ -58,7 +58,7 @@ public class ChatMedia {
                     return Optional.empty();
                 }
                 return Optional.of(new Found(Base64.getDecoder().decode(s.data()), s.mimeType(), s.fileName()));
-            } catch (JsonProcessingException | IllegalArgumentException e) {
+            } catch (JacksonException | IllegalArgumentException e) {
                 return Optional.empty();
             }
         });

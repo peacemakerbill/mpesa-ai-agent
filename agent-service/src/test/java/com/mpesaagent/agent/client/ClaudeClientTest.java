@@ -1,7 +1,5 @@
 package com.mpesaagent.agent.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mpesaagent.agent.TestSupport;
 import com.mpesaagent.agent.exception.ModelException;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +9,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +53,7 @@ class ClaudeClientTest {
 
         JsonNode response = client.createMessage(body());
 
-        assertThat(response.path("content").get(0).path("text").asText()).isEqualTo("hi");
+        assertThat(response.path("content").get(0).path("text").asString()).isEqualTo("hi");
         server.verify();
     }
 

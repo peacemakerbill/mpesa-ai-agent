@@ -1,6 +1,5 @@
 package com.mpesaagent.agent.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mpesaagent.agent.TestSupport;
 import com.mpesaagent.agent.client.PaymentClient;
 import com.mpesaagent.agent.dto.OperationView;
@@ -16,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
 import java.util.List;
@@ -109,12 +109,13 @@ class ToolExecutorTest {
     }
 
     private static List<String> names(ToolCatalog catalog, Role role) {
-        return catalog.toolsFor(role).findValuesAsText("name");
+        return catalog.toolsFor(role).findValuesAsString("name");
     }
 
     // ---------------------------------------------------------------- payments
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     void proposingAPaymentOnlyCreatesAConfirmationAndNeverCallsPaymentService() {
         ToolContext ctx = ctx(CUSTOMER, Role.CUSTOMER);
 
@@ -126,7 +127,8 @@ class ToolExecutorTest {
         verifyNoInteractions(payments);
 
         ctx.deferred().get(0).accept(sender);
-        ArgumentCaptor<List> buttons = ArgumentCaptor.forClass(List.class);
+        @SuppressWarnings("rawtypes")
+		ArgumentCaptor<List> buttons = ArgumentCaptor.forClass(List.class);
         verify(sender).buttons(eq(CUSTOMER), org.mockito.ArgumentMatchers.contains("KES 1,500"), anyString(), buttons.capture());
         assertThat(buttons.getValue().toString()).contains("PAY:").contains("NO:");
     }

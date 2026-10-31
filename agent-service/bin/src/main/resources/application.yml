@@ -1,0 +1,109 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  application:
+    name: agent-service
+  jackson:
+    default-property-inclusion: non_null
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        # A message that keeps failing is dropped after the retries instead of looping forever
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 2s
+          multiplier: 2
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# Shared secret between our own services (X-Internal-Key header)
+# Browser access for the test console (console/console.html). Empty means off. Never set this in production.
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+
+internal:
+  key: ${INTERNAL_KEY}
+
+# Optional: only used when agent.business-payments is on
+payment:
+  base-url: ${PAYMENT_BASE_URL:http://localhost:8083}
+
+# Private address of companion-api, and the public address customers' phones open from links in chat
+companion:
+  base-url: ${COMPANION_BASE_URL:http://localhost:8084}
+  public-url: ${COMPANION_PUBLIC_BASE_URL:http://localhost:8084}
+
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY}
+  base-url: ${ANTHROPIC_BASE_URL:https://api.anthropic.com}
+  model: ${ANTHROPIC_MODEL:claude-sonnet-5-5}
+  max-tokens: ${ANTHROPIC_MAX_TOKENS:1024}
+  version: 2023-06-01
+
+# Speech to text for voice notes. Any provider that offers an OpenAI compatible
+# POST {base-url}/audio/transcriptions endpoint works. Audio leaves your servers when this is on.
+stt:
+  enabled: ${STT_ENABLED:false}
+  base-url: ${STT_BASE_URL:https://api.openai.com/v1}
+  api-key: ${STT_API_KEY:}
+  model: ${STT_MODEL:whisper-1}
+  # Leave blank to detect the language (customers mix English and Swahili)
+  language: ${STT_LANGUAGE:}
+
+# Optional spoken replies to voice notes (POST {base-url}/audio/speech). Off by default.
+tts:
+  enabled: ${TTS_ENABLED:false}
+  base-url: ${TTS_BASE_URL:https://api.openai.com/v1}
+  api-key: ${TTS_API_KEY:}
+  model: ${TTS_MODEL:tts-1}
+  voice: ${TTS_VOICE:alloy}
+
+business:
+  name: ${BUSINESS_NAME:Our Business}
+  support-phone: ${BUSINESS_SUPPORT_PHONE:}
+
+agent:
+  # redis in production. memory keeps everything in this process, for local development only.
+  store: ${AGENT_STORE:redis}
+  history-size: 20
+  history-ttl: PT24H
+  rate-limit-per-minute: ${AGENT_RATE_LIMIT_PER_MINUTE:12}
+  max-tool-rounds: 6
+  intent-ttl: PT10M
+  approval-intent-ttl: PT24H
+  # Staff numbers that get customer escalations, comma separated, for example 254712345678,254722000000
+  escalation-phones: ${AGENT_ESCALATION_PHONES:}
+  max-image-bytes: 5242880
+  max-document-bytes: 15728640
+  max-audio-bytes: 16777216
+  # Largest file a customer can attach in the chat
+  max-upload-bytes: 20971520
+  max-text-chars: 20000
+  # Off: the agent only prepares requests for the customer's own M-Pesa (companion-api).
+  # On: also offers the business tools that need payment-service (Daraja): paying the business by STK Push,
+  # refunds, payouts, staff roles. Needs payment-service and its Daraja credentials.
+  business-payments: ${AGENT_BUSINESS_PAYMENTS:false}
+
+logging:
+  level:
+    com.mpesaagent: INFO

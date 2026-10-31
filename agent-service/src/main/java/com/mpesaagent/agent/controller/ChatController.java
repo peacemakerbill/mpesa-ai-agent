@@ -126,7 +126,7 @@ public class ChatController {
             return problem(HttpStatus.BAD_REQUEST, "The file is empty.");
         }
         if (bytes.length > props.maxUploadBytes()) {
-            return problem(HttpStatus.PAYLOAD_TOO_LARGE, "That file is larger than " + (props.maxUploadBytes() / (1024 * 1024)) + " MB.");
+            return problem(HttpStatus.CONTENT_TOO_LARGE, "That file is larger than " + (props.maxUploadBytes() / (1024 * 1024)) + " MB.");
         }
         String type = contentType == null || contentType.isBlank() ? "application/octet-stream" : contentType.split(";")[0].trim();
         String id = media.put(who, bytes, type, fileName);

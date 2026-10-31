@@ -1,7 +1,5 @@
 package com.mpesaagent.agent.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.agent.dto.OperationView;
 import com.mpesaagent.agent.dto.PaymentView;
 import com.mpesaagent.agent.dto.QrView;
@@ -12,6 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.List;
@@ -160,8 +161,8 @@ public class PaymentClient {
         String message = null;
         try {
             JsonNode body = mapper.readTree(response.getBody().readAllBytes());
-            message = body.path("message").asText(null);
-        } catch (IOException ignored) {
+            message = body.path("message").asString(null);
+        } catch (IOException | JacksonException ignored) {
             // not JSON, use the default below
         }
         if (message == null || message.isBlank()) {

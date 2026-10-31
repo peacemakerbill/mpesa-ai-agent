@@ -1,9 +1,9 @@
 package com.mpesaagent.agent;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.mpesaagent.agent.config.AgentProperties;
 import com.mpesaagent.agent.config.ServiceProperties;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Duration;
 import java.util.List;
@@ -14,9 +14,9 @@ public final class TestSupport {
     private TestSupport() {
     }
 
-    /** Same as Spring Boot's mapper: knows about java.time. */
+    /** A plain Jackson 3 mapper, like Spring Boot's: java.time and parameter names are built in. */
     public static ObjectMapper mapper() {
-        return JsonMapper.builder().findAndAddModules().build();
+        return JsonMapper.builder().build();
     }
 
     public static AgentProperties props() {

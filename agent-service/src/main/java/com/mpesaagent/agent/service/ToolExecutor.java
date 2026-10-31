@@ -1,6 +1,5 @@
 package com.mpesaagent.agent.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mpesaagent.agent.chat.ChatChannel.Button;
 import com.mpesaagent.agent.client.PaymentClient;
 import com.mpesaagent.agent.config.AgentProperties;
@@ -17,6 +16,7 @@ import com.mpesaagent.agent.util.Phones;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -55,7 +55,8 @@ public class ToolExecutor {
     }
 
     /** A problem the model should be told about in plain words. */
-    static final class ToolException extends RuntimeException {
+    @SuppressWarnings("serial")
+	static final class ToolException extends RuntimeException {
         ToolException(String message) {
             super(message);
         }
@@ -125,7 +126,7 @@ public class ToolExecutor {
 
     private Result proposePayment(ToolContext ctx, JsonNode input) {
         int amount = positiveInt(input, "amount");
-        String reference = reference(input.path("reference").asText(""));
+        String reference = reference(input.path("reference").asString(""));
         String phone = ctx.phone();
         if (!Phones.isKenyanMobile(Phones.normalize(phone))) {
             throw new ToolException("M-Pesa payments from this chat work only for Kenyan Safaricom numbers.");
@@ -144,7 +145,7 @@ public class ToolExecutor {
     }
 
     private Result checkPaymentStatus(ToolContext ctx, JsonNode input) {
-        String id = input.path("payment_id").asText("").strip();
+        String id = input.path("payment_id").asString("").strip();
         PaymentView payment;
         if (id.isEmpty()) {
             payment = payments.latest(ctx.phone()).orElse(null);
@@ -166,7 +167,7 @@ public class ToolExecutor {
     }
 
     private Result sendReceipt(ToolContext ctx, JsonNode input) {
-        String id = input.path("payment_id").asText("").strip();
+        String id = input.path("payment_id").asString("").strip();
         PaymentView payment;
         if (id.isEmpty()) {
             payment = payments.list(ctx.phone(), 10).stream()
@@ -188,7 +189,7 @@ public class ToolExecutor {
     }
 
     private Result requestRefund(ToolContext ctx, JsonNode input) {
-        UUID paymentId = uuid(input.path("payment_id").asText(""), "payment_id");
+        UUID paymentId = uuid(input.path("payment_id").asString(""), "payment_id");
         String reason = text(input, "reason", 200);
         if (reason.isEmpty()) {
             throw new ToolException("A reason for the refund is required.");
@@ -223,7 +224,7 @@ public class ToolExecutor {
 
     private Result generateQr(ToolContext ctx, JsonNode input) {
         int amount = positiveInt(input, "amount");
-        String reference = reference(input.path("reference").asText(""));
+        String reference = reference(input.path("reference").asString(""));
         byte[] png = Base64.getDecoder().decode(payments.qr(amount, reference));
         String phone = ctx.phone();
         ctx.defer(s -> s.image(phone, png, "image/png", "Scan with M-Pesa to pay " + Money.kes(amount) + " to " + business.name()));
@@ -300,7 +301,7 @@ public class ToolExecutor {
         if (reason.isEmpty()) {
             throw new ToolException("A reason for the payout is required.");
         }
-        String type = input.path("payout_type").asText("DISBURSEMENT");
+        String type = input.path("payout_type").asString("DISBURSEMENT");
         if (!type.equals("WITHDRAWAL") && !type.equals("DISBURSEMENT")) {
             throw new ToolException("payout_type must be WITHDRAWAL or DISBURSEMENT.");
         }
@@ -332,7 +333,7 @@ public class ToolExecutor {
     }
 
     private Result reviewApproval(ToolContext ctx, JsonNode input) {
-        UUID id = uuid(input.path("operation_id").asText(""), "operation_id");
+        UUID id = uuid(input.path("operation_id").asString(""), "operation_id");
         OperationView op = payments.getOperation(id, ctx.phone());
         if (!"PENDING_APPROVAL".equals(op.status())) {
             return Result.ok("This request is already " + op.status() + ", so there is nothing to decide.");
@@ -448,13 +449,13 @@ public class ToolExecutor {
 
     static int positiveInt(JsonNode input, String field) {
         JsonNode node = input.get(field);
-        if (node == null || node.isNull() || !(node.isInt() || node.isLong() || node.isTextual() || node.isDouble())) {
+        if (node == null || node.isNull() || !(node.isInt() || node.isLong() || node.isString() || node.isDouble())) {
             throw new ToolException(field + " is required and must be a whole number of shillings.");
         }
         double value;
-        if (node.isTextual()) {
+        if (node.isString()) {
             try {
-                value = Double.parseDouble(node.asText().replace(",", "").trim());
+                value = Double.parseDouble(node.asString().replace(",", "").trim());
             } catch (NumberFormatException e) {
                 throw new ToolException(field + " must be a number.");
             }
@@ -473,7 +474,7 @@ public class ToolExecutor {
     }
 
     static String text(JsonNode input, String field, int max) {
-        String value = input.path(field).asText("").strip();
+        String value = input.path(field).asString("").strip();
         return value.length() <= max ? value : value.substring(0, max);
     }
 

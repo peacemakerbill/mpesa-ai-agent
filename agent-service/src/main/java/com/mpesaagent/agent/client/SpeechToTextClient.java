@@ -1,6 +1,5 @@
 package com.mpesaagent.agent.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mpesaagent.agent.config.SpeechProperties;
 import com.mpesaagent.agent.exception.UnsupportedFileException;
 import org.slf4j.Logger;
@@ -12,6 +11,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Map;
 import java.util.Optional;
@@ -72,7 +72,7 @@ public class SpeechToTextClient {
                     .body(form)
                     .retrieve()
                     .body(JsonNode.class);
-            String text = response == null ? "" : response.path("text").asText("").strip();
+            String text = response == null ? "" : response.path("text").asString("").strip();
             return text.isEmpty() ? Optional.empty() : Optional.of(text);
         } catch (RestClientException e) {
             log.error("Speech to text failed: {}", e.getMessage());

@@ -1,9 +1,5 @@
 package com.mpesaagent.agent.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mpesaagent.agent.client.ClaudeClient;
 import com.mpesaagent.agent.config.AgentProperties;
 import com.mpesaagent.agent.config.AnthropicProperties;
@@ -13,6 +9,10 @@ import com.mpesaagent.agent.store.ConversationStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.time.Instant;
 
@@ -82,7 +82,7 @@ public class AgentOrchestrator {
 
             JsonNode response = claude.createMessage(request);
             JsonNode content = response.path("content");
-            String stop = response.path("stop_reason").asText("");
+            String stop = response.path("stop_reason").asString("");
 
             if (!"tool_use".equals(stop)) {
                 return finalText(content, stop);
@@ -98,14 +98,14 @@ public class AgentOrchestrator {
 
             ArrayNode results = mapper.createArrayNode();
             for (JsonNode block : content) {
-                if (!"tool_use".equals(block.path("type").asText())) {
+                if (!"tool_use".equals(block.path("type").asString())) {
                     continue;
                 }
-                String name = block.path("name").asText();
+                String name = block.path("name").asString();
                 ToolExecutor.Result result = executor.execute(ctx, name, block.path("input"));
                 ObjectNode r = results.addObject();
                 r.put("type", "tool_result");
-                r.put("tool_use_id", block.path("id").asText());
+                r.put("tool_use_id", block.path("id").asString());
                 r.put("content", result.content());
                 if (result.error()) {
                     r.put("is_error", true);
@@ -121,11 +121,11 @@ public class AgentOrchestrator {
     private String finalText(JsonNode content, String stop) {
         StringBuilder text = new StringBuilder();
         for (JsonNode block : content) {
-            if ("text".equals(block.path("type").asText())) {
+            if ("text".equals(block.path("type").asString())) {
                 if (text.length() > 0) {
                     text.append("\n\n");
                 }
-                text.append(block.path("text").asText());
+                text.append(block.path("text").asString());
             }
         }
         String answer = text.toString().strip();

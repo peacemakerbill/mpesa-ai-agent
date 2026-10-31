@@ -1,7 +1,5 @@
 package com.mpesaagent.agent.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mpesaagent.agent.exception.ModelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.Set;
 
@@ -90,7 +90,8 @@ public class ClaudeClient {
     }
 
     /** Carries the HTTP status out of the status handler (which may only throw unchecked exceptions). */
-    private static final class HttpFailure extends RuntimeException {
+    @SuppressWarnings("serial")
+	private static final class HttpFailure extends RuntimeException {
         final int status;
         final String detail;
 

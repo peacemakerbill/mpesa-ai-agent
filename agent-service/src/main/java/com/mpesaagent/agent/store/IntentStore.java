@@ -1,12 +1,12 @@
 package com.mpesaagent.agent.store;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.agent.model.Intent;
 import com.mpesaagent.agent.model.IntentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -37,7 +37,7 @@ public class IntentStore {
         Intent intent = new Intent(UUID.randomUUID().toString().replace("-", ""), type, phone, Map.copyOf(data), Instant.now());
         try {
             store.set(PREFIX + intent.id(), mapper.writeValueAsString(intent), ttl);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("Could not store the confirmation", e);
         }
         return intent;
@@ -77,7 +77,7 @@ public class IntentStore {
         }
         try {
             return Optional.of(mapper.readValue(json.get(), Intent.class));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("Unreadable stored intent", e);
             return Optional.empty();
         }

@@ -1,11 +1,11 @@
 package com.mpesaagent.agent.chat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.agent.store.StateStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -42,7 +42,7 @@ public class ChatLog {
             message.at = Instant.now().toEpochMilli();
             try {
                 store.appendToList("chat:log:" + phone, mapper.writeValueAsString(message), KEEP, RETENTION);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new IllegalStateException("Could not store a chat message", e);
             }
         }
@@ -61,7 +61,7 @@ public class ChatLog {
                 if (m.id > after) {
                     result.add(m);
                 }
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 log.warn("Skipping an unreadable chat message");
             }
         }

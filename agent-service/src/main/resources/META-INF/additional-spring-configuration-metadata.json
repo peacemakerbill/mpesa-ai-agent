@@ -1,0 +1,218 @@
+{
+  "properties": [
+    {
+      "name": "cors.allowed-origins",
+      "type": "java.lang.String",
+      "description": "Browser origins allowed to call this service, comma separated, for the test console (console/console.html). Empty means CORS is off. Never set this in production. Set with CORS_ALLOWED_ORIGINS.",
+      "defaultValue": ""
+    },
+    {
+      "name": "internal.key",
+      "type": "java.lang.String",
+      "description": "Shared secret between our own services, sent in the X-Internal-Key header. Required. Set with INTERNAL_KEY."
+    },
+    {
+      "name": "payment.base-url",
+      "type": "java.lang.String",
+      "description": "Address of payment-service. Only used when agent.business-payments is on. Set with PAYMENT_BASE_URL.",
+      "defaultValue": "http://localhost:8083"
+    },
+    {
+      "name": "companion.base-url",
+      "type": "java.lang.String",
+      "description": "Private address of companion-api. Set with COMPANION_BASE_URL.",
+      "defaultValue": "http://localhost:8084"
+    },
+    {
+      "name": "companion.public-url",
+      "type": "java.lang.String",
+      "description": "Public address of companion-api, which customers' phones open from links in chat. Set with COMPANION_PUBLIC_BASE_URL.",
+      "defaultValue": "http://localhost:8084"
+    },
+    {
+      "name": "anthropic.api-key",
+      "type": "java.lang.String",
+      "description": "Anthropic API key used for the agent's Claude calls. Required. Set with ANTHROPIC_API_KEY."
+    },
+    {
+      "name": "anthropic.base-url",
+      "type": "java.lang.String",
+      "description": "Anthropic API address. Set with ANTHROPIC_BASE_URL.",
+      "defaultValue": "https://api.anthropic.com"
+    },
+    {
+      "name": "anthropic.model",
+      "type": "java.lang.String",
+      "description": "Claude model the agent uses. Set with ANTHROPIC_MODEL.",
+      "defaultValue": "claude-sonnet-5-5"
+    },
+    {
+      "name": "anthropic.max-tokens",
+      "type": "java.lang.Integer",
+      "description": "Largest reply, in tokens, requested from Claude in one call. Set with ANTHROPIC_MAX_TOKENS.",
+      "defaultValue": 1024
+    },
+    {
+      "name": "anthropic.version",
+      "type": "java.lang.String",
+      "description": "Value sent in the anthropic-version header.",
+      "defaultValue": "2023-06-01"
+    },
+    {
+      "name": "stt.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Turn voice note transcription on. Audio leaves your servers when this is on. Set with STT_ENABLED.",
+      "defaultValue": false
+    },
+    {
+      "name": "stt.base-url",
+      "type": "java.lang.String",
+      "description": "Speech to text provider address. Any provider with an OpenAI compatible POST {base-url}/audio/transcriptions works. Set with STT_BASE_URL.",
+      "defaultValue": "https://api.openai.com/v1"
+    },
+    {
+      "name": "stt.api-key",
+      "type": "java.lang.String",
+      "description": "Speech to text provider key. Set with STT_API_KEY.",
+      "defaultValue": ""
+    },
+    {
+      "name": "stt.model",
+      "type": "java.lang.String",
+      "description": "Speech to text model. Set with STT_MODEL.",
+      "defaultValue": "whisper-1"
+    },
+    {
+      "name": "stt.language",
+      "type": "java.lang.String",
+      "description": "Language of voice notes. Leave blank to detect it, since customers mix English and Swahili. Set with STT_LANGUAGE.",
+      "defaultValue": ""
+    },
+    {
+      "name": "tts.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Turn spoken replies to voice notes on (POST {base-url}/audio/speech). Set with TTS_ENABLED.",
+      "defaultValue": false
+    },
+    {
+      "name": "tts.base-url",
+      "type": "java.lang.String",
+      "description": "Text to speech provider address. Set with TTS_BASE_URL.",
+      "defaultValue": "https://api.openai.com/v1"
+    },
+    {
+      "name": "tts.api-key",
+      "type": "java.lang.String",
+      "description": "Text to speech provider key. Set with TTS_API_KEY.",
+      "defaultValue": ""
+    },
+    {
+      "name": "tts.model",
+      "type": "java.lang.String",
+      "description": "Text to speech model. Set with TTS_MODEL.",
+      "defaultValue": "tts-1"
+    },
+    {
+      "name": "tts.voice",
+      "type": "java.lang.String",
+      "description": "Voice used for spoken replies. Set with TTS_VOICE.",
+      "defaultValue": "alloy"
+    },
+    {
+      "name": "business.name",
+      "type": "java.lang.String",
+      "description": "Business name the agent uses when talking to customers. Set with BUSINESS_NAME.",
+      "defaultValue": "Our Business"
+    },
+    {
+      "name": "business.support-phone",
+      "type": "java.lang.String",
+      "description": "Support number the agent gives customers. Set with BUSINESS_SUPPORT_PHONE.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agent.store",
+      "type": "java.lang.String",
+      "description": "Where chat state is kept: redis in production, or memory (this process only) for local development. Set with AGENT_STORE.",
+      "defaultValue": "redis"
+    },
+    {
+      "name": "agent.history-size",
+      "type": "java.lang.Integer",
+      "description": "How many recent messages are kept for each customer's conversation.",
+      "defaultValue": 20
+    },
+    {
+      "name": "agent.history-ttl",
+      "type": "java.time.Duration",
+      "description": "How long an idle conversation is kept.",
+      "defaultValue": "PT24H"
+    },
+    {
+      "name": "agent.rate-limit-per-minute",
+      "type": "java.lang.Integer",
+      "description": "Most messages one customer can send in a minute. Set with AGENT_RATE_LIMIT_PER_MINUTE.",
+      "defaultValue": 12
+    },
+    {
+      "name": "agent.max-tool-rounds",
+      "type": "java.lang.Integer",
+      "description": "Most tool-calling rounds the agent runs for one customer message.",
+      "defaultValue": 6
+    },
+    {
+      "name": "agent.intent-ttl",
+      "type": "java.time.Duration",
+      "description": "How long a confirm or cancel button stays valid.",
+      "defaultValue": "PT10M"
+    },
+    {
+      "name": "agent.approval-intent-ttl",
+      "type": "java.time.Duration",
+      "description": "How long an approver's approve or reject button stays valid.",
+      "defaultValue": "PT24H"
+    },
+    {
+      "name": "agent.escalation-phones",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Staff numbers that get customer escalations, comma separated, for example 254712345678,254722000000. Set with AGENT_ESCALATION_PHONES.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agent.max-image-bytes",
+      "type": "java.lang.Long",
+      "description": "Largest image the agent will read, in bytes.",
+      "defaultValue": 5242880
+    },
+    {
+      "name": "agent.max-document-bytes",
+      "type": "java.lang.Long",
+      "description": "Largest document the agent will read, in bytes.",
+      "defaultValue": 15728640
+    },
+    {
+      "name": "agent.max-audio-bytes",
+      "type": "java.lang.Long",
+      "description": "Largest voice note the agent will transcribe, in bytes.",
+      "defaultValue": 16777216
+    },
+    {
+      "name": "agent.max-upload-bytes",
+      "type": "java.lang.Long",
+      "description": "Largest file a customer can attach in the chat, in bytes.",
+      "defaultValue": 20971520
+    },
+    {
+      "name": "agent.max-text-chars",
+      "type": "java.lang.Integer",
+      "description": "Longest text message accepted, in characters.",
+      "defaultValue": 20000
+    },
+    {
+      "name": "agent.business-payments",
+      "type": "java.lang.Boolean",
+      "description": "Off: the agent only prepares requests for the customer's own M-Pesa (companion-api). On: it also offers the business tools that need payment-service (Daraja): paying the business by STK Push, refunds, payouts and staff roles. Set with AGENT_BUSINESS_PAYMENTS.",
+      "defaultValue": false
+    }
+  ]
+}

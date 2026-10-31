@@ -1,6 +1,7 @@
 package com.mpesaagent.agent.exception;
 
 /** payment-service said no (or could not be reached, status 0). The message is safe to show a person. */
+@SuppressWarnings("serial")
 public class PaymentApiException extends RuntimeException {
 
     private final int status;

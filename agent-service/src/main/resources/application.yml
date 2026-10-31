@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: agent-service
+  # Loads a .env file from the folder the service is started in. Real environment variables win over it.
+  config:
+    import: optional:file:.env[.properties]
   jackson:
     default-property-inclusion: non_null
   data:
@@ -22,7 +25,7 @@ spring:
         default-requeue-rejected: false
         retry:
           enabled: true
-          max-attempts: 3
+          max-retries: 3
           initial-interval: 2s
           multiplier: 2
 
@@ -106,4 +109,4 @@ agent:
 
 logging:
   level:
-    com.mpesaagent: INFO
+    "[com.mpesaagent]": INFO

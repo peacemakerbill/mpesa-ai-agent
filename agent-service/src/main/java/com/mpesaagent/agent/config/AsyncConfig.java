@@ -16,7 +16,7 @@ public class AsyncConfig {
      * and the app is asked to send the message again a little later.
      */
     @Bean(destroyMethod = "shutdown")
-    public ThreadPoolExecutor inboundExecutor() {
+    ThreadPoolExecutor inboundExecutor() {
         return new ThreadPoolExecutor(8, 32, 60, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200),
                 runnable -> {
                     Thread t = new Thread(runnable);

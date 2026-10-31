@@ -1,8 +1,5 @@
 package com.mpesaagent.agent.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mpesaagent.agent.TestSupport;
 import com.mpesaagent.agent.client.ClaudeClient;
 import com.mpesaagent.agent.config.AnthropicProperties;
@@ -17,6 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +77,7 @@ class AgentOrchestratorTest {
 
     private List<String> toolNames(ObjectNode request) {
         List<String> names = new ArrayList<>();
-        request.path("tools").forEach(t -> names.add(t.path("name").asText()));
+        request.path("tools").forEach(t -> names.add(t.path("name").asString()));
         return names;
     }
 
@@ -104,10 +104,10 @@ class AgentOrchestratorTest {
         // the captured object is the same instance each round, so check the final shape
         JsonNode messages = requests.getAllValues().get(1).path("messages");
         JsonNode last = messages.get(messages.size() - 1);
-        assertThat(last.path("role").asText()).isEqualTo("user");
-        assertThat(last.path("content").get(0).path("type").asText()).isEqualTo("tool_result");
-        assertThat(last.path("content").get(0).path("tool_use_id").asText()).isEqualTo("tu_1");
-        assertThat(last.path("content").get(0).path("content").asText()).isEqualTo("queued");
+        assertThat(last.path("role").asString()).isEqualTo("user");
+        assertThat(last.path("content").get(0).path("type").asString()).isEqualTo("tool_result");
+        assertThat(last.path("content").get(0).path("tool_use_id").asString()).isEqualTo("tu_1");
+        assertThat(last.path("content").get(0).path("content").asString()).isEqualTo("queued");
     }
 
     @Test
@@ -159,9 +159,9 @@ class AgentOrchestratorTest {
         verify(claude).createMessage(request.capture());
         JsonNode system = request.getValue().path("system");
         assertThat(system.size()).isEqualTo(2);
-        assertThat(system.get(0).path("cache_control").path("type").asText()).isEqualTo("ephemeral");
+        assertThat(system.get(0).path("cache_control").path("type").asString()).isEqualTo("ephemeral");
         assertThat(system.get(1).has("cache_control")).isFalse();
-        assertThat(request.getValue().path("model").asText()).isEqualTo("claude-sonnet-5-5");
+        assertThat(request.getValue().path("model").asString()).isEqualTo("claude-sonnet-5-5");
     }
 
     @Test
@@ -177,9 +177,9 @@ class AgentOrchestratorTest {
         verify(claude).createMessage(request.capture());
         JsonNode messages = request.getValue().path("messages");
         assertThat(messages.size()).isEqualTo(3);
-        assertThat(messages.get(0).path("role").asText()).isEqualTo("user");
-        assertThat(messages.get(0).path("content").asText()).isEqualTo("earlier question");
-        assertThat(messages.get(2).path("content").get(0).path("text").asText()).isEqualTo("hello");
+        assertThat(messages.get(0).path("role").asString()).isEqualTo("user");
+        assertThat(messages.get(0).path("content").asString()).isEqualTo("earlier question");
+        assertThat(messages.get(2).path("content").get(0).path("text").asString()).isEqualTo("hello");
     }
 
     @Test

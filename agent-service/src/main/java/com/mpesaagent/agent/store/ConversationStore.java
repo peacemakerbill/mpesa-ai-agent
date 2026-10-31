@@ -1,12 +1,12 @@
 package com.mpesaagent.agent.store;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.agent.config.AgentProperties;
 import com.mpesaagent.agent.model.ChatTurn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public class ConversationStore {
         try {
             store.appendToList("chat:history:" + phone, mapper.writeValueAsString(new ChatTurn(role, text)),
                     props.historySize(), props.historyTtl());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.warn("Could not remember a chat turn", e);
         }
     }
@@ -51,7 +51,7 @@ public class ConversationStore {
         for (String json : store.readList("chat:history:" + phone)) {
             try {
                 raw.add(mapper.readValue(json, ChatTurn.class));
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 log.warn("Skipping an unreadable chat turn");
             }
         }

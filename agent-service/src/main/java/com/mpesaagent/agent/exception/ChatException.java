@@ -1,6 +1,7 @@
 package com.mpesaagent.agent.exception;
 
 /** A chat file could not be found or was refused. */
+@SuppressWarnings("serial")
 public class ChatException extends RuntimeException {
 
     private final int status;

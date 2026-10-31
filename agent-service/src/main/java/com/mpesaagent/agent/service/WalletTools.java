@@ -1,6 +1,5 @@
 package com.mpesaagent.agent.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mpesaagent.agent.client.CompanionClient;
 import com.mpesaagent.agent.chat.ChatChannel.Button;
 import com.mpesaagent.agent.config.ServiceProperties;
@@ -9,6 +8,7 @@ import com.mpesaagent.agent.service.ToolExecutor.Result;
 import com.mpesaagent.agent.service.ToolExecutor.ToolException;
 import com.mpesaagent.agent.util.Money;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -218,7 +218,7 @@ public class WalletTools {
      * app to open its finder; what the customer picks comes back as a shared contact.
      */
     private Result findContact(ToolContext ctx, JsonNode input) {
-        String name = input.path("name").asText("").strip();
+        String name = input.path("name").asString("").strip();
         if (name.isEmpty()) {
             throw new ToolException("Please include the name to look for.");
         }
