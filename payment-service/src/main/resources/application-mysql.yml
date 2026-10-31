@@ -5,6 +5,9 @@ spring:
     url: ${DB_URL:${MYSQL_URL:jdbc:mysql://localhost:3306/payments?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&preserveInstants=true&useSSL=false&allowPublicKeyRetrieval=true}}
     username: ${DB_USER:app}
     password: ${DB_PASSWORD:app}
+    hikari:
+      # Give up on one connection attempt after 5 seconds (milliseconds), so a missing database is noticed quickly
+      connection-timeout: 5000
   jpa:
     open-in-view: false
     properties:
@@ -16,6 +19,10 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration/mysql
+    # If the database is not up yet (for example it is still starting), wait for it instead of stopping at once:
+    # about 6 tries, 1 second apart at first, growing to at most 5 seconds. Then the service stops with a clear message.
+    connect-retries: 6
+    connect-retries-interval: 5s
   autoconfigure:
     exclude:
       # Spring Boot 4 class names (they moved out of org.springframework.boot.autoconfigure)

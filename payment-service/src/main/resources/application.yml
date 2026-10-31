@@ -11,7 +11,7 @@ spring:
     # Which database this service uses: postgresql, mysql or mongodb.
     # Change the word after the colon, or set DATABASE_TYPE in the environment.
     # The settings for each live in application-postgresql.yml, application-mysql.yml and application-mongodb.yml.
-    active: ${DATABASE_TYPE:postgresql}
+    active: ${DATABASE_TYPE:mongodb}
   application:
     name: payment-service
   rabbitmq:
