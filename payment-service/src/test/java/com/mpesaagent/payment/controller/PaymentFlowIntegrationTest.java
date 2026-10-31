@@ -1,7 +1,5 @@
 package com.mpesaagent.payment.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.payment.dto.StkPushResponse;
 import com.mpesaagent.payment.event.PaymentCompletedEvent;
 import com.mpesaagent.payment.exception.MpesaApiException;
@@ -10,13 +8,15 @@ import com.mpesaagent.payment.service.MpesaClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 import java.util.UUID;
@@ -111,12 +111,12 @@ class PaymentFlowIntegrationTest {
         stubPushAccepted("ws_CO_it1");
 
         JsonNode first = createPayment("it-key-1", "0712345601", 250, "ORD-1001");
-        assertThat(first.get("status").asText()).isEqualTo("PUSHED");
-        assertThat(first.get("phone").asText()).isEqualTo("254712345601");
-        assertThat(first.get("checkoutRequestId").asText()).isEqualTo("ws_CO_it1");
+        assertThat(first.get("status").asString()).isEqualTo("PUSHED");
+        assertThat(first.get("phone").asString()).isEqualTo("254712345601");
+        assertThat(first.get("checkoutRequestId").asString()).isEqualTo("ws_CO_it1");
 
         JsonNode second = createPayment("it-key-1", "0712345601", 250, "ORD-1001");
-        assertThat(second.get("id").asText()).isEqualTo(first.get("id").asText());
+        assertThat(second.get("id").asString()).isEqualTo(first.get("id").asString());
         verify(mpesa, times(1)).stkPush("254712345601", 250, "ORD-1001");
     }
 
@@ -130,10 +130,10 @@ class PaymentFlowIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ResultCode").value(0));
 
-        JsonNode after = fetch(payment.get("id").asText());
-        assertThat(after.get("status").asText()).isEqualTo("SUCCESS");
-        assertThat(after.get("mpesaReceipt").asText()).isEqualTo("TST123ABC");
-        assertThat(after.get("resultCode").asText()).isEqualTo("0");
+        JsonNode after = fetch(payment.get("id").asString());
+        assertThat(after.get("status").asString()).isEqualTo("SUCCESS");
+        assertThat(after.get("mpesaReceipt").asString()).isEqualTo("TST123ABC");
+        assertThat(after.get("resultCode").asString()).isEqualTo("0");
 
         sendCallback(CALLBACK_URL, callback).andExpect(status().isOk());
 
@@ -149,8 +149,8 @@ class PaymentFlowIntegrationTest {
         sendCallback(CALLBACK_URL, failureCallback("ws_CO_it3", "\"1032\"", "Request cancelled by user"))
                 .andExpect(status().isOk());
 
-        JsonNode after = fetch(payment.get("id").asText());
-        assertThat(after.get("status").asText()).isEqualTo("CANCELLED");
+        JsonNode after = fetch(payment.get("id").asString());
+        assertThat(after.get("status").asString()).isEqualTo("CANCELLED");
         assertThat(after.get("mpesaReceipt")).isNull();
     }
 
@@ -162,7 +162,7 @@ class PaymentFlowIntegrationTest {
         sendCallback(CALLBACK_URL, failureCallback("ws_CO_it4", "1", "The balance is insufficient for the transaction"))
                 .andExpect(status().isOk());
 
-        assertThat(fetch(payment.get("id").asText()).get("status").asText()).isEqualTo("FAILED");
+        assertThat(fetch(payment.get("id").asString()).get("status").asString()).isEqualTo("FAILED");
     }
 
     @Test
@@ -173,7 +173,7 @@ class PaymentFlowIntegrationTest {
         sendCallback("/api/callbacks/stk/wrong-secret", successCallback("ws_CO_it5", 100, "FAKE000001", "254712345605"))
                 .andExpect(status().isForbidden());
 
-        assertThat(fetch(payment.get("id").asText()).get("status").asText()).isEqualTo("PUSHED");
+        assertThat(fetch(payment.get("id").asString()).get("status").asString()).isEqualTo("PUSHED");
         verify(rabbitTemplate, never()).convertAndSend(anyString(), anyString(), any(PaymentCompletedEvent.class));
     }
 
@@ -211,7 +211,7 @@ class PaymentFlowIntegrationTest {
 
     @Test
     void amountAboveTheTransactionLimitIsRejected() throws Exception {
-        postPayment("it-key-8", "0712345608", 70001, "ORD-1008").andExpect(status().isUnprocessableEntity());
+        postPayment("it-key-8", "0712345608", 70001, "ORD-1008").andExpect(status().isUnprocessableContent());
     }
 
     @Test
@@ -229,8 +229,8 @@ class PaymentFlowIntegrationTest {
 
         JsonNode payment = createPayment("it-key-10", "0712345610", 100, "ORD-1010");
 
-        assertThat(payment.get("status").asText()).isEqualTo("FAILED");
-        assertThat(payment.get("resultDesc").asText()).contains("Invalid PhoneNumber");
+        assertThat(payment.get("status").asString()).isEqualTo("FAILED");
+        assertThat(payment.get("resultDesc").asString()).contains("Invalid PhoneNumber");
     }
 
     @Test
@@ -239,10 +239,10 @@ class PaymentFlowIntegrationTest {
                 .thenThrow(new MpesaCommunicationException("timeout", null));
 
         JsonNode first = createPayment("it-key-11", "0712345611", 100, "ORD-1011");
-        assertThat(first.get("status").asText()).isEqualTo("PENDING");
+        assertThat(first.get("status").asString()).isEqualTo("PENDING");
 
         JsonNode second = createPayment("it-key-11", "0712345611", 100, "ORD-1011");
-        assertThat(second.get("id").asText()).isEqualTo(first.get("id").asText());
+        assertThat(second.get("id").asString()).isEqualTo(first.get("id").asString());
         verify(mpesa, times(1)).stkPush(anyString(), anyInt(), anyString());
     }
 
@@ -258,7 +258,7 @@ class PaymentFlowIntegrationTest {
 
         mvc.perform(get("/internal/payments/latest").param("phone", "0712345612").header("X-Internal-Key", INTERNAL_KEY))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(newest.get("id").asText()))
+                .andExpect(jsonPath("$.id").value(newest.get("id").asString()))
                 .andExpect(jsonPath("$.amount").value(150));
     }
 

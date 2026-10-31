@@ -3,7 +3,7 @@ package com.mpesaagent.payment.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,7 +38,7 @@ public record DarajaResultPayload(@JsonProperty("Result") Result result) {
             if (resultParameters != null && resultParameters.items() != null) {
                 for (Param p : resultParameters.items()) {
                     if (p.key() != null && p.value() != null && !p.value().isNull()) {
-                        map.put(p.key(), p.value().asText());
+                        map.put(p.key(), p.value().asString());
                     }
                 }
             }

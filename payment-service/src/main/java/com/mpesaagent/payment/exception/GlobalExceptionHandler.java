@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(LimitExceededException.class)
     public ResponseEntity<ApiError> limit(LimitExceededException e) {
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, e.getMessage());
     }
 
     @ExceptionHandler(IdempotencyConflictException.class)

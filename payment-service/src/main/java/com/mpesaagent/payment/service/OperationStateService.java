@@ -1,7 +1,5 @@
 package com.mpesaagent.payment.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.payment.config.OperationsProperties;
 import com.mpesaagent.payment.dto.DarajaResultPayload;
 import com.mpesaagent.payment.event.ApprovalRequestedEvent;
@@ -19,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 import java.util.Optional;
@@ -200,7 +200,7 @@ public class OperationStateService {
     private String toJson(Map<String, String> map) {
         try {
             return abbreviate(objectMapper.writeValueAsString(map), 4000);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return null;
         }
     }

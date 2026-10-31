@@ -1,7 +1,5 @@
 package com.mpesaagent.payment.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.payment.config.MpesaProperties;
 import com.mpesaagent.payment.dto.StkPushResponse;
 import com.mpesaagent.payment.dto.StkQueryResponse;
@@ -16,6 +14,8 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -179,7 +179,7 @@ public class MpesaClient {
                 throw new MpesaApiException("AUTH", "M-Pesa returned no access token");
             }
             long expiresIn = body.path("expires_in").asLong(3599);
-            cachedToken = body.get("access_token").asText();
+            cachedToken = body.get("access_token").asString();
             tokenExpiresAt = Instant.now().plusSeconds(Math.max(expiresIn - 60, 30));
             log.debug("Obtained a new M-Pesa access token");
             return cachedToken;
@@ -204,10 +204,10 @@ public class MpesaClient {
         try {
             JsonNode node = objectMapper.readTree(e.getResponseBodyAsString());
             if (node.hasNonNull("errorCode")) {
-                code = node.get("errorCode").asText();
+                code = node.get("errorCode").asString();
             }
             if (node.hasNonNull("errorMessage")) {
-                message = node.get("errorMessage").asText();
+                message = node.get("errorMessage").asString();
             }
         } catch (Exception ignored) {
             // body was not JSON, keep the defaults

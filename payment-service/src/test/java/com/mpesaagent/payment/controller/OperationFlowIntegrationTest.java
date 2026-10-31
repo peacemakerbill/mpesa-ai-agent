@@ -1,7 +1,5 @@
 package com.mpesaagent.payment.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.payment.dto.DarajaAsyncResponse;
 import com.mpesaagent.payment.model.MpesaOperation;
 import com.mpesaagent.payment.model.Payment;
@@ -13,12 +11,14 @@ import com.mpesaagent.payment.service.MpesaOperationsClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 import java.util.UUID;
@@ -91,9 +91,9 @@ class OperationFlowIntegrationTest {
                 "relatedPaymentId", payment.getId().toString(), "reason", "changed my mind"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PENDING_APPROVAL")));
-        String id = created.get("id").asText();
+        String id = created.get("id").asString();
         assertThat(created.get("amount").asInt()).isEqualTo(300);
-        assertThat(created.get("recipientPhone").asText()).isEqualTo("254700000010");
+        assertThat(created.get("recipientPhone").asString()).isEqualTo("254700000010");
         verify(daraja, never()).b2c(anyString(), anyInt(), anyString(), anyString(), anyString());
 
         // the customer, a plain staff member and an unrelated person cannot approve
@@ -153,10 +153,10 @@ class OperationFlowIntegrationTest {
                 "amount", 500, "recipientPhone", "0722000005"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("PENDING_APPROVAL")));
 
-        act(created.get("id").asText() + "/approve", "0711000003").andExpect(status().isForbidden());
+        act(created.get("id").asString() + "/approve", "0711000003").andExpect(status().isForbidden());
 
         // a different approver can still decline it
-        act(created.get("id").asText() + "/reject", "0711000002")
+        act(created.get("id").asString() + "/reject", "0711000002")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("REJECTED"));
     }

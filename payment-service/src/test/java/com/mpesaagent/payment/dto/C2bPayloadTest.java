@@ -1,13 +1,13 @@
 package com.mpesaagent.payment.dto;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class C2bPayloadTest {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final JsonMapper mapper = JsonMapper.builder().build();
 
     @Test
     void parsesConfirmation() throws Exception {

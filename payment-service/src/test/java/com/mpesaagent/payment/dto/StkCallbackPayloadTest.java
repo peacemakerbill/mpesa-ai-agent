@@ -1,14 +1,14 @@
 package com.mpesaagent.payment.dto;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.payment.dto.StkCallbackPayload.StkCallback;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class StkCallbackPayloadTest {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final JsonMapper mapper = JsonMapper.builder().build();
 
     @Test
     void parsesSuccessCallbackWithNumericResultCode() throws Exception {

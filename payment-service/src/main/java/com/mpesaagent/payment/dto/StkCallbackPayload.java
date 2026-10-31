@@ -2,7 +2,7 @@ package com.mpesaagent.payment.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +35,7 @@ public record StkCallbackPayload(@JsonProperty("Body") Body body) {
             String receipt = null;
             Integer amount = null;
             if (callbackMetadata != null) {
-                receipt = callbackMetadata.item("MpesaReceiptNumber").map(JsonNode::asText).orElse(null);
+                receipt = callbackMetadata.item("MpesaReceiptNumber").map(JsonNode::asString).orElse(null);
                 amount = callbackMetadata.item("Amount").map(JsonNode::asInt).orElse(null);
             }
             return new StkResult(checkoutRequestId, resultCode, resultDesc, receipt, amount);

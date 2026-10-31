@@ -11,7 +11,7 @@ import java.time.Duration;
 public class RestClientConfig {
 
     @Bean
-    public RestClient mpesaRestClient(MpesaProperties props) {
+    RestClient mpesaRestClient(MpesaProperties props) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(Duration.ofSeconds(5));
         factory.setReadTimeout(Duration.ofSeconds(20));

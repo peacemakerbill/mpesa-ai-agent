@@ -130,7 +130,8 @@ class PaymentServiceTest {
         verifyNoInteractions(mpesa, state);
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     void racingRequestWithSameKeyReturnsTheWinner() {
         Payment winner = payment(PaymentStatus.PENDING);
         when(repository.findByIdempotencyKey("k1")).thenReturn(Optional.empty(), Optional.of(winner));

@@ -9,6 +9,7 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
  * {@code @Transactional} methods and {@code @TransactionalEventListener(AFTER_COMMIT)} listeners behave the same
  * way in MongoDB mode: events are sent only after the method finished without an error.
  */
+@SuppressWarnings("serial")
 public class NoOpTransactionManager extends AbstractPlatformTransactionManager {
 
     @Override
