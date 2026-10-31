@@ -3,6 +3,7 @@ package com.mpesaagent.agent.client;
 import com.mpesaagent.agent.exception.ModelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,7 @@ public class ClaudeClient {
     private final RestClient http;
     private final Sleeper sleeper;
 
+    @Autowired
     public ClaudeClient(RestClient anthropicRestClient) {
         this(anthropicRestClient, Thread::sleep);
     }
