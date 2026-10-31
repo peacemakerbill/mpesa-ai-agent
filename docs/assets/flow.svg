@@ -1,0 +1,47 @@
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/flow.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="250" viewBox="0 0 1200 250" role="img" aria-label="Request flow: ask, prepare, approve, hand off, record">
+<title>Request flow: ask, prepare, approve, hand off, record</title>
+<defs><linearGradient id="trk" x1="0" x2="1"><stop offset="0" stop-color="#2BD576"/><stop offset="1" stop-color="#4FD1C5"/></linearGradient>
+<clipPath id="c"><rect width="1200" height="250" rx="18"/></clipPath></defs>
+<style>
+.st { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 700; font-size: 17px; fill: #E8F4EC; }
+.ss { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 12.5px; fill: #8DA89A; }
+.on { opacity: 0; animation: lit 10s ease-in-out infinite; }
+@keyframes lit { 0% { opacity: 0 } 4% { opacity: 1 } 18% { opacity: 1 } 24%,100% { opacity: 0 } }
+.trav { animation: trav 10s linear infinite; }
+@keyframes trav { from { transform: translateX(0) } to { transform: translateX(960px) } }
+@media (prefers-reduced-motion: reduce) { .on { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }</style>
+<g clip-path="url(#c)"><rect width="1200" height="250" fill="#08100D"/>
+<line x1="120" y1="92" x2="1080" y2="92" stroke="#22372C" stroke-width="3"/>
+<line x1="120" y1="92" x2="1080" y2="92" stroke="url(#trk)" stroke-width="3" stroke-dasharray="4 10" opacity=".55"/>
+<g>
+<circle cx="120" cy="92" r="40" fill="#0F1A15" stroke="#22372C" stroke-width="2"/>
+<circle class="on" style="animation-delay:0.00s" cx="120" cy="92" r="40" fill="#2BD576" fill-opacity=".14" stroke="#2BD576" stroke-width="2.4"/>
+<g transform="translate(105 77) scale(1.2500)" fill="none" stroke="#E8F4EC" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-5 4v-4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8 9.5h8M8 12.5h5"/></g>
+<text class="st" x="120" y="166" text-anchor="middle">Ask</text>
+<text class="ss" x="120" y="188" text-anchor="middle">The customer chats</text></g><g>
+<circle cx="360" cy="92" r="40" fill="#0F1A15" stroke="#22372C" stroke-width="2"/>
+<circle class="on" style="animation-delay:2.00s" cx="360" cy="92" r="40" fill="#2BD576" fill-opacity=".14" stroke="#2BD576" stroke-width="2.4"/>
+<g transform="translate(345 77) scale(1.2500)" fill="none" stroke="#E8F4EC" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/><path d="M7 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"/><path d="M10 10h4v4h-4z"/></g>
+<text class="st" x="360" y="166" text-anchor="middle">Prepare</text>
+<text class="ss" x="360" y="188" text-anchor="middle">The assistant builds a request</text></g><g>
+<circle cx="600" cy="92" r="40" fill="#0F1A15" stroke="#22372C" stroke-width="2"/>
+<circle class="on" style="animation-delay:4.00s" cx="600" cy="92" r="40" fill="#2BD576" fill-opacity=".14" stroke="#2BD576" stroke-width="2.4"/>
+<g transform="translate(585 77) scale(1.2500)" fill="none" stroke="#E8F4EC" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 5-5"/></g>
+<text class="st" x="600" y="166" text-anchor="middle">Approve</text>
+<text class="ss" x="600" y="188" text-anchor="middle">The phone confirms the owner</text></g><g>
+<circle cx="840" cy="92" r="40" fill="#0F1A15" stroke="#22372C" stroke-width="2"/>
+<circle class="on" style="animation-delay:6.00s" cx="840" cy="92" r="40" fill="#2BD576" fill-opacity=".14" stroke="#2BD576" stroke-width="2.4"/>
+<g transform="translate(825 77) scale(1.2500)" fill="none" stroke="#E8F4EC" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2h8a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M11 18.5h2"/><path d="M10 5.5h4"/></g>
+<text class="st" x="840" y="166" text-anchor="middle">Hand off</text>
+<text class="ss" x="840" y="188" text-anchor="middle">Dialler opens, PIN in M-Pesa</text></g><g>
+<circle cx="1080" cy="92" r="40" fill="#0F1A15" stroke="#22372C" stroke-width="2"/>
+<circle class="on" style="animation-delay:8.00s" cx="1080" cy="92" r="40" fill="#2BD576" fill-opacity=".14" stroke="#2BD576" stroke-width="2.4"/>
+<g transform="translate(1065 77) scale(1.2500)" fill="none" stroke="#E8F4EC" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L3 10.5l7 3 3 7z"/><path d="M10 13.5L21 3"/></g>
+<text class="st" x="1080" y="166" text-anchor="middle">Record</text>
+<text class="ss" x="1080" y="188" text-anchor="middle">Reported, or matched to the SMS</text></g>
+<g class="trav"><circle cx="120" cy="92" r="7" fill="#2BD576"/><circle cx="120" cy="92" r="14" fill="#2BD576" fill-opacity=".25"/></g>
+<text class="ss" x="600.0" y="228" text-anchor="middle">Safaricom is never asked to confirm. The status is a record, not proof.</text></g>
+<rect x=".5" y=".5" width="1199" height="249" rx="18" fill="none" stroke="#22372C"/>
+</svg>

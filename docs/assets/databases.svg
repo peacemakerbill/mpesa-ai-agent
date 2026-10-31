@@ -1,0 +1,37 @@
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/databases.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="330" viewBox="0 0 1200 330" role="img" aria-label="PostgreSQL, MySQL and MongoDB compared: schema, concurrency and multi-record changes">
+<title>PostgreSQL, MySQL and MongoDB compared: schema, concurrency and multi-record changes</title>
+<defs><clipPath id="c0"><rect x="16" y="10" width="368" height="310" rx="18"/></clipPath><linearGradient id="g0" x1="0" x2="1"><stop offset="0" stop-color="#6EA8FF" stop-opacity="0"/><stop offset=".5" stop-color="#6EA8FF"/><stop offset="1" stop-color="#6EA8FF" stop-opacity="0"/></linearGradient><clipPath id="c1"><rect x="416" y="10" width="368" height="310" rx="18"/></clipPath><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#F2B544" stop-opacity="0"/><stop offset=".5" stop-color="#F2B544"/><stop offset="1" stop-color="#F2B544" stop-opacity="0"/></linearGradient><clipPath id="c2"><rect x="816" y="10" width="368" height="310" rx="18"/></clipPath><linearGradient id="g2" x1="0" x2="1"><stop offset="0" stop-color="#2BD576" stop-opacity="0"/><stop offset=".5" stop-color="#2BD576"/><stop offset="1" stop-color="#2BD576" stop-opacity="0"/></linearGradient></defs>
+<style>
+.t { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 700; font-size: 22px; fill: #E8F4EC; }
+.k { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 12px; fill: #8DA89A; }
+.v { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; fill: #E8F4EC; }
+.in { opacity: 0; animation: up .8s ease-out forwards; }
+@keyframes up { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: translateY(0) } }
+.sw { animation: sw 6s ease-in-out infinite; }
+@keyframes sw { 0% { transform: translateX(-160px) } 55%,100% { transform: translateX(368px) } }
+@media (prefers-reduced-motion: reduce) { .in { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }</style>
+<g class="in" style="animation-delay:0.00s">
+<g clip-path="url(#c0)"><rect x="16" y="10" width="368" height="310" fill="#0F1A15"/>
+<rect x="16" y="10" width="368" height="3" fill="#22372C"/><rect class="sw" style="animation-delay:0.0s" x="16" y="10" width="160" height="3" fill="url(#g0)"/>
+<rect x="40" y="34" width="52" height="52" rx="14" fill="#6EA8FF" fill-opacity=".18"/><g transform="translate(53 47) scale(1.0833)" fill="none" stroke="#6EA8FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4.4 0 8 1.1 8 2.5S16.4 8 12 8 4 6.9 4 5.5 7.6 3 12 3z"/><path d="M4 5.5v13C4 19.9 7.6 21 12 21s8-1.1 8-2.5v-13"/><path d="M4 12c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5"/></g>
+<text class="t" x="106" y="58">PostgreSQL</text>
+<rect x="106" y="66" width="42" height="20" rx="10" fill="#14231C" stroke="#6EA8FF" stroke-opacity=".6"/><text class="k" x="127" y="80" text-anchor="middle" style="fill:#6EA8FF">SQL</text>
+<text class="k" x="40" y="128">Schema</text><text class="v" x="40" y="148">Flyway, db/migration/postgresql</text><text class="k" x="40" y="180">Two requests changing one record</text><text class="v" x="40" y="200">Row lock</text><text class="k" x="40" y="232">One change across several records</text><text class="v" x="40" y="252">Transaction</text></g>
+<rect x="16.5" y="10.5" width="367" height="309" rx="18" fill="none" stroke="#22372C"/></g><g class="in" style="animation-delay:0.15s">
+<g clip-path="url(#c1)"><rect x="416" y="10" width="368" height="310" fill="#0F1A15"/>
+<rect x="416" y="10" width="368" height="3" fill="#22372C"/><rect class="sw" style="animation-delay:0.8s" x="416" y="10" width="160" height="3" fill="url(#g1)"/>
+<rect x="440" y="34" width="52" height="52" rx="14" fill="#F2B544" fill-opacity=".18"/><g transform="translate(453 47) scale(1.0833)" fill="none" stroke="#F2B544" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4.4 0 8 1.1 8 2.5S16.4 8 12 8 4 6.9 4 5.5 7.6 3 12 3z"/><path d="M4 5.5v13C4 19.9 7.6 21 12 21s8-1.1 8-2.5v-13"/><path d="M4 12c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5"/></g>
+<text class="t" x="506" y="58">MySQL</text>
+<rect x="506" y="66" width="42" height="20" rx="10" fill="#14231C" stroke="#F2B544" stroke-opacity=".6"/><text class="k" x="527" y="80" text-anchor="middle" style="fill:#F2B544">SQL</text>
+<text class="k" x="440" y="128">Schema</text><text class="v" x="440" y="148">Flyway, db/migration/mysql</text><text class="k" x="440" y="180">Two requests changing one record</text><text class="v" x="440" y="200">Row lock</text><text class="k" x="440" y="232">One change across several records</text><text class="v" x="440" y="252">Transaction</text></g>
+<rect x="416.5" y="10.5" width="367" height="309" rx="18" fill="none" stroke="#22372C"/></g><g class="in" style="animation-delay:0.30s">
+<g clip-path="url(#c2)"><rect x="816" y="10" width="368" height="310" fill="#0F1A15"/>
+<rect x="816" y="10" width="368" height="3" fill="#22372C"/><rect class="sw" style="animation-delay:1.6s" x="816" y="10" width="160" height="3" fill="url(#g2)"/>
+<rect x="840" y="34" width="52" height="52" rx="14" fill="#2BD576" fill-opacity=".18"/><g transform="translate(853 47) scale(1.0833)" fill="none" stroke="#2BD576" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4.4 0 8 1.1 8 2.5S16.4 8 12 8 4 6.9 4 5.5 7.6 3 12 3z"/><path d="M4 5.5v13C4 19.9 7.6 21 12 21s8-1.1 8-2.5v-13"/><path d="M4 12c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5"/></g>
+<text class="t" x="906" y="58">MongoDB</text>
+<rect x="906" y="66" width="200" height="20" rx="10" fill="#14231C" stroke="#2BD576" stroke-opacity=".6"/><text class="k" x="1006" y="80" text-anchor="middle" style="fill:#2BD576">Default for payment-service</text>
+<text class="k" x="840" y="128">Schema</text><text class="v" x="840" y="148">Created by the service, indexes included</text><text class="k" x="840" y="180">Two requests changing one record</text><text class="v" x="840" y="200">Version number, loser gets 409</text><text class="k" x="840" y="232">One change across several records</text><text class="v" x="840" y="252">Not atomic across records</text></g>
+<rect x="816.5" y="10.5" width="367" height="309" rx="18" fill="none" stroke="#22372C"/></g>
+</svg>

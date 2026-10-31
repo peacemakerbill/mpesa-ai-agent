@@ -1,0 +1,10 @@
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/divider.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="14" viewBox="0 0 1200 14" role="img" aria-label="divider">
+<title>divider</title>
+<defs><linearGradient id="d" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1200" y2="0">
+<stop offset="0" stop-color="#2BD576" stop-opacity="0"/><stop offset="0.5" stop-color="#2BD576"/><stop offset="1" stop-color="#4FD1C5" stop-opacity="0"/>
+<animate attributeName="x1" values="-1200;0" dur="5s" repeatCount="indefinite"/><animate attributeName="x2" values="0;1200" dur="5s" repeatCount="indefinite"/></linearGradient></defs>
+<style>
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }</style>
+<rect x="0" y="6" width="1200" height="2" rx="1" fill="url(#d)"/><rect x="0" y="6" width="1200" height="2" fill="#2BD576" opacity=".10"/>
+</svg>

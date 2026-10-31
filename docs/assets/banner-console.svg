@@ -1,0 +1,55 @@
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/banner-console.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="210" viewBox="0 0 1200 210" role="img" aria-label="console: Browser test console">
+<title>console: Browser test console</title>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#07110C"/><stop offset="1" stop-color="#0D2217"/></linearGradient>
+<linearGradient id="ac" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2B544"/><stop offset="1" stop-color="#2BD576"/></linearGradient>
+<linearGradient id="shine" gradientUnits="userSpaceOnUse" x1="-500" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#F2B544"/><stop offset="0.5" stop-color="#F2FFF7"/><stop offset="1" stop-color="#2BD576"/>
+<animate attributeName="x1" values="-500;500" dur="6s" repeatCount="indefinite"/><animate attributeName="x2" values="0;1000" dur="6s" repeatCount="indefinite"/></linearGradient>
+<pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#fff" stroke-opacity=".045"/></pattern>
+<clipPath id="c"><rect width="1200" height="210" rx="18"/></clipPath>
+<clipPath id="wv"><rect x="760" y="0" width="440" height="210"/></clipPath></defs>
+<style>
+.name { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 800; font-size: 46px; letter-spacing: -1px; }
+.kind { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; fill: #8DA89A; }
+.wave1 { animation: wave 5s linear infinite; }
+.wave2 { animation: wave 8s linear infinite reverse; }
+@keyframes wave { from { transform: translateX(0) } to { transform: translateX(-300px) } }
+.pulse { animation: pulse 2.4s ease-out infinite; transform-origin: 62px 62px; }
+@keyframes pulse { 0% { transform: scale(.9); opacity: .7 } 100% { transform: scale(1.3); opacity: 0 } }
+@keyframes b0 { 0% { width: 0 } 0.00% { width: 0 } 15.33% { width: 349.2px } 29.33% { width: 349.2px } 32.00% { width: 0 } 100% { width: 0 } }
+@keyframes b0c { 0% { transform: translateX(0); opacity: 1 } 0.01% { transform: translateX(0); opacity: 1 } 15.33% { transform: translateX(349.2px); opacity: 1 } 29.33% { transform: translateX(349.2px); opacity: 1 } 32.00% { transform: translateX(349.2px); opacity: 1 } 32.02% { transform: translateX(0); opacity: 0 } 100% { transform: translateX(0); opacity: 0 } }
+.b0 { animation: b0 13.799999999999999s steps(29, end) infinite; }
+.b0c { animation: b0c 13.799999999999999s steps(29, end) infinite; }
+@media (prefers-reduced-motion: reduce) { .b0 { width: 349.2px; } .b0c { transform: translateX(349.2px); } }
+@keyframes b1 { 0% { width: 0 } 33.33% { width: 0 } 48.67% { width: 505.7px } 62.67% { width: 505.7px } 65.33% { width: 0 } 100% { width: 0 } }
+@keyframes b1c { 0% { transform: translateX(0); opacity: 0 } 33.31% { transform: translateX(0); opacity: 0 } 33.34% { transform: translateX(0); opacity: 1 } 48.67% { transform: translateX(505.7px); opacity: 1 } 62.67% { transform: translateX(505.7px); opacity: 1 } 65.33% { transform: translateX(505.7px); opacity: 1 } 65.35% { transform: translateX(0); opacity: 0 } 100% { transform: translateX(0); opacity: 0 } }
+.b1 { animation: b1 13.799999999999999s steps(42, end) infinite; }
+.b1c { animation: b1c 13.799999999999999s steps(42, end) infinite; }
+@media (prefers-reduced-motion: reduce) { .b1 { width: 505.7px; } .b1c { transform: translateX(505.7px); } }
+@keyframes b2 { 0% { width: 0 } 66.67% { width: 0 } 82.00% { width: 457.5px } 96.00% { width: 457.5px } 98.67% { width: 0 } 100% { width: 0 } }
+@keyframes b2c { 0% { transform: translateX(0); opacity: 0 } 66.65% { transform: translateX(0); opacity: 0 } 66.68% { transform: translateX(0); opacity: 1 } 82.00% { transform: translateX(457.5px); opacity: 1 } 96.00% { transform: translateX(457.5px); opacity: 1 } 98.67% { transform: translateX(457.5px); opacity: 1 } 98.69% { transform: translateX(0); opacity: 0 } 100% { transform: translateX(0); opacity: 0 } }
+.b2 { animation: b2 13.799999999999999s steps(38, end) infinite; }
+.b2c { animation: b2c 13.799999999999999s steps(38, end) infinite; }
+@media (prefers-reduced-motion: reduce) { .b2 { width: 457.5px; } .b2c { transform: translateX(457.5px); } }
+@media (prefers-reduced-motion: reduce) { #b1g { display: none; } #b2g { display: none; } }
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }</style>
+
+<g clip-path="url(#c)">
+<rect width="1200" height="210" fill="url(#bg)"/><rect width="1200" height="210" fill="url(#grid)"/>
+<g clip-path="url(#wv)">
+  <path class="wave1" d="M700 94.2 L710 100.7 L720 107.5 L730 114.2 L740 120.2 L750 125.2 L760 128.7 L770 130.7 L780 130.9 L790 129.2 L800 126.0 L810 121.3 L820 115.4 L830 108.9 L840 102.0 L850 95.4 L860 89.5 L870 84.6 L880 81.1 L890 79.3 L900 79.2 L910 80.9 L920 84.3 L930 89.1 L940 95.0 L950 101.6 L960 108.4 L970 115.0 L980 120.9 L990 125.7 L1000 129.1 L1010 130.8 L1020 130.8 L1030 128.9 L1040 125.5 L1050 120.6 L1060 114.6 L1070 108.0 L1080 101.2 L1090 94.6 L1100 88.8 L1110 84.1 L1120 80.8 L1130 79.2 L1140 79.3 L1150 81.2 L1160 84.8 L1170 89.8 L1180 95.8 L1190 102.4 L1200 109.2 L1210 115.7 L1220 121.5 L1230 126.2 L1240 129.4 L1250 130.9 L1260 130.6 L1270 128.6 L1280 124.9 L1290 119.9 L1300 113.8 L1310 107.2 L1320 100.4 L1330 93.9 L1340 88.1 L1350 83.6 L1360 80.5 L1370 79.1 L1380 79.5 L1390 81.6 L1400 85.3 L1410 90.5 L1420 96.6 L1430 103.2 L1440 110.1 L1450 116.5 L1460 122.2 L1470 126.7 L1480 129.7 L1490 131.0 L1500 130.5 L1510 128.2" fill="none" stroke="#F2B544" stroke-width="2.2" stroke-opacity=".75"/>
+  <path class="wave2" d="M700 121.4 L710 122.8 L720 122.9 L730 121.8 L740 119.5 L750 116.3 L760 112.2 L770 107.7 L780 103.0 L790 98.4 L800 94.2 L810 90.9 L820 88.4 L830 87.2 L840 87.1 L850 88.3 L860 90.7 L870 94.0 L880 98.1 L890 102.6 L900 107.3 L910 111.9 L920 116.0 L930 119.3 L940 121.7 L950 122.9 L960 122.8 L970 121.6 L980 119.2 L990 115.8 L1000 111.7 L1010 107.1 L1020 102.4 L1030 97.8 L1040 93.8 L1050 90.5 L1060 88.2 L1070 87.1 L1080 87.2 L1090 88.5 L1100 91.0 L1110 94.4 L1120 98.6 L1130 103.2 L1140 107.9 L1150 112.4 L1160 116.4 L1170 119.7 L1180 121.9 L1190 122.9 L1200 122.7 L1210 121.3 L1220 118.8 L1230 115.3 L1240 111.1 L1250 106.5 L1260 101.8 L1270 97.3 L1280 93.3 L1290 90.2 L1300 88.0 L1310 87.1 L1320 87.3 L1330 88.8 L1340 91.4 L1350 94.9 L1360 99.2 L1370 103.8 L1380 108.5 L1390 113.0 L1400 116.9 L1410 120.0 L1420 122.1 L1430 123.0 L1440 122.6 L1450 121.1 L1460 118.4 L1470 114.8 L1480 110.6 L1490 105.9 L1500 101.2 L1510 96.8" fill="none" stroke="#2BD576" stroke-width="2" stroke-opacity=".5"/>
+</g>
+<rect x=".5" y=".5" width="1199" height="209" rx="18" fill="none" stroke="#22372C"/>
+<g transform="translate(48 44)">
+  <circle class="pulse" cx="62" cy="62" r="46" fill="none" stroke="#F2B544" stroke-width="2"/>
+  <rect x="16" y="16" width="92" height="92" rx="24" fill="url(#ac)"/>
+  <g transform="translate(40 40) scale(1.8333)" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M7 10l3 2-3 2"/><path d="M12 15h5"/></g>
+</g>
+<text class="kind" x="198" y="62">Browser test console</text>
+<text class="name" x="194" y="108" fill="url(#shine)">console</text>
+<g id="b0g"><clipPath id="b0clip"><rect class="b0" x="196" y="122" width="0" height="28"/></clipPath><text x="196" y="142" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="20" fill="#E8F4EC" clip-path="url(#b0clip)" xml:space="preserve">One HTML file. No build step.</text><rect class="b0c" x="196" y="125.6" width="10.0" height="20.0" fill="#F2B544" rx="1"/></g><g id="b1g"><clipPath id="b1clip"><rect class="b1" x="196" y="122" width="0" height="28"/></clipPath><text x="196" y="142" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="20" fill="#E8F4EC" clip-path="url(#b1clip)" xml:space="preserve">Journey trace, real chat, phone simulator.</text><rect class="b1c" x="196" y="125.6" width="10.0" height="20.0" fill="#F2B544" rx="1"/></g><g id="b2g"><clipPath id="b2clip"><rect class="b2" x="196" y="122" width="0" height="28"/></clipPath><text x="196" y="142" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="20" fill="#E8F4EC" clip-path="url(#b2clip)" xml:space="preserve">78 endpoints in a searchable explorer.</text><rect class="b2c" x="196" y="125.6" width="10.0" height="20.0" fill="#F2B544" rx="1"/></g>
+</g>
+</svg>
