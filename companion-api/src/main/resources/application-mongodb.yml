@@ -3,15 +3,20 @@
 # MongoDB mode has no multi-document transactions and no row locks. Concurrent changes to one record are
 # caught with a version number instead, and the loser gets 409 Conflict and can try again.
 spring:
+  # Spring Boot 4: the connection settings moved from spring.data.mongodb to spring.mongodb.
+  # The UUID format has no default any more, so it is set here (standard is the one every driver reads).
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27017/companion}
+    representation:
+      uuid: standard
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/companion}
       auto-index-creation: true
-      uuid-representation: standard
   autoconfigure:
     exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
-      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+      # Spring Boot 4 class names
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration
+      - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
+      - org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
+      - org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration

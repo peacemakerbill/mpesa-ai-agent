@@ -1,10 +1,10 @@
 package com.mpesaagent.companion.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,7 +13,7 @@ import java.util.Map;
 @Converter
 public class DetailsConverter implements AttributeConverter<Map<String, String>, String> {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final JsonMapper MAPPER = JsonMapper.builder().build();
     private static final TypeReference<LinkedHashMap<String, String>> TYPE = new TypeReference<>() {
     };
 
@@ -21,7 +21,7 @@ public class DetailsConverter implements AttributeConverter<Map<String, String>,
     public String convertToDatabaseColumn(Map<String, String> attribute) {
         try {
             return MAPPER.writeValueAsString(attribute == null ? Map.of() : attribute);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("Could not store action details", e);
         }
     }
@@ -33,7 +33,7 @@ public class DetailsConverter implements AttributeConverter<Map<String, String>,
         }
         try {
             return MAPPER.readValue(dbData, TYPE);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("Could not read action details", e);
         }
     }

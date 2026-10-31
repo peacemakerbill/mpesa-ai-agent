@@ -1,15 +1,16 @@
 package com.mpesaagent.companion.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Map;
 
@@ -23,16 +24,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class DevCodeIntegrationTest {
 
     @Autowired MockMvc mvc;
-    @Autowired ObjectMapper mapper;
+    @Autowired JsonMapper mapper;
     @MockitoBean RabbitTemplate rabbit;
 
     @Test
     void theCodeFromTheAnswerSignsThePhoneIn() throws Exception {
         String phone = "254711223344";
-        JsonNode issued = mapper.readTree(mvc.perform(post("/api/auth/request-code").contentType(MediaType.APPLICATION_JSON)
+        DocumentContext issued = JsonPath.parse(mvc.perform(post("/api/auth/request-code").contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(Map.of("phone", phone))))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
-        String code = issued.get("devCode").asText();
+        String code = issued.read("$.devCode", String.class);
         assertThat(code).matches("\\d{6}");
 
         mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)

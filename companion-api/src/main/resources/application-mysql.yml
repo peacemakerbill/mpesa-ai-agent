@@ -19,7 +19,8 @@ spring:
     locations: classpath:db/migration/mysql
   autoconfigure:
     exclude:
-      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
-      - org.springframework.boot.actuate.autoconfigure.data.mongo.MongoHealthContributorAutoConfiguration
+      # Spring Boot 4 class names (they moved out of org.springframework.boot.autoconfigure)
+      - org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration
+      - org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration
+      - org.springframework.boot.data.mongodb.autoconfigure.DataMongoRepositoriesAutoConfiguration
+      - org.springframework.boot.mongodb.autoconfigure.health.MongoHealthContributorAutoConfiguration

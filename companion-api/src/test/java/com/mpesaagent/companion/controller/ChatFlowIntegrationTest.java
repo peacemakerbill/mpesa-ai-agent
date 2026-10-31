@@ -1,25 +1,25 @@
 package com.mpesaagent.companion.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.companion.service.ChatRelay;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -41,7 +41,7 @@ class ChatFlowIntegrationTest {
     private static final AtomicInteger NEXT = new AtomicInteger(30_000_000);
 
     @Autowired MockMvc mvc;
-    @Autowired ObjectMapper mapper;
+    @Autowired JsonMapper mapper;
     @MockitoBean RabbitTemplate rabbit;
     @MockitoBean ChatRelay relay;
 
@@ -51,16 +51,16 @@ class ChatFlowIntegrationTest {
 
     /** Signs in the way a customer does when the code goes to their phone, using the internal code endpoint to read it. */
     private String signIn(String phone) throws Exception {
-        JsonNode code = mapper.readTree(mvc.perform(post("/internal/link-codes").header("X-Internal-Key", KEY)
+        DocumentContext code = JsonPath.parse(mvc.perform(post("/internal/link-codes").header("X-Internal-Key", KEY)
                 .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Map.of("phone", phone))))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
         Map<String, Object> body = new HashMap<>();
         body.put("phone", phone);
-        body.put("code", code.get("code").asText());
+        body.put("code", code.read("$.code", String.class));
         body.put("deviceId", "device-" + phone);
-        JsonNode token = mapper.readTree(mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)
+        DocumentContext token = JsonPath.parse(mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(body))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
-        return token.get("token").asText();
+        return token.read("$.token", String.class);
     }
 
     private static ResponseEntity<byte[]> ok(String json) {

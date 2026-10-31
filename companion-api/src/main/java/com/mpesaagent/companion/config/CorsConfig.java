@@ -23,7 +23,7 @@ import java.util.List;
 public class CorsConfig {
 
     @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilterRegistration(@Value("${cors.allowed-origins:}") String origins) {
+    FilterRegistrationBean<CorsFilter> corsFilterRegistration(@Value("${cors.allowed-origins:}") String origins) {
         FilterRegistrationBean<CorsFilter> registration = new FilterRegistrationBean<>(corsFilter(origins));
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registration;

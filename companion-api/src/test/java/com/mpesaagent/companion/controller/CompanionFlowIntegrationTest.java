@@ -1,17 +1,18 @@
 package com.mpesaagent.companion.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpesaagent.companion.event.ActionEvent;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +40,7 @@ class CompanionFlowIntegrationTest {
     private static final AtomicInteger NEXT_PHONE = new AtomicInteger(10_000_000);
 
     @Autowired MockMvc mvc;
-    @Autowired ObjectMapper mapper;
+    @Autowired JsonMapper mapper;
     @MockitoBean RabbitTemplate rabbit;
 
     /** A new customer number per test so tests do not see each other's data. */
@@ -52,21 +53,21 @@ class CompanionFlowIntegrationTest {
                 .content(mapper.writeValueAsString(body)));
     }
 
-    private JsonNode json(ResultActions r) throws Exception {
-        return mapper.readTree(r.andReturn().getResponse().getContentAsString());
+    private DocumentContext json(ResultActions r) throws Exception {
+        return JsonPath.parse(r.andReturn().getResponse().getContentAsString());
     }
 
     /** Link a phone the way a customer would: code from the agent, typed into the app. Returns the token. */
     private String link(String phone, String deviceId) throws Exception {
-        JsonNode code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
+        DocumentContext code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
         Map<String, Object> body = new HashMap<>();
         body.put("phone", phone);
-        body.put("code", code.get("code").asText());
+        body.put("code", code.read("$.code", String.class));
         body.put("deviceId", deviceId);
         body.put("deviceName", "Test phone");
-        JsonNode token = json(mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)
+        DocumentContext token = json(mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(body))).andExpect(status().isOk()));
-        return token.get("token").asText();
+        return token.read("$.token", String.class);
     }
 
     private UUID createBill(String phone, String key) throws Exception {
@@ -78,8 +79,8 @@ class CompanionFlowIntegrationTest {
         body.put("source", "IMAGE");
         body.put("label", "Electricity");
         body.put("details", Map.of("paybill", "888880", "account", "123456"));
-        JsonNode created = json(internalPost("/internal/actions", body).andExpect(status().isOk()));
-        return UUID.fromString(created.get("id").asText());
+        DocumentContext created = json(internalPost("/internal/actions", body).andExpect(status().isOk()));
+        return UUID.fromString(created.read("$.id", String.class));
     }
 
     private ResultActions app(String token, String method, String url, Object body) throws Exception {
@@ -229,8 +230,8 @@ class CompanionFlowIntegrationTest {
     @Test
     void aWrongCodeFiveTimesBurnsTheCode() throws Exception {
         String phone = newPhone();
-        JsonNode code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
-        String real = code.get("code").asText();
+        DocumentContext code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
+        String real = code.read("$.code", String.class);
         String wrong = real.equals("000000") ? "111111" : "000000";
 
         for (int i = 0; i < 5; i++) {
@@ -243,17 +244,17 @@ class CompanionFlowIntegrationTest {
     @Test
     void theRightCodeWorksOnlyOnce() throws Exception {
         String phone = newPhone();
-        JsonNode code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
+        DocumentContext code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
 
-        verifyCode(phone, code.get("code").asText(), "device-once-123456").andExpect(status().isOk());
-        verifyCode(phone, code.get("code").asText(), "device-once-123456").andExpect(status().isUnauthorized());
+        verifyCode(phone, code.read("$.code", String.class), "device-once-123456").andExpect(status().isOk());
+        verifyCode(phone, code.read("$.code", String.class), "device-once-123456").andExpect(status().isUnauthorized());
     }
 
     @Test
     void aNewCodeReplacesTheOldOne() throws Exception {
         String phone = newPhone();
-        String first = json(internalPost("/internal/link-codes", Map.of("phone", phone))).get("code").asText();
-        String second = json(internalPost("/internal/link-codes", Map.of("phone", phone))).get("code").asText();
+        String first = json(internalPost("/internal/link-codes", Map.of("phone", phone))).read("$.code", String.class);
+        String second = json(internalPost("/internal/link-codes", Map.of("phone", phone))).read("$.code", String.class);
 
         if (!first.equals(second)) {
             verifyCode(phone, first, "device-replace-1234").andExpect(status().isUnauthorized());

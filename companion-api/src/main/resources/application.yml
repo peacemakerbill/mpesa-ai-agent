@@ -8,7 +8,7 @@ spring:
     # Which database this service uses: postgresql, mysql or mongodb.
     # Change the word after the colon, or set DATABASE_TYPE in the environment.
     # The settings for each live in application-postgresql.yml, application-mysql.yml and application-mongodb.yml.
-    active: ${DATABASE_TYPE:postgresql}
+    active: ${DATABASE_TYPE:mongodb}
   application:
     name: companion-api
   rabbitmq:
@@ -77,12 +77,13 @@ companion:
     ussd-main: ${HANDOFF_USSD_MAIN:*334#}
     mpesa-android-package: ${HANDOFF_MPESA_ANDROID_PACKAGE:}
     mpesa-ios-url: ${HANDOFF_MPESA_IOS_URL:}
+    # Keys are the request types the app looks up, so they keep their capitals. The [ ] keeps them exactly as written.
     ussd-templates:
-      SEND_MONEY: ${HANDOFF_USSD_SEND_MONEY:}
-      PAY_BILL: ${HANDOFF_USSD_PAY_BILL:}
-      PAY_TILL: ${HANDOFF_USSD_PAY_TILL:}
-      BUY_AIRTIME: ${HANDOFF_USSD_BUY_AIRTIME:}
+      "[SEND_MONEY]": ${HANDOFF_USSD_SEND_MONEY:}
+      "[PAY_BILL]": ${HANDOFF_USSD_PAY_BILL:}
+      "[PAY_TILL]": ${HANDOFF_USSD_PAY_TILL:}
+      "[BUY_AIRTIME]": ${HANDOFF_USSD_BUY_AIRTIME:}
 
 logging:
   level:
-    com.mpesaagent: INFO
+    "[com.mpesaagent]": INFO
