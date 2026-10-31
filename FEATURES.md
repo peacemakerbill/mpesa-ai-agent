@@ -78,15 +78,15 @@ Customers chat with an AI assistant, in the app or on the web, in English or Swa
 
 ## The M-Ganji app
 
-Flutter, for Android and iOS. More in [`ganji-app/README.md`](ganji-app/README.md).
+Flutter, for Android, iOS, macOS, Linux and Windows. More in [`ganji_app/README.md`](ganji_app/README.md).
 
 - **Sign in** with the phone number and a 6 digit code sent by SMS. Sign out at any time.
 - **Chat tab** with the assistant: message bubbles, buttons and menus the assistant sends, photos, videos, documents, voice notes (record and play), shared locations and contacts, typing indicator, and a **Requests tab** beside it.
 - Request list and request detail, with warnings (details read from a voice note, photo or file are flagged).
 - Approval with biometrics or device lock. Decline with one tap.
 - Hand-off to M-Pesa: dialler, optional M-Pesa app launch, guided steps, copy buttons. Values come from the server, so they can be corrected without a new release.
-- **Contact search** across this phone (with permission, or its own chooser without one), Google contacts, Outlook contacts, a vCard or CSV file, or a typed number. Searching happens on the phone. See [`ganji-app/docs/CONTACTS.md`](ganji-app/docs/CONTACTS.md).
-- **M-Pesa message check (Android only):** reads only messages from the sender `MPESA`, only on request, matches on the phone, and sends the code, kind, amount and payee, never the text. See [`ganji-app/docs/SMS.md`](ganji-app/docs/SMS.md).
+- **Contact search** across this phone (with permission, or its own chooser without one), Google contacts, Outlook contacts, a vCard or CSV file, or a typed number. Searching happens on the phone. See [`ganji_app/docs/CONTACTS.md`](ganji_app/docs/CONTACTS.md).
+- **M-Pesa message check (Android only):** reads only messages from the sender `MPESA`, only on request, matches on the phone, and sends the code, kind, amount and payee, never the text. See [`ganji_app/docs/SMS.md`](ganji_app/docs/SMS.md).
 - Deep links from `https://host/a/ID` and `mganji://a/ID`.
 - iPhone: no message reading is possible. Customers send the M-Pesa message in the chat instead.
 
@@ -184,7 +184,7 @@ Request states: `CREATED`, `APPROVED`, `HANDED_OFF`, `DONE_REPORTED`, `NOT_DONE`
 |---|---|---|
 | [agent-service](agent-service/README.md) | 8082 | Claude model with tool use, the chat (messages and files) and conversation memory, role handling, menus, media understanding, contact lookup |
 | [ganji-api](ganji-api/README.md) | 8084 | Signs customers in by SMS code, relays the chat, stores requests, serves the app, matches message evidence, publishes events, serves app-link files |
-| [ganji-app](ganji-app/README.md) | none | The Flutter app above |
+| [ganji_app](ganji_app/README.md) | none | The Flutter app above |
 | [payment-service](payment-service/README.md) | 8083 | **Optional** Daraja module for a business, off by default |
 
 **Infrastructure.** A database you choose with `DATABASE_TYPE` (MongoDB, PostgreSQL or MySQL, with separate `payments` and `ganji` databases), Redis and RabbitMQ. payment-service defaults to MongoDB when run directly, and the compose file starts PostgreSQL unless you say otherwise. See [`docs/DATABASES.md`](docs/DATABASES.md). All Java services use the same layered packages: controller, service, repository, model, dto, exception, config.

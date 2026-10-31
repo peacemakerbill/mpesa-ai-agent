@@ -78,7 +78,7 @@ The finder in Chat and in the Phone tab searches:
 | A `.vcf` or `.csv` file | Nothing to set up |
 | Typing the number | Nothing to set up |
 
-Contacts are searched in the browser. Only the contact you choose is sent, and only as a chat message. Tokens stay in memory. See [`../ganji-app/docs/CONTACTS.md`](../ganji-app/docs/CONTACTS.md).
+Contacts are searched in the browser. Only the contact you choose is sent, and only as a chat message. Tokens stay in memory. See [`../ganji_app/docs/CONTACTS.md`](../ganji_app/docs/CONTACTS.md).
 
 ## Files and voice notes in Chat
 

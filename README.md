@@ -58,7 +58,7 @@ Customers chat with an assistant in the app or on the web, in English or Swahili
 <tr>
 <td><a href="agent-service/README.md"><img src="docs/assets/card-agent.svg" alt="agent-service" width="384"/></a></td>
 <td><a href="ganji-api/README.md"><img src="docs/assets/card-ganji-api.svg" alt="ganji-api" width="384"/></a></td>
-<td><a href="ganji-app/README.md"><img src="docs/assets/card-ganji-app.svg" alt="ganji-app" width="384"/></a></td>
+<td><a href="ganji_app/README.md"><img src="docs/assets/card-ganji-app.svg" alt="ganji_app" width="384"/></a></td>
 </tr>
 <tr>
 <td><a href="payment-service/README.md"><img src="docs/assets/card-payment.svg" alt="payment-service" width="384"/></a></td>
@@ -72,7 +72,7 @@ Customers chat with an assistant in the app or on the web, in English or Swahili
 |---|---|---|---|
 | agent-service | 8082 | Talks to Claude, keeps each customer's chat and files, prepares requests with tools | Yes |
 | ganji-api | 8084 | Signs customers in by SMS code, relays the chat to the agent, stores prepared requests, serves the app and its link files | Yes |
-| ganji-app | none | Flutter app for Android and iOS: chat, find contacts, approve, hand over to M-Pesa, report | Yes |
+| ganji_app | none | Flutter app for Android, iOS, macOS, Linux and Windows: chat, find contacts, approve, hand over to M-Pesa, report | Yes |
 | payment-service | 8083 | Daraja for a **business**: STK Push to your own shortcode, refunds, payouts, staff roles | Optional, off by default |
 | console | 8000 | One HTML file that behaves like a frontend for every endpoint | For testing |
 | postman | none | Collection and environment for every endpoint | For testing |
@@ -198,7 +198,7 @@ cd ganji-api && mvn spring-boot:run
 cd agent-service   && mvn clean verify
 cd ganji-api       && mvn clean verify
 cd payment-service && mvn clean verify
-cd ganji-app       && ./setup.sh your.reverse.domain && flutter analyze && flutter test
+cd ganji_app && flutter pub get && flutter analyze && flutter test
 ```
 
 **6. Try it without a phone.** Start ganji-api with `CODE_DELIVERY=dev`, then open the console.
@@ -319,7 +319,7 @@ The retry and timeout values sit in the profile ymls, so they are easy to tune.
 |---|---|---|
 | Dialler with the code filled in | Opens the dialler, the customer presses call | Same, with a system confirmation |
 | Open the M-Pesa app | Possible by package name (not verified) | Only if it has a URL scheme (not verified) |
-| Matching the M-Pesa SMS to a request | On request, with permission. See [`ganji-app/docs/SMS.md`](ganji-app/docs/SMS.md). Google Play restricts this permission | Not possible. The customer sends the message in the chat |
+| Matching the M-Pesa SMS to a request | On request, with permission. See [`ganji_app/docs/SMS.md`](ganji_app/docs/SMS.md). Google Play restricts this permission | Not possible. The customer sends the message in the chat |
 | Approval | Fingerprint, face or phone lock | Face ID, Touch ID or passcode |
 
 ## Voice, images and files
@@ -353,9 +353,9 @@ With the switch off, the assistant is told nothing about these tools, the code r
 - Request expiry is checked when a request is read, not by a timer. A request opened in M-Pesa never expires on its own.
 - The chat is read by polling about every 1.5 seconds while the app is open. There is no push notification yet.
 - SIM swap is a risk for any SMS sign-in.
-- The Google and Microsoft contact sign-ins need your own OAuth client ids and were not run against real accounts. See [`ganji-app/docs/CONTACTS.md`](ganji-app/docs/CONTACTS.md).
+- The Google and Microsoft contact sign-ins need your own OAuth client ids and were not run against real accounts. See [`ganji_app/docs/CONTACTS.md`](ganji_app/docs/CONTACTS.md).
 - The phone check protects our approval step only. Whether a biometric or the device lock was used is a best guess recorded for the audit trail.
-- The M-Pesa SMS patterns in `ganji-app/lib/models/mpesa_sms.dart` were written from memory. Test them with real messages.
+- The M-Pesa SMS patterns in `ganji_app/lib/models/mpesa_sms.dart` were written from memory. Test them with real messages.
 - 503 handling is in payment-service. agent-service and ganji-api still need the same treatment in their exception handlers.
 - No admin dashboard, offline mode or Swahili text in the app screens yet. The assistant itself replies in the customer's language.
 
@@ -372,9 +372,9 @@ With the switch off, the assistant is told nothing about these tools, the code r
 |---|---|
 | [`FEATURES.md`](FEATURES.md) | Everything the system does today, for customers and for operators |
 | [`docs/DATABASES.md`](docs/DATABASES.md) | PostgreSQL, MySQL and MongoDB: setup, trade-offs, what was tested |
-| [`ganji-app/docs/CONTACTS.md`](ganji-app/docs/CONTACTS.md) | Contact search and the Google and Microsoft sign-ins |
-| [`ganji-app/docs/SMS.md`](ganji-app/docs/SMS.md) | How the M-Pesa message check works and what it sends |
-| [`ganji-app/docs/PLATFORM_SETUP.md`](ganji-app/docs/PLATFORM_SETUP.md) | Android and iOS settings, signing and app links |
+| [`ganji_app/docs/CONTACTS.md`](ganji_app/docs/CONTACTS.md) | Contact search and the Google and Microsoft sign-ins |
+| [`ganji_app/docs/SMS.md`](ganji_app/docs/SMS.md) | How the M-Pesa message check works and what it sends |
+| [`ganji_app/docs/PLATFORM_SETUP.md`](ganji_app/docs/PLATFORM_SETUP.md) | Settings for each platform, signing and app links |
 
 <div align="center">
 <br/>
