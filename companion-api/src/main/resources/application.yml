@@ -4,6 +4,10 @@ server:
   forward-headers-strategy: native
 
 spring:
+  config:
+    # Reads the .env file next to where the service starts (the companion-api folder), so a run from the IDE or
+    # the command line picks up the same settings as Docker. Real environment variables win over it. A missing file is fine.
+    import: optional:file:.env[.properties]
   profiles:
     # Which database this service uses: postgresql, mysql or mongodb.
     # Change the word after the colon, or set DATABASE_TYPE in the environment.
