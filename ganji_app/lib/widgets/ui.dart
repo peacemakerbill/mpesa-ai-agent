@@ -93,6 +93,23 @@ class StatusTag extends StatelessWidget {
   }
 }
 
+/// A small filled number, for counts next to a heading.
+class CountBadge extends StatelessWidget {
+  const CountBadge(this.count, {super.key});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tk;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(color: t.p.accent, borderRadius: BorderRadius.circular((t.radius * 0.6).clamp(0, 10).toDouble())),
+      child: Text('$count', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: t.p.accentInk)),
+    );
+  }
+}
+
 /// A boxed note. Warnings and information use the same shape so the screen stays calm.
 class Callout extends StatelessWidget {
   const Callout(this.text, {super.key, this.tone = Tone.neutral, this.icon});
@@ -122,7 +139,7 @@ class Callout extends StatelessWidget {
   }
 }
 
-/// The amount, large, with the plain-words summary under it.
+/// The amount, large, with the plain-words summary under it. The figure shrinks to fit a narrow screen or a large text size.
 class AmountHero extends StatelessWidget {
   const AmountHero({super.key, required this.amount, required this.summary});
 
@@ -134,13 +151,17 @@ class AmountHero extends StatelessWidget {
     final t = context.tk;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('Amount', style: Theme.of(context).textTheme.labelMedium),
-      const SizedBox(height: 4),
-      Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-        Text('KES', style: t.numeric(18, weight: FontWeight.w600, color: t.p.ink2)),
-        const SizedBox(width: 8),
-        Flexible(child: Text(formatKes(amount), style: t.numeric(46), overflow: TextOverflow.ellipsis)),
-      ]),
-      const SizedBox(height: 8),
+      const SizedBox(height: 6),
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Row(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+          Text('KES', style: t.numeric(18, weight: FontWeight.w600, color: t.p.ink2)),
+          const SizedBox(width: 8),
+          Text(formatKes(amount), style: t.numeric(52)),
+        ]),
+      ),
+      const SizedBox(height: 10),
       Text(summary, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: t.p.ink2)),
     ]);
   }
@@ -278,16 +299,22 @@ class SectionTitle extends StatelessWidget {
       );
 }
 
-/// The small logo: an outlined square with a drawn M.
+/// The small logo: an outlined square with a drawn M. Pass [ink] and [accent] to draw it on a coloured band.
 class BrandMark extends StatelessWidget {
-  const BrandMark({super.key, this.size = 40});
+  const BrandMark({super.key, this.size = 40, this.ink, this.accent});
 
   final double size;
+  final Color? ink;
+  final Color? accent;
 
   @override
   Widget build(BuildContext context) {
     final t = context.tk;
-    return SizedBox(width: size, height: size, child: CustomPaint(painter: _MarkPainter(ink: t.p.ink, accent: t.p.accent, square: t.square)));
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _MarkPainter(ink: ink ?? t.p.ink, accent: accent ?? t.p.accent, square: t.square)),
+    );
   }
 }
 
@@ -326,6 +353,212 @@ class _MarkPainter extends CustomPainter {
   bool shouldRepaint(covariant _MarkPainter old) => old.ink != ink || old.accent != accent || old.square != square;
 }
 
+/// A quiet repeating pattern of the logo's rounded square, for the background of the chat and the sign-in page.
+/// It paints once and is cached, so it costs nothing while the screen scrolls.
+class BrandPattern extends StatelessWidget {
+  const BrandPattern({super.key, this.color});
+
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tk;
+    final c = color ?? t.p.ink.withAlpha(t.p.dark ? 16 : 11);
+    return IgnorePointer(
+      child: RepaintBoundary(
+        child: CustomPaint(painter: _PatternPainter(color: c, square: t.square), size: Size.infinite),
+      ),
+    );
+  }
+}
+
+class _PatternPainter extends CustomPainter {
+  const _PatternPainter({required this.color, required this.square});
+
+  final Color color;
+  final bool square;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const cell = 72.0;
+    final line = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..color = color;
+    final dot = Paint()..color = color;
+    var row = 0;
+    for (var y = cell / 2; y < size.height + cell; y += cell) {
+      final shift = row.isOdd ? cell / 2 : 0.0;
+      for (var x = cell / 2 - shift; x < size.width + cell; x += cell) {
+        final box = Rect.fromCenter(center: Offset(x, y), width: 26, height: 26);
+        canvas.drawRRect(RRect.fromRectAndRadius(box, Radius.circular(square ? 0 : 8)), line);
+        canvas.drawCircle(Offset(x, y), 2.2, dot);
+      }
+      row++;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PatternPainter old) => old.color != color || old.square != square;
+}
+
+/// The outline of a till slip: a rounded card with a half circle bitten out of the top and bottom edge where the stub tears off.
+class _TicketShape {
+  const _TicketShape({required this.radius, required this.notch, required this.stubWidth});
+
+  final double radius;
+  final double notch;
+  final double stubWidth;
+
+  double tearX(Size size) => size.width - stubWidth;
+
+  Path path(Size size) {
+    final x = tearX(size);
+    final body = Path()..addRRect(RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius)));
+    final bites = Path()
+      ..addOval(Rect.fromCircle(center: Offset(x, 0), radius: notch))
+      ..addOval(Rect.fromCircle(center: Offset(x, size.height), radius: notch));
+    return Path.combine(PathOperation.difference, body, bites);
+  }
+}
+
+class _TicketClipper extends CustomClipper<Path> {
+  const _TicketClipper(this.shape);
+
+  final _TicketShape shape;
+
+  @override
+  Path getClip(Size size) => shape.path(size);
+
+  @override
+  bool shouldReclip(covariant _TicketClipper old) =>
+      old.shape.radius != shape.radius || old.shape.notch != shape.notch || old.shape.stubWidth != shape.stubWidth;
+}
+
+class _TicketBorder extends CustomPainter {
+  const _TicketBorder({required this.shape, required this.color, required this.width, required this.dash});
+
+  final _TicketShape shape;
+  final Color color;
+  final double width;
+  final Color dash;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawPath(
+      shape.path(size),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = width
+        ..color = color,
+    );
+    final x = shape.tearX(size);
+    final paint = Paint()
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round
+      ..color = dash;
+    for (var y = shape.notch + 8; y < size.height - shape.notch - 6; y += 8) {
+      canvas.drawLine(Offset(x, y), Offset(x, y + 3.5), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TicketBorder old) =>
+      old.color != color || old.width != width || old.dash != dash || old.shape.stubWidth != shape.stubWidth || old.shape.radius != shape.radius;
+}
+
+/// A request drawn as a till slip: the details on the left, the amount on a stub that tears off on the right.
+/// With [highlight] the outline takes the accent colour, which marks a request that needs the customer.
+class TicketCard extends StatelessWidget {
+  const TicketCard({super.key, required this.main, required this.stub, this.onTap, this.stubWidth = 112, this.highlight = false});
+
+  final Widget main;
+  final Widget stub;
+  final VoidCallback? onTap;
+  final double stubWidth;
+  final bool highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tk;
+    final shape = _TicketShape(radius: t.radius.clamp(0, 18).toDouble(), notch: 9, stubWidth: stubWidth);
+    return CustomPaint(
+      foregroundPainter: _TicketBorder(
+        shape: shape,
+        color: highlight ? t.p.accent : t.p.line,
+        width: highlight ? 1.6 : 1,
+        dash: t.p.lineStrong,
+      ),
+      child: ClipPath(
+        clipper: _TicketClipper(shape),
+        child: Material(
+          color: t.p.surface,
+          child: InkWell(
+            onTap: onTap,
+            child: IntrinsicHeight(
+              child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                Expanded(child: Padding(padding: const EdgeInsets.fromLTRB(16, 14, 12, 14), child: main)),
+                SizedBox(width: stubWidth, child: Padding(padding: const EdgeInsets.fromLTRB(8, 14, 14, 14), child: stub)),
+              ]),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A calm page for when there is nothing to show yet. It scrolls, so it still fits a phone on its side.
+class EmptyState extends StatelessWidget {
+  const EmptyState({super.key, required this.title, required this.message, this.children = const <Widget>[]});
+
+  final String title;
+  final String message;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tk;
+    final text = Theme.of(context).textTheme;
+    return LayoutBuilder(
+      builder: (context, box) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: box.maxHeight),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Container(
+                    width: 76,
+                    height: 76,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: t.p.accentSoft,
+                      border: Border.all(color: t.p.accentLine),
+                      borderRadius: t.square ? null : BorderRadius.circular(t.radius * 1.5),
+                    ),
+                    child: const BrandMark(size: 44),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(title, style: text.titleLarge, textAlign: TextAlign.center),
+                  const SizedBox(height: 8),
+                  Text(message, textAlign: TextAlign.center, style: text.bodyMedium?.copyWith(color: t.p.ink2)),
+                  if (children.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    ...children,
+                  ],
+                ]),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// An alert dialog that follows the theme's corners and colours.
 class AppDialog extends StatelessWidget {
   const AppDialog({super.key, this.title, this.content, this.actions});
@@ -356,6 +589,8 @@ Future<void> showThemeSheet(BuildContext context, AppState state) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
+    constraints: const BoxConstraints(maxWidth: 560),
     builder: (sheetContext) => ListenableBuilder(
       listenable: state,
       builder: (context, _) {
@@ -367,7 +602,7 @@ Future<void> showThemeSheet(BuildContext context, AppState state) {
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Appearance', style: text.titleLarge),
               const SizedBox(height: 4),
-              Text('Saved on this phone.', style: text.bodySmall),
+              Text('Saved on this device.', style: text.bodySmall),
               const SizedBox(height: 12),
               Flexible(
                 child: SingleChildScrollView(

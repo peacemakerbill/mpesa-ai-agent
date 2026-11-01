@@ -515,7 +515,30 @@ class AppTheme {
       canvasColor: p.bg,
       textTheme: text,
       splashFactory: tk.square ? NoSplash.splashFactory : null,
+      visualDensity: VisualDensity.adaptivePlatformDensity,
       extensions: <ThemeExtension<dynamic>>[tk],
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: p.surface,
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: p.accentSoft,
+        indicatorShape: tk.square ? const RoundedRectangleBorder() : const StadiumBorder(),
+        height: 68,
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>(
+          (states) => body(12, weight: states.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500, color: states.contains(WidgetState.selected) ? p.ink : p.ink2),
+        ),
+        iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
+          (states) => IconThemeData(size: 24, color: states.contains(WidgetState.selected) ? p.ink : p.ink2),
+        ),
+      ),
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: p.surface,
+        indicatorColor: p.accentSoft,
+        indicatorShape: tk.square ? const RoundedRectangleBorder() : const StadiumBorder(),
+        selectedIconTheme: IconThemeData(size: 24, color: p.ink),
+        unselectedIconTheme: IconThemeData(size: 24, color: p.ink2),
+        selectedLabelTextStyle: body(12, weight: FontWeight.w700, color: p.ink),
+        unselectedLabelTextStyle: body(12, weight: FontWeight.w500, color: p.ink2),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: p.headBg,
         foregroundColor: p.headInk,

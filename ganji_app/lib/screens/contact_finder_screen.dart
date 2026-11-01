@@ -89,13 +89,19 @@ class _ContactFinderScreenState extends State<ContactFinderScreen> {
       body: SafeArea(
         child: ListenableBuilder(
           listenable: _c,
-          builder: (context, _) => Column(children: [
-            _sources(context),
-            if (_c.source == ContactSourceKind.manual) Expanded(child: _manual(context)) else ...[
-              _searchBar(context),
-              Expanded(child: _results(context)),
-            ],
-          ]),
+          builder: (context, _) => Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: Column(children: [
+                _sources(context),
+                if (_c.source == ContactSourceKind.manual) Expanded(child: _manual(context)) else ...[
+                  _searchBar(context),
+                  Expanded(child: _results(context)),
+                ],
+              ]),
+            ),
+          ),
         ),
       ),
     );

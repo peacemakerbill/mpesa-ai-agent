@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../api/api_client.dart';
 import '../app_state.dart';
 import '../contacts/contact_models.dart';
+import '../layout/responsive.dart';
 import '../models/handoff.dart';
 import '../models/progress.dart';
 import '../models/sms_match.dart';
@@ -262,13 +263,14 @@ class _ActionScreenState extends State<ActionScreen> with WidgetsBindingObserver
             ? const Center(child: CircularProgressIndicator())
             : a == null
                 ? _failure()
-                : ListView(padding: const EdgeInsets.fromLTRB(20, 20, 20, 28), children: _content(a)),
+                : CenteredList(maxWidth: 640, top: 20, bottom: 32, children: _content(a)),
       ),
     );
   }
 
-  Widget _failure() => ListView(
-        padding: const EdgeInsets.all(20),
+  Widget _failure() => CenteredList(
+        maxWidth: 560,
+        top: 20,
         children: [
           Callout(_error ?? 'Could not open this request.', tone: Tone.bad),
           const SizedBox(height: 12),
@@ -286,10 +288,16 @@ class _ActionScreenState extends State<ActionScreen> with WidgetsBindingObserver
     final t = context.tk;
     final text = Theme.of(context).textTheme;
     final widgets = <Widget>[
-      AmountHero(amount: a.amount, summary: a.summary),
-      const SizedBox(height: 14),
-      Align(alignment: Alignment.centerLeft, child: StatusTag(a.statusText, tone: toneForStatus(a.status))),
-      const SizedBox(height: 18),
+      Panel(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+        edge: a.isOpen ? t.p.accent : null,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          AmountHero(amount: a.amount, summary: a.summary),
+          const SizedBox(height: 14),
+          StatusTag(a.statusText, tone: toneForStatus(a.status)),
+        ]),
+      ),
+      const SizedBox(height: 16),
     ];
 
     if (a.isOpen) {
@@ -342,7 +350,11 @@ class _ActionScreenState extends State<ActionScreen> with WidgetsBindingObserver
         ..add(FilledButton.icon(
           onPressed: _busy || (a.needsContact && _contact == null) ? null : _approve,
           icon: const Icon(Icons.fingerprint),
-          label: const Text('Approve with fingerprint, face or phone lock'),
+          label: const Text('Approve on this phone'),
+        ))
+        ..add(Padding(
+          padding: const EdgeInsets.only(top: 6, bottom: 4),
+          child: Text('You confirm with your fingerprint, face or phone lock. Nothing is sent before that.', style: text.bodySmall, textAlign: TextAlign.center),
         ))
         ..add(const SizedBox(height: 8))
         ..add(OutlinedButton(onPressed: _busy ? null : _decline, child: const Text('Decline')));

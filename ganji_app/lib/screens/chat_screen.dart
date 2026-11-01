@@ -8,6 +8,7 @@ import '../chat/chat_controller.dart';
 import '../chat/chat_device.dart';
 import '../contacts/contact_models.dart';
 import '../contacts/contact_services.dart';
+import '../layout/responsive.dart';
 import '../models/chat.dart';
 import '../theme/app_theme.dart';
 import '../widgets/chat_bubbles.dart';
@@ -60,6 +61,24 @@ class _Pending {
   /// A voice note, a contact or a location is sent without the typed words as a caption.
   bool get takesCaption => file != null && file!.kind != 'AUDIO';
 }
+
+/// One line of the message list: a message, a day heading, or the typing dots.
+class _Entry {
+  const _Entry.message(ChatMessage this.message, {this.startsGroup = true}) : day = null;
+  const _Entry.day(DateTime this.day)
+      : message = null,
+        startsGroup = false;
+  const _Entry.typing()
+      : message = null,
+        day = null,
+        startsGroup = false;
+
+  final ChatMessage? message;
+  final DateTime? day;
+  final bool startsGroup;
+}
+
+const double _columnWidth = 760;
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key, required this.state, required this.chat, required this.device, required this.contacts});
@@ -118,6 +137,12 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _openRequest(String id) {
+    // On a wide window the request opens in the right pane, next to the conversation.
+    final inPane = RequestPane.openerOf(context);
+    if (inPane != null) {
+      inPane(id);
+      return;
+    }
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => ActionScreen(state: widget.state, actionId: id)));
   }
 
@@ -208,15 +233,16 @@ class _ChatScreenState extends State<ChatScreen> {
     ];
     showModalBottomSheet<void>(
       context: context,
+      constraints: const BoxConstraints(maxWidth: 560),
       builder: (sheet) {
         final t = sheet.tk;
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Wrap(spacing: 8, runSpacing: 12, children: [
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+            child: Wrap(alignment: WrapAlignment.center, spacing: 12, runSpacing: 12, children: [
               for (final e in entries)
                 SizedBox(
-                  width: (MediaQuery.sizeOf(sheet).width - 32 - 16) / 3,
+                  width: 92,
                   child: InkWell(
                     borderRadius: t.corners,
                     onTap: () {
@@ -321,7 +347,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AppDialog(
-        title: const Text('Sign out of this phone?'),
+        title: const Text('Sign out of this device?'),
         content: const Text('You will need a new code by SMS to sign in again.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Stay signed in')),
@@ -339,26 +365,12 @@ class _ChatScreenState extends State<ChatScreen> {
     return ListenableBuilder(
       listenable: _chat,
       builder: (context, _) => Scaffold(
-        appBar: AppBar(
-          title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('M-Ganji'),
-            if (_chat.typing) Text('typing', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: context.tk.p.ink2)),
-          ]),
-          actions: [
-            IconButton(onPressed: () => showThemeSheet(context, widget.state), icon: const Icon(Icons.palette_outlined), tooltip: 'Appearance'),
-            PopupMenuButton<String>(
-              onSelected: (v) => v == 'clear' ? _clear() : _signOut(),
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'clear', child: Text('Clear chat')),
-                PopupMenuItem(value: 'out', child: Text('Sign out')),
-              ],
-            ),
-          ],
-        ),
+        appBar: _appBar(context),
         body: SafeArea(
+          top: false,
           child: Column(children: [
             Expanded(child: _messages(context)),
-            if (_chat.error != null) Padding(padding: const EdgeInsets.fromLTRB(12, 4, 12, 0), child: Callout(_chat.error!, tone: Tone.bad)),
+            if (_chat.error != null) _padded(Callout(_chat.error!, tone: Tone.bad), top: 4),
             if (_tray.isNotEmpty) _trayView(context),
             _composer(context),
           ]),
@@ -367,23 +379,116 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  /// Keeps what sits under the message list at the same width as the messages.
+  Widget _padded(Widget child, {double top = 0, double bottom = 0}) {
+    return LayoutBuilder(
+      builder: (context, box) {
+        final side = sidePad(box.maxWidth, maxWidth: _columnWidth);
+        return Padding(padding: EdgeInsets.fromLTRB(side, top, side, bottom), child: child);
+      },
+    );
+  }
+
+  PreferredSizeWidget _appBar(BuildContext context) {
+    final t = context.tk;
+    final text = Theme.of(context).textTheme;
+    final inkOnHead = t.p.headInk;
+    return AppBar(
+      titleSpacing: 16,
+      title: Row(children: [
+        Container(
+          width: 38,
+          height: 38,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: inkOnHead.withAlpha(24),
+            border: Border.all(color: inkOnHead.withAlpha(60)),
+            borderRadius: t.square ? null : BorderRadius.circular(t.radius * 0.9),
+          ),
+          child: BrandMark(size: 24, ink: inkOnHead, accent: t.p.headDark ? inkOnHead : t.p.accent),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+            const Text('M-Ganji', maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(
+              _chat.typing ? 'typing' : 'Your M-Pesa assistant',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: text.labelSmall?.copyWith(color: inkOnHead.withAlpha(190)),
+            ),
+          ]),
+        ),
+      ]),
+      actions: [
+        IconButton(onPressed: () => showThemeSheet(context, widget.state), icon: const Icon(Icons.palette_outlined), tooltip: 'Appearance'),
+        PopupMenuButton<String>(
+          tooltip: 'More',
+          onSelected: (v) => v == 'clear' ? _clear() : _signOut(),
+          itemBuilder: (_) => const [
+            PopupMenuItem(value: 'clear', child: Text('Clear chat')),
+            PopupMenuItem(value: 'out', child: Text('Sign out')),
+          ],
+        ),
+      ],
+    );
+  }
+
+  bool _sameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+
+  String _dayLabel(DateTime d) {
+    final now = DateTime.now();
+    if (_sameDay(d, now)) return 'Today';
+    if (_sameDay(d, now.subtract(const Duration(days: 1)))) return 'Yesterday';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${d.day} ${months[d.month - 1]}${d.year == now.year ? '' : ' ${d.year}'}';
+  }
+
+  /// Newest first, because the list is drawn from the bottom up.
+  List<_Entry> _entries(List<ChatMessage> list) {
+    final out = <_Entry>[];
+    if (_chat.typing) out.add(const _Entry.typing());
+    for (var i = list.length - 1; i >= 0; i--) {
+      final m = list[i];
+      final prev = i > 0 ? list[i - 1] : null;
+      final newDay = prev == null || !_sameDay(prev.at, m.at);
+      final startsGroup = prev == null || newDay || prev.mine != m.mine;
+      out.add(_Entry.message(m, startsGroup: startsGroup));
+      if (newDay) out.add(_Entry.day(m.at));
+    }
+    return out;
+  }
+
   Widget _messages(BuildContext context) {
     if (!_chat.loaded) return const Center(child: CircularProgressIndicator());
     final list = _chat.messages;
-    if (list.isEmpty) return _welcome(context);
+    return Stack(fit: StackFit.expand, children: [
+      const Positioned.fill(child: BrandPattern()),
+      if (list.isEmpty) _welcome(context) else _list(context, list),
+    ]);
+  }
+
+  Widget _list(BuildContext context, List<ChatMessage> list) {
     var lastMine = 0;
     for (final m in list) {
       if (m.mine && m.id > lastMine) lastMine = m.id;
     }
-    final extra = _chat.typing ? 1 : 0;
-    return ListView.builder(
-      reverse: true,
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-      itemCount: list.length + extra,
-      itemBuilder: (context, i) {
-        if (extra == 1 && i == 0) return const TypingBubble();
-        final m = list[list.length - 1 - (i - extra)];
-        return MessageBubble(key: ValueKey(m.id), message: m, live: m.id > lastMine, actions: _actions);
+    final entries = _entries(list);
+    return LayoutBuilder(
+      builder: (context, box) {
+        final side = sidePad(box.maxWidth, maxWidth: _columnWidth);
+        return ListView.builder(
+          reverse: true,
+          padding: EdgeInsets.fromLTRB(side, 10, side, 10),
+          itemCount: entries.length,
+          itemBuilder: (context, i) {
+            final e = entries[i];
+            if (e.day != null) return _DayChip(_dayLabel(e.day!));
+            final m = e.message;
+            if (m == null) return const TypingBubble();
+            return MessageBubble(key: ValueKey(m.id), message: m, live: m.id > lastMine, actions: _actions, startsGroup: e.startsGroup);
+          },
+        );
       },
     );
   }
@@ -391,82 +496,106 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _welcome(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final t = context.tk;
-    const ideas = ['Send 500 to Mama', 'Pay till 123456', 'What can you do?'];
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const BrandMark(size: 44),
-          const SizedBox(height: 16),
-          Text('Ask in your own words', style: text.titleLarge),
-          const SizedBox(height: 8),
-          Text(
-            'Type, send a photo of a till or paybill, or record a voice note. Nothing moves until you approve it.',
-            textAlign: TextAlign.center,
-            style: text.bodyMedium?.copyWith(color: t.p.ink2),
-          ),
-          const SizedBox(height: 16),
-          Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
-            for (final idea in ideas)
-              ActionChip(
-                label: Text(idea),
-                backgroundColor: t.p.surface,
-                side: BorderSide(color: t.p.line),
-                shape: t.shape(outline: false, scale: 0.7),
-                onPressed: () {
-                  _text.text = idea;
-                  _text.selection = TextSelection.collapsed(offset: idea.length);
-                  _focus.requestFocus();
-                },
+    const ideas = [
+      (Icons.send_outlined, 'Send 500 to Mama'),
+      (Icons.storefront_outlined, 'Pay till 123456'),
+      (Icons.help_outline, 'What can you do?'),
+    ];
+    return LayoutBuilder(
+      builder: (context, box) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: box.maxHeight),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 460),
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Container(
+                    width: 76,
+                    height: 76,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: t.p.surface,
+                      border: Border.all(color: t.p.accentLine),
+                      borderRadius: t.square ? null : BorderRadius.circular(t.radius * 1.5),
+                    ),
+                    child: const BrandMark(size: 44),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('Ask in your own words', style: text.titleLarge, textAlign: TextAlign.center),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Type, send a photo of a till or paybill, or record a voice note. Nothing moves until you approve it.',
+                    textAlign: TextAlign.center,
+                    style: text.bodyMedium?.copyWith(color: t.p.ink2),
+                  ),
+                  const SizedBox(height: 20),
+                  Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
+                    for (final idea in ideas)
+                      ActionChip(
+                        avatar: Icon(idea.$1, size: 18, color: t.p.ink),
+                        label: Text(idea.$2),
+                        backgroundColor: t.p.surface,
+                        side: BorderSide(color: t.p.line),
+                        shape: t.shape(outline: false, scale: 0.7),
+                        onPressed: () {
+                          _text.text = idea.$2;
+                          _text.selection = TextSelection.collapsed(offset: idea.$2.length);
+                          _focus.requestFocus();
+                        },
+                      ),
+                  ]),
+                ]),
               ),
-          ]),
-        ]),
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _trayView(BuildContext context) {
     final t = context.tk;
-    return SizedBox(
-      height: 48,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(12, 6, 12, 4),
-        itemCount: _tray.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (_, i) => InputChip(
-          avatar: Icon(_tray[i].icon, size: 18, color: t.p.ink),
-          label: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 160), child: Text(_tray[i].label, overflow: TextOverflow.ellipsis)),
-          onDeleted: () => setState(() => _tray.removeAt(i)),
-          backgroundColor: t.p.accentSoft,
-          side: BorderSide(color: t.p.accentLine),
-          shape: t.shape(outline: false, scale: 0.7),
+    return _padded(
+      SizedBox(
+        height: 48,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.only(top: 6, bottom: 4),
+          itemCount: _tray.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 8),
+          itemBuilder: (_, i) => InputChip(
+            avatar: Icon(_tray[i].icon, size: 18, color: t.p.ink),
+            label: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 160), child: Text(_tray[i].label, overflow: TextOverflow.ellipsis)),
+            onDeleted: () => setState(() => _tray.removeAt(i)),
+            backgroundColor: t.p.accentSoft,
+            side: BorderSide(color: t.p.accentLine),
+            shape: t.shape(outline: false, scale: 0.7),
+          ),
         ),
       ),
     );
   }
 
+  /// The message box floats above the pattern as one rounded bar, at the same width as the messages.
   Widget _composer(BuildContext context) {
     final t = context.tk;
+    final bar = t.square ? BorderRadius.zero : BorderRadius.circular(28);
+    final decoration = BoxDecoration(color: t.p.surface, border: Border.all(color: t.p.lineStrong), borderRadius: bar);
+    final Widget content;
     if (_recording) {
-      return Container(
-        padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
-        decoration: BoxDecoration(color: t.p.surface, border: Border(top: BorderSide(color: t.p.line))),
-        child: Row(children: [
-          IconButton(onPressed: _cancelVoice, icon: const Icon(Icons.delete_outline), tooltip: 'Discard recording'),
-          Icon(Icons.fiber_manual_record, size: 14, color: t.p.bad),
-          const SizedBox(width: 8),
-          Text('Recording  ${_elapsed()}', style: t.numeric(16, weight: FontWeight.w600)),
-          const Spacer(),
-          IconButton.filled(onPressed: _sendVoice, icon: const Icon(Icons.send), tooltip: 'Send voice note'),
-        ]),
-      );
-    }
-    final hasWords = _text.text.trim().isNotEmpty || _tray.isNotEmpty;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(4, 6, 8, 8),
-      decoration: BoxDecoration(color: t.p.surface, border: Border(top: BorderSide(color: t.p.line))),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+      content = Row(children: [
+        IconButton(onPressed: _cancelVoice, icon: const Icon(Icons.delete_outline), tooltip: 'Discard recording'),
+        Icon(Icons.fiber_manual_record, size: 14, color: t.p.bad),
+        const SizedBox(width: 8),
+        Expanded(child: Text('Recording  ${_elapsed()}', style: t.numeric(16, weight: FontWeight.w600))),
+        IconButton.filled(onPressed: _sendVoice, icon: const Icon(Icons.send), tooltip: 'Send voice note'),
+        const SizedBox(width: 4),
+      ]);
+    } else {
+      final hasWords = _text.text.trim().isNotEmpty || _tray.isNotEmpty;
+      content = Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
         IconButton(onPressed: _showAttachMenu, icon: const Icon(Icons.add_circle_outline), tooltip: 'Attach'),
         Expanded(
           child: TextField(
@@ -476,15 +605,50 @@ class _ChatScreenState extends State<ChatScreen> {
             maxLines: 5,
             keyboardType: TextInputType.multiline,
             textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(hintText: _tray.isEmpty ? 'Message' : 'Add a caption', isDense: true),
+            decoration: InputDecoration(
+              hintText: _tray.isEmpty ? 'Message' : 'Add a caption',
+              isDense: true,
+              filled: false,
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
+            ),
           ),
         ),
-        const SizedBox(width: 6),
-        if (hasWords)
-          IconButton.filled(onPressed: _chat.sending ? null : _send, icon: const Icon(Icons.send), tooltip: 'Send')
-        else
-          IconButton.filled(onPressed: _startVoice, icon: const Icon(Icons.mic), tooltip: 'Record a voice note'),
-      ]),
+        const SizedBox(width: 4),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 150),
+          child: hasWords
+              ? IconButton.filled(key: const ValueKey('send'), onPressed: _chat.sending ? null : _send, icon: const Icon(Icons.send), tooltip: 'Send')
+              : IconButton.filled(key: const ValueKey('mic'), onPressed: _startVoice, icon: const Icon(Icons.mic), tooltip: 'Record a voice note'),
+        ),
+        const SizedBox(width: 4),
+      ]);
+    }
+    return _padded(Container(decoration: decoration, child: content), top: 6, bottom: 8);
+  }
+}
+
+class _DayChip extends StatelessWidget {
+  const _DayChip(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tk;
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: t.p.surface,
+          border: Border.all(color: t.p.line),
+          borderRadius: BorderRadius.circular(t.square ? 0 : 20),
+        ),
+        child: Text(label, style: Theme.of(context).textTheme.labelMedium),
+      ),
     );
   }
 }

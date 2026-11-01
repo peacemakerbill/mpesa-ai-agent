@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -34,11 +36,14 @@ String clock(DateTime t) => '${t.hour.toString().padLeft(2, '0')}:${t.minute.toS
 /// One message, on the right when the customer wrote it and on the left when the assistant did.
 /// [live] is true when buttons and menus under it can still be used, that is, nothing was said after it.
 class MessageBubble extends StatelessWidget {
-  const MessageBubble({super.key, required this.message, required this.live, required this.actions});
+  const MessageBubble({super.key, required this.message, required this.live, required this.actions, this.startsGroup = true});
 
   final ChatMessage message;
   final bool live;
   final BubbleActions actions;
+
+  /// False when the message before this one came from the same side, so the two sit closer together.
+  final bool startsGroup;
 
   @override
   Widget build(BuildContext context) {
@@ -52,23 +57,25 @@ class MessageBubble extends StatelessWidget {
       bottomLeft: Radius.circular(mine ? r : small),
       bottomRight: Radius.circular(mine ? small : r),
     );
-    final width = MediaQuery.sizeOf(context).width;
-    return Align(
-      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsets.fromLTRB(mine ? 48 : 0, 3, mine ? 0 : 48, 3),
-        constraints: BoxConstraints(maxWidth: width * 0.84),
-        padding: const EdgeInsets.fromLTRB(12, 9, 12, 6),
-        decoration: BoxDecoration(
-          color: mine ? t.p.accentSoft : t.p.surface,
-          border: Border.all(color: mine ? t.p.accentLine : t.p.line),
-          borderRadius: shape,
+    // A bubble is at most 84 percent of the pane it sits in, and never wider than 560 points, so lines stay easy to read on a big screen.
+    return LayoutBuilder(
+      builder: (context, box) => Align(
+        alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          margin: EdgeInsets.fromLTRB(mine ? 40 : 0, startsGroup ? 8 : 2, mine ? 0 : 40, 0),
+          constraints: BoxConstraints(maxWidth: math.min(box.maxWidth * 0.84, 560.0)),
+          padding: const EdgeInsets.fromLTRB(12, 9, 12, 6),
+          decoration: BoxDecoration(
+            color: mine ? t.p.accentSoft : t.p.surface,
+            border: Border.all(color: mine ? t.p.accentLine : t.p.line),
+            borderRadius: shape,
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+            _content(context),
+            const SizedBox(height: 3),
+            Align(alignment: Alignment.centerRight, child: Text(clock(message.at), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: t.p.ink3))),
+          ]),
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-          _content(context),
-          const SizedBox(height: 3),
-          Align(alignment: Alignment.centerRight, child: Text(clock(message.at), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: t.p.ink3))),
-        ]),
       ),
     );
   }
@@ -164,6 +171,7 @@ class MessageBubble extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 560),
       builder: (sheet) => SafeArea(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(sheet).height * 0.7),
@@ -258,35 +266,41 @@ class _ChatImageState extends State<_ChatImage> {
   @override
   Widget build(BuildContext context) {
     final t = context.tk;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular((t.radius * 0.6).clamp(0, 12).toDouble()),
-      child: FutureBuilder<ChatFile>(
-        future: _file,
-        builder: (context, snap) {
-          if (snap.hasData) {
-            final bytes = snap.data!.bytes;
-            return GestureDetector(
-              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-                builder: (_) => Scaffold(
-                  backgroundColor: Colors.black,
-                  appBar: AppBar(backgroundColor: Colors.black, foregroundColor: Colors.white),
-                  body: Center(child: InteractiveViewer(child: Image.memory(bytes))),
-                ),
-              )),
-              child: Image.memory(bytes, width: 240, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _box(context, Icons.broken_image_outlined, 'Photo could not be shown')),
-            );
-          }
-          if (snap.hasError) return _box(context, Icons.broken_image_outlined, 'Photo could not be loaded');
-          return _box(context, null, null);
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, box) {
+        // As wide as the bubble allows, up to 320 points.
+        final width = math.min(box.maxWidth.isFinite ? box.maxWidth : 240.0, 320.0);
+        return ClipRRect(
+          borderRadius: BorderRadius.circular((t.radius * 0.6).clamp(0, 12).toDouble()),
+          child: FutureBuilder<ChatFile>(
+            future: _file,
+            builder: (context, snap) {
+              if (snap.hasData) {
+                final bytes = snap.data!.bytes;
+                return GestureDetector(
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                    builder: (_) => Scaffold(
+                      backgroundColor: Colors.black,
+                      appBar: AppBar(backgroundColor: Colors.black, foregroundColor: Colors.white),
+                      body: Center(child: InteractiveViewer(child: Image.memory(bytes))),
+                    ),
+                  )),
+                  child: Image.memory(bytes, width: width, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _box(context, width, Icons.broken_image_outlined, 'Photo could not be shown')),
+                );
+              }
+              if (snap.hasError) return _box(context, width, Icons.broken_image_outlined, 'Photo could not be loaded');
+              return _box(context, width, null, null);
+            },
+          ),
+        );
+      },
     );
   }
 
-  Widget _box(BuildContext context, IconData? icon, String? label) {
+  Widget _box(BuildContext context, double width, IconData? icon, String? label) {
     final t = context.tk;
     return Container(
-      width: 240,
+      width: width,
       height: 140,
       color: t.p.surface2,
       alignment: Alignment.center,

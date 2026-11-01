@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 
 import 'app_state.dart';
@@ -10,6 +11,7 @@ import 'screens/action_screen.dart';
 import 'screens/home_shell.dart';
 import 'screens/link_screen.dart';
 import 'theme/app_theme.dart';
+import 'widgets/ui.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,6 +75,13 @@ class _GanjiAppState extends State<GanjiApp> {
         navigatorKey: navigator,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.build(state.theme),
+        scrollBehavior: const _AppScrollBehavior(),
+        // Text follows the phone's size setting, but is held to a range the screens are drawn for.
+        builder: (context, child) => MediaQuery.withClampedTextScaling(
+          minScaleFactor: 0.85,
+          maxScaleFactor: 1.4,
+          child: child ?? const SizedBox.shrink(),
+        ),
         home: _home(),
       ),
     );
@@ -87,9 +96,30 @@ class _GanjiAppState extends State<GanjiApp> {
   }
 }
 
+/// Lets a mouse or a trackpad drag a list, as a finger does, so the app also feels right on a desktop.
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  const _AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.trackpad,
+      };
+}
+
 class _Splash extends StatelessWidget {
   const _Splash();
 
   @override
-  Widget build(BuildContext context) => const Scaffold(body: Center(child: CircularProgressIndicator()));
+  Widget build(BuildContext context) => const Scaffold(
+        body: Center(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            BrandMark(size: 56),
+            SizedBox(height: 24),
+            SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2)),
+          ]),
+        ),
+      );
 }
