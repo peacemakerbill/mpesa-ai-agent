@@ -24,10 +24,13 @@ android {
         applicationId = "ke.co.ganjiai.ganji_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // local_auth and the sign-in plugins need API 23 or higher.
+        minSdk = maxOf(flutter.minSdkVersion, 23)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Where the Microsoft sign-in (Outlook contacts) returns to the app.
+        manifestPlaceholders["appAuthRedirectScheme"] = "mganjiauth"
     }
 
     buildTypes {
