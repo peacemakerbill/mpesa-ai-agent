@@ -1,0 +1,9 @@
+{{! A ledger of label and value rows. Needs rows (label, value, mono). }}
+<table role="presentation" class="bd" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:2px solid #15171F;margin:6px 0 22px 0;">
+{{#each rows}}
+<tr>
+<td class="slip-l hair" valign="top" width="34%" style="padding:13px 10px 13px 0;border-bottom:1px solid #C9CBD3;font-family:'DM Mono','Courier New',Courier,monospace;font-size:12px;line-height:21px;color:#565B6B;"><span class="tx-muted" style="color:#565B6B;">{{label}}</span></td>
+<td class="slip-v hair" valign="top" style="padding:12px 0 12px 0;border-bottom:1px solid #C9CBD3;font-family:'Hanken Grotesk','Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:23px;color:#1D2030;word-break:break-word;"><span class="tx" style="color:#1D2030;{{#if mono}}font-family:'DM Mono','Courier New',Courier,monospace;font-weight:bold;letter-spacing:1px;{{/if}}">{{value}}</span></td>
+</tr>
+{{/each}}
+</table>

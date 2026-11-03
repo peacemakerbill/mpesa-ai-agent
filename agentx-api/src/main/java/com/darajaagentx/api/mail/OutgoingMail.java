@@ -3,7 +3,8 @@ package com.darajaagentx.api.mail;
 import java.util.List;
 
 /**
- * One email. [html] may be null for a plain text email. Every address was already checked with Emails.clean,
+ * One email. When [html] is set it is the only body that is sent, and [text] is just a short digest for the log. When [html]
+ * is null the text is sent as a plain text email. Every address was already checked with Emails.clean,
  * which refuses line breaks, so none of these can add a header.
  *
  * <p>[replyTo] is where a reply goes. Null means the server's default (agentx.mail.reply-to, usually none). A report a

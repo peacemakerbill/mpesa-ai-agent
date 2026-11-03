@@ -1,0 +1,14 @@
+<p style="margin:0 0 16px 0;">{{greeting}}</p>
+<p style="margin:0 0 24px 0;">Your {{brand}} account is ready, and this email address is now verified, so reports and alerts can reach you here.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+{{#each features}}
+<tr><td class="bd" style="border-top:2px solid #15171F;padding:14px 0 18px 0;">
+<div class="tx" style="font-family:'Bricolage Grotesque','Trebuchet MS','Segoe UI',Helvetica,Arial,sans-serif;font-size:21px;line-height:26px;font-weight:700;letter-spacing:-0.4px;color:#15171F;padding-bottom:3px;">{{title}}</div>
+<div class="tx-muted" style="font-family:'Hanken Grotesk','Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#565B6B;">{{text}}</div>
+</td></tr>
+{{/each}}
+</table>
+{{#if buttonUrl}}
+{{> button}}
+{{/if}}
+<p class="tx-muted" style="margin:22px 0 0 0;font-size:14px;line-height:22px;color:#565B6B;">If you did not create this account, reply to this email and we will look into it.</p>

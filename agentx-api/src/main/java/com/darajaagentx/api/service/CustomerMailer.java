@@ -48,7 +48,7 @@ public class CustomerMailer {
 
     /** The code that proves an address is the customer's. Sent now, errors reach the caller. */
     public void emailCode(UserProfile profile, String address, String code) {
-        MailTemplates.Message m = MailTemplates.emailCode(brand, firstName(profile), code, (int) props.codeTtl().toMinutes());
+        MailTemplates.Message m = MailTemplates.emailCode(brand, firstName(profile), code, (int) props.codeTtl().toMinutes(), clock.instant());
         outbox.send(profile.getPhone(), "EMAIL_CODE", OutgoingMail.of(List.of(address), m.subject(), m.text(), m.html()));
     }
 
@@ -57,7 +57,7 @@ public class CustomerMailer {
         if (!props.notifications().welcome() || !hasVerifiedEmail(profile)) {
             return;
         }
-        MailTemplates.Message m = MailTemplates.welcome(brand, firstName(profile));
+        MailTemplates.Message m = MailTemplates.welcome(brand, firstName(profile), clock.instant());
         outbox.sendQuietly(profile.getPhone(), "WELCOME", OutgoingMail.of(List.of(profile.getEmail()), m.subject(), m.text(), m.html()));
     }
 
@@ -110,7 +110,7 @@ public class CustomerMailer {
         if (!hasVerifiedEmail(owner)) {
             return;
         }
-        MailTemplates.Message m = MailTemplates.reportNotice(brand, firstName(owner), title, recipients, fileName);
+        MailTemplates.Message m = MailTemplates.reportNotice(brand, firstName(owner), title, recipients, fileName, clock.instant());
         outbox.sendQuietly(owner.getPhone(), "REPORT_NOTICE", OutgoingMail.of(List.of(owner.getEmail()), m.subject(), m.text(), m.html()));
     }
 
@@ -123,7 +123,7 @@ public class CustomerMailer {
             return;
         }
         UserProfile p = found.get();
-        MailTemplates.Message m = MailTemplates.payment(brand, firstName(p), ok, title, summary, result, receipt);
+        MailTemplates.Message m = MailTemplates.payment(brand, firstName(p), ok, title, summary, result, receipt, clock.instant());
         outbox.sendQuietly(phone, "PAYMENT", OutgoingMail.of(List.of(p.getEmail()), m.subject(), m.text(), m.html()));
     }
 

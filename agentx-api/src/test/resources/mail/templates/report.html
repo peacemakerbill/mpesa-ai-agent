@@ -1,0 +1,16 @@
+<p style="margin:0 0 16px 0;">Hello,</p>
+<p style="margin:0 0 20px 0;">{{who}} sent you a report from {{brand}}.</p>
+{{#if note}}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px 0;"><tr>
+<td class="pk" width="6" bgcolor="#15171F" style="width:6px;background-color:#15171F;font-size:0;line-height:0;">&nbsp;</td>
+<td class="tx" style="padding:2px 0 2px 18px;font-family:'Bricolage Grotesque','Trebuchet MS','Segoe UI',Helvetica,Arial,sans-serif;font-size:21px;line-height:29px;font-weight:500;letter-spacing:-0.3px;color:#15171F;">{{note}}</td>
+</tr></table>
+{{/if}}
+<table role="presentation" class="bd" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:2px solid #15171F;margin:0 0 8px 0;"><tr>
+<td class="filebox" width="84" align="center" valign="middle" bgcolor="#15171F" style="width:84px;background-color:#15171F;font-family:'DM Mono','Courier New',Courier,monospace;font-size:16px;line-height:20px;font-weight:bold;color:#FFFFFF;padding:18px 0;"><span style="color:#FFFFFF;">{{ext}}</span></td>
+<td valign="middle" style="padding:16px 18px;">
+<div class="tx" style="font-family:'Bricolage Grotesque','Trebuchet MS','Segoe UI',Helvetica,Arial,sans-serif;font-size:18px;line-height:24px;font-weight:700;letter-spacing:-0.3px;color:#15171F;word-break:break-all;">{{fileName}}</div>
+<div class="tx-muted" style="font-family:'DM Mono','Courier New',Courier,monospace;font-size:12px;line-height:20px;color:#565B6B;padding-top:2px;">{{rowsLabel}}, made {{when}}</div>
+<div class="tx-muted" style="font-family:'DM Mono','Courier New',Courier,monospace;font-size:12px;line-height:20px;color:#565B6B;">Attached to this email</div>
+</td>
+</tr></table>

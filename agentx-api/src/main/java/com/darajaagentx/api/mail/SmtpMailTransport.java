@@ -65,7 +65,8 @@ public class SmtpMailTransport implements MailTransport {
             helper.setTo(mail.to().toArray(String[]::new));
             helper.setSubject(mail.subject());
             if (mail.html() != null) {
-                helper.setText(mail.text(), mail.html());
+                // HTML only. The plain text of a message is for the log and for tests, it is not sent.
+                helper.setText(mail.html(), true);
             } else {
                 helper.setText(mail.text(), false);
             }

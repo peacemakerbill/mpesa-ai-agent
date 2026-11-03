@@ -1,0 +1,11 @@
+<p style="margin:0 0 16px 0;">{{greeting}}</p>
+{{#if summary}}
+<p class="tx" style="margin:0 0 14px 0;font-family:'Bricolage Grotesque','Trebuchet MS','Segoe UI',Helvetica,Arial,sans-serif;font-size:22px;line-height:30px;font-weight:700;letter-spacing:-0.4px;color:#15171F;">{{summary}}</p>
+{{/if}}
+{{> slip}}
+{{#if next}}
+{{> callout}}
+{{/if}}
+{{#if receipt}}
+<p class="tx-muted" style="margin:18px 0 0 0;font-size:14px;line-height:22px;color:#565B6B;">Keep the M-Pesa code. You will need it if you ask Safaricom about this payment.</p>
+{{/if}}
