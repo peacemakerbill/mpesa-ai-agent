@@ -53,7 +53,8 @@ public class ChatSessions {
     }
 
     /** A refusal the controller turns into an HTTP answer. */
-    public static class Failure extends RuntimeException {
+    @SuppressWarnings("serial")
+	public static class Failure extends RuntimeException {
         private final int status;
 
         public Failure(int status, String message) {
