@@ -36,7 +36,7 @@ spring:
 Or leave the file alone and set `DATABASE_TYPE` in the environment or in the service's `.env`. **The environment wins.** Each service can use a different database.
 
 > [!NOTE]
-> **Defaults.** payment-service defaults to `mongodb` when you run it directly. The compose file still starts PostgreSQL unless `DATABASE_TYPE` says otherwise. If agentx-api's `application.yml` still reads `${DATABASE_TYPE:postgresql}`, that is its default. Check the line above in each service so you know what you are running.
+> **Defaults.** agentx-api and payment-service both default to `mongodb` when you run them directly. A `DATABASE_TYPE` line in a service's `.env` wins over the default, so check that file if the service starts on a database you did not expect. The compose file still starts PostgreSQL unless `DATABASE_TYPE` says otherwise.
 
 Each service reads its local `.env` through `spring.config.import: optional:file:.env[.properties]`. Spring Boot does not read `.env` on its own, so this line must stay in `application.yml`. Real environment variables always win over the file.
 
