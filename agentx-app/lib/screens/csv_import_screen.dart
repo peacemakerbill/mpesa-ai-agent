@@ -212,7 +212,8 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
           'The first line is the header. The order of columns does not matter, and you can leave out columns you do not use.',
           'A head row has the shortcode and the credentials. One head per shortcode and environment.',
           'A shortcode with many tills or branches: add one more row per till. Leave shortcode empty and write the head shortcode in parent_shortcode. Buy Goods branches fill till_number, Paybill branches fill account_reference.',
-          'Branch rows must not carry credentials. They use their head\'s.',
+          'A store number or child shortcode has its own number: write it in shortcode, and the head office in parent_shortcode. A Buy Goods store number also fills till_number (the till linked to it). A Paybill child has no till.',
+          'A row without a shortcode is a till or branch that shares its head office\'s shortcode and credentials, so it carries none. A store number that went live on its own can carry its own credentials. Leave out the ones it does not have: the key and secret, and the initiator, then come from the head office. The passkey is only ever its own.',
           'A row for an account that is already saved updates it. Leave consumer_secret empty to keep the saved one.',
           'Commas, semicolons or tabs can separate the columns. Use UTF-8 text.',
           'If any row has a problem, nothing at all is saved.',
@@ -307,9 +308,12 @@ class _PreviewRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final t = context.tk;
-    final what = row.parent.isNotEmpty
-        ? '${row.tillNumber.isNotEmpty ? 'Till ${row.tillNumber}' : 'Account ${row.accountReference}'} under ${row.shortcode.isNotEmpty ? row.shortcode : row.parent}'
-        : '${row.kind == 'buy_goods' ? 'Buy Goods' : 'Paybill'} ${row.shortcode}';
+    final ownCode = row.parent.isNotEmpty && row.shortcode.isNotEmpty && row.shortcode != row.parent;
+    final what = ownCode
+        ? '${row.tillNumber.isNotEmpty ? 'Store ${row.shortcode}, till ${row.tillNumber}' : 'Child shortcode ${row.shortcode}'} under ${row.parent}'
+        : row.parent.isNotEmpty
+            ? '${row.tillNumber.isNotEmpty ? 'Till ${row.tillNumber}' : 'Account ${row.accountReference}'} under ${row.shortcode.isNotEmpty ? row.shortcode : row.parent}'
+            : '${row.kind == 'buy_goods' ? 'Buy Goods' : 'Paybill'} ${row.shortcode}';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(children: [

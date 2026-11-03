@@ -124,6 +124,40 @@ void main() {
       expect(branch.payTo, '123456');
     });
 
+    test('a store number with its own shortcode and credentials is read with where each group comes from', () {
+      final store = BusinessAccount.fromJson({
+        ...branchJson,
+        'shortcode': '600111',
+        'tillNumber': '5551234',
+        'ownShortcode': true,
+        'headShortcode': '174379',
+        'inheritsCredentials': false,
+        'credentialSources': {'app': 'OWN', 'passkey': 'OWN', 'initiator': 'HEAD'},
+      });
+      expect(store.ownShortcode, isTrue);
+      expect(store.headShortcode, '174379');
+      expect(store.holdsOwnCredentials, isTrue);
+      expect(store.sources.initiator, 'HEAD');
+      expect(store.headline, 'Store 600111, till 5551234');
+      expect(store.payTo, '5551234');
+    });
+
+    test('older answers without the new fields still read: a head owns what it has and a child uses its head office', () {
+      final head = BusinessAccount.fromJson(headJson);
+      expect(head.ownShortcode, isFalse);
+      expect(head.sources.app, 'OWN');
+      expect(head.sources.passkey, 'NONE');
+      final branch = BusinessAccount.fromJson(branchJson);
+      expect(branch.sources.app, 'HEAD');
+      expect(branch.holdsOwnCredentials, isFalse);
+    });
+
+    test('a paybill child shortcode has no till in its headline', () {
+      final child = BusinessAccount.fromJson({...branchJson, 'shortcodeType': 'PAYBILL', 'shortcode': '400300', 'tillNumber': '', 'ownShortcode': true, 'headShortcode': '400200'});
+      expect(child.headline, 'Paybill 400300');
+      expect(child.payTo, '400300');
+    });
+
     test('a paybill headline names the account reference of a branch', () {
       final account = BusinessAccount.fromJson({...branchJson, 'shortcodeType': 'PAYBILL', 'tillNumber': '', 'accountReference': 'NAIROBI'});
       expect(account.headline, 'Paybill 174379, account NAIROBI');
@@ -230,7 +264,7 @@ void main() {
   });
 
   group('form', () {
-    testWidgets('an empty head account asks for the name, the shortcode and the key and secret', (tester) async {
+    testWidgets('an empty head account asks for the name and the shortcode, and the credentials can wait', (tester) async {
       final seen = <http.Request>[];
       final state = _state((req) async => _json(headJson, 201), seen);
       await _openOver(tester, BusinessAccountFormScreen(state: state));
@@ -240,7 +274,7 @@ void main() {
 
       expect(find.text('Give the account a name.'), findsOneWidget);
       expect(find.text('Enter 5 to 7 digits.'), findsOneWidget);
-      expect(find.text('This is required.'), findsNWidgets(2));
+      expect(find.text('This is required.'), findsNothing);
       expect(seen, isEmpty);
     });
 
@@ -296,7 +330,7 @@ void main() {
       expect(find.text('Add a branch'), findsOneWidget);
       expect(_field('Till number'), findsOneWidget);
       expect(_field('Consumer key'), findsNothing);
-      expect(find.textContaining('uses the credentials of "Main shop"'), findsOneWidget);
+      expect(find.textContaining('shares the shortcode and credentials of "Main shop"'), findsOneWidget);
 
       await tester.enterText(_field('Name'), 'Till 1');
       await tester.enterText(_field('Till number'), '123456');
@@ -307,7 +341,104 @@ void main() {
       expect(body['parentId'], headJson['id']);
       expect(body['tillNumber'], '123456');
       expect(body.containsKey('consumerKey'), isFalse);
-      expect(body.containsKey('shortcode'), isFalse);
+      // the head office's own number is sent, which keeps a till on the shared shortcode
+      expect(body['shortcode'], '174379');
+      expect(body.containsKey('credentials'), isFalse);
+    });
+
+    testWidgets('a store number asks for its own shortcode, the linked till and its own credentials', (tester) async {
+      final seen = <http.Request>[];
+      final state = _state((req) async => _json(branchJson, 201), seen);
+      final head = BusinessAccount.fromJson(headJson);
+      await _openOver(tester, BusinessAccountFormScreen(state: state, parent: head, startWithOwnShortcode: true));
+
+      expect(find.text('Add a child shortcode'), findsOneWidget);
+      expect(_field('Store number (child shortcode)'), findsOneWidget);
+      expect(_field('Till number linked to this store'), findsOneWidget);
+      expect(_field('Consumer key'), findsOneWidget);
+      expect(_field('STK Push passkey'), findsOneWidget);
+
+      await tester.enterText(_field('Name'), 'Mombasa store');
+      await tester.enterText(_field('Store number (child shortcode)'), '600111');
+      await tester.enterText(_field('Till number linked to this store'), '5551234');
+      await tester.enterText(_field('Consumer key'), 'storekey12345');
+      await tester.enterText(_field('Consumer secret'), 'storesecret12345');
+      await tester.enterText(_field('STK Push passkey'), 'storepasskeystorepasskey1');
+      await tester.tap(find.text('Save account'));
+      await tester.pumpAndSettle();
+
+      final body = jsonDecode(seen.single.body) as Map<String, dynamic>;
+      expect(body['parentId'], headJson['id']);
+      expect(body['shortcode'], '600111');
+      expect(body['tillNumber'], '5551234');
+      expect(body['credentials'], 'own');
+      expect(body['consumerKey'], 'storekey12345');
+      expect(body['consumerSecret'], 'storesecret12345');
+      expect(body['passkey'], 'storepasskeystorepasskey1');
+      expect(body.containsKey('environment'), isFalse);
+    });
+
+    testWidgets('a store number can use the head office credentials and then sends none of its own', (tester) async {
+      final seen = <http.Request>[];
+      final state = _state((req) async => _json(branchJson, 201), seen);
+      final head = BusinessAccount.fromJson(headJson);
+      await _openOver(tester, BusinessAccountFormScreen(state: state, parent: head, startWithOwnShortcode: true));
+
+      await tester.tap(find.text('The head office\'s'));
+      await tester.pumpAndSettle();
+      expect(_field('Consumer key'), findsNothing);
+
+      await tester.enterText(_field('Name'), 'Kisumu store');
+      await tester.enterText(_field('Store number (child shortcode)'), '600222');
+      await tester.enterText(_field('Till number linked to this store'), '5552345');
+      await tester.tap(find.text('Save account'));
+      await tester.pumpAndSettle();
+
+      final body = jsonDecode(seen.single.body) as Map<String, dynamic>;
+      expect(body['shortcode'], '600222');
+      expect(body['credentials'], 'head');
+      expect(body.containsKey('consumerKey'), isFalse);
+      expect(body.containsKey('passkey'), isFalse);
+    });
+
+    testWidgets('choosing its own credentials and typing none is refused before it is sent', (tester) async {
+      final seen = <http.Request>[];
+      final state = _state((req) async => _json(branchJson, 201), seen);
+      final head = BusinessAccount.fromJson(headJson);
+      await _openOver(tester, BusinessAccountFormScreen(state: state, parent: head, startWithOwnShortcode: true));
+
+      await tester.enterText(_field('Name'), 'Mombasa store');
+      await tester.enterText(_field('Store number (child shortcode)'), '600111');
+      await tester.enterText(_field('Till number linked to this store'), '5551234');
+      await tester.tap(find.text('Save account'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Add the credentials from this shortcode'), findsOneWidget);
+      expect(seen, isEmpty);
+    });
+
+    testWidgets('a child of a paybill has its own shortcode, no till and an optional account reference', (tester) async {
+      final seen = <http.Request>[];
+      final state = _state((req) async => _json(branchJson, 201), seen);
+      final head = BusinessAccount.fromJson({...headJson, 'shortcodeType': 'PAYBILL', 'shortcode': '400200'});
+      await _openOver(tester, BusinessAccountFormScreen(state: state, parent: head, startWithOwnShortcode: true));
+
+      expect(_field('Child shortcode'), findsOneWidget);
+      expect(_field('Till number linked to this store'), findsNothing);
+      expect(_field('Till number'), findsNothing);
+      expect(_field('Account reference (optional)'), findsOneWidget);
+
+      await tester.tap(find.text('The head office\'s'));
+      await tester.pumpAndSettle();
+      await tester.enterText(_field('Name'), 'Kisumu campus');
+      await tester.enterText(_field('Child shortcode'), '400300');
+      await tester.tap(find.text('Save account'));
+      await tester.pumpAndSettle();
+
+      final body = jsonDecode(seen.single.body) as Map<String, dynamic>;
+      expect(body['shortcode'], '400300');
+      expect(body['credentials'], 'head');
+      expect(body.containsKey('tillNumber'), isFalse);
     });
 
     testWidgets('a paybill branch asks for an account reference', (tester) async {
@@ -379,6 +510,7 @@ void main() {
       expect(find.text('Main shop'), findsOneWidget);
       expect(find.text('Till 1'), findsOneWidget);
       expect(find.text('Add a till'), findsOneWidget);
+      expect(find.text('Add a store number'), findsOneWidget);
       expect(find.text('2 of 3 ready'), findsOneWidget);
     });
 

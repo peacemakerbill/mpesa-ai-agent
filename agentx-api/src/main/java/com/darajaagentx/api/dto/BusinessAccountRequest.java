@@ -7,6 +7,9 @@ import java.util.UUID;
  * Text fields are checked by BusinessAccountService, which gives plain messages the app can show.
  *
  * <p>When editing, an empty secret field means "keep the saved one".
+ *
+ * <p>A child (a store number or a till under a head office) can share the head office's shortcode, or have its own
+ * shortcode. A child with its own shortcode can use the head office's credentials or its own (see {@code credentials}).
  */
 public record BusinessAccountRequest(
         String label,
@@ -23,8 +26,11 @@ public record BusinessAccountRequest(
         String consumerSecret,
         String initiatorName,
         String initiatorPassword,
-        String passkey
+        String passkey,
+        /** Children only: "head" to use the head office's credentials, "own" for this account's own. Empty keeps what is saved, or picks "own" when credentials are sent. */
+        String credentials
 ) {
+
     @Override
     public String toString() {
         // never print secrets, even by accident in a log line

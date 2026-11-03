@@ -208,7 +208,7 @@ The 503 handler is in payment-service today. agent-service and agentx-api still 
 
 ## Business accounts, chat transactions and chat files
 
-- **Business accounts** (Settings): Paybill or Buy Goods shortcode, till numbers, consumer key and secret, STK passkey, initiator name and password, encrypted on the server. Security credential made by the server. Several branches or tills under one shortcode, and CSV upload with a full check first. See [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md).
+- **Business accounts** (Settings): Paybill or Buy Goods shortcode, till numbers, consumer key and secret, STK passkey, initiator name and password, encrypted on the server. Security credential made by the server. Several branches or tills under one shortcode, and store numbers or child shortcodes with their own number (a Buy Goods store number has its linked till, a Paybill child has none), each using the head office's credentials or its own, whichever it has from Daraja. CSV upload with a full check first. See [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md).
 - **Transactions in chat:** STK Push, STK Push query, Dynamic QR, balance, pull transactions, B2C, Pochi la Biashara, B2B. Money out needs approval in the app. Requests are sent once.
 - **`@` mentions and contact picker** in the chat box.
 - **Chat file storage:** Redis (default, 24 hours), a folder or network share, or S3-compatible storage. See [`agent-service/STORAGE.md`](agent-service/STORAGE.md).
@@ -234,7 +234,7 @@ Switched on with `docker compose --profile business up` and `AGENT_BUSINESS_PAYM
 
 **[`postman/`](postman/README.md)**
 
-A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 106 requests, and a walkthrough you can run with the collection runner.
+A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 108 requests, and a walkthrough you can run with the collection runner.
 
 </td>
 <td width="50%" valign="top">

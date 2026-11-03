@@ -92,11 +92,11 @@ class BusinessAccountServiceTest {
     }
 
     private static BusinessAccountRequest head(String label, String env, String type, String code, String till, String key, String secret, String initiator, String initiatorPass, String passkey) {
-        return new BusinessAccountRequest(label, env, type, code, till, null, null, null, key, secret, initiator, initiatorPass, passkey);
+        return new BusinessAccountRequest(label, env, type, code, till, null, null, null, key, secret, initiator, initiatorPass, passkey, null);
     }
 
     private static BusinessAccountRequest branch(String label, UUID parent, String till, String ref) {
-        return new BusinessAccountRequest(label, null, null, null, till, ref, parent, null, null, null, null, null, null);
+        return new BusinessAccountRequest(label, null, null, null, till, ref, parent, null, null, null, null, null, null, null);
     }
 
     private BusinessAccountView fullHead() {
@@ -190,12 +190,12 @@ class BusinessAccountServiceTest {
         BusinessAccountView h = fullHead();
         BusinessAccountView till = service.create(OWNER, branch("Till 1", h.id(), "123456", null));
         assertThatThrownBy(() -> service.create(OWNER, branch("T", h.id(), null, null))).hasMessageContaining("needs its till number");
-        assertThatThrownBy(() -> service.create(OWNER, branch("T", h.id(), "123456", null))).hasMessageContaining("already uses");
+        assertThatThrownBy(() -> service.create(OWNER, branch("T", h.id(), "123456", null))).hasMessageContaining("already saved");
         assertThatThrownBy(() -> service.create(OWNER, branch("T", till.id(), "333333", null))).hasMessageContaining("head account");
         assertThatThrownBy(() -> service.create(OWNER, branch("T", UUID.randomUUID(), "333333", null))).hasMessageContaining("parent account was not found");
-        assertThatThrownBy(() -> service.create(OWNER, new BusinessAccountRequest("T", null, null, null, "444444", null, h.id(), null, null, SECRET, null, null, null)))
-                .hasMessageContaining("uses its head account's credentials");
-        assertThatThrownBy(() -> service.create(OWNER, new BusinessAccountRequest("T", "production", null, null, "444444", null, h.id(), null, null, null, null, null, null)))
+        assertThatThrownBy(() -> service.create(OWNER, new BusinessAccountRequest("T", null, null, null, "444444", null, h.id(), null, null, SECRET, null, null, null, null)))
+                .hasMessageContaining("uses the head office's shortcode");
+        assertThatThrownBy(() -> service.create(OWNER, new BusinessAccountRequest("T", "production", null, null, "444444", null, h.id(), null, null, null, null, null, null, null)))
                 .hasMessageContaining("same environment");
     }
 
@@ -213,6 +213,200 @@ class BusinessAccountServiceTest {
         service.create(OWNER, branch("Till 1", h.id(), "123456", null));
         assertThat(service.delete(OWNER, h.id())).isEqualTo(2);
         assertThat(service.list(OWNER)).isEmpty();
+    }
+
+    // ---------------------------------------------------------------- child shortcodes (store numbers)
+
+    private static BusinessAccountRequest child(String label, UUID parent, String code, String till, String credentials,
+                                                String key, String secret, String initiator, String initiatorPass, String passkey) {
+        return new BusinessAccountRequest(label, null, null, code, till, null, parent, null, key, secret, initiator, initiatorPass, passkey, credentials);
+    }
+
+    @Test
+    void aBuyGoodsStoreNumberHasItsOwnShortcodeAndALinkedTillAndItsOwnCredentials() {
+        BusinessAccountView h = fullHead();
+        BusinessAccountView store = service.create(OWNER, child("Mombasa store", h.id(), "600111", "5551234", "own",
+                "StoreKeyStoreKeyStoreKey99", "StoreSecretStoreSecret99", null, null, "storePasskeyStorePasskeyStorePasskey"));
+        assertThat(store.ownShortcode()).isTrue();
+        assertThat(store.headShortcode()).isEqualTo("174379");
+        assertThat(store.shortcode()).isEqualTo("600111");
+        assertThat(store.tillNumber()).isEqualTo("5551234");
+        assertThat(store.inheritsCredentials()).isFalse();
+        assertThat(store.consumerKeyHint()).isEqualTo("ey99");
+        assertThat(store.credentialSources().app()).isEqualTo("OWN");
+        assertThat(store.credentialSources().passkey()).isEqualTo("OWN");
+        assertThat(store.credentialSources().initiator()).isEqualTo("HEAD");
+
+        ResolvedCredentials rc = service.resolve(OWNER, store.id());
+        assertThat(rc.shortcode()).isEqualTo("600111");
+        assertThat(rc.partyB()).isEqualTo("5551234");
+        assertThat(rc.consumerKey()).isEqualTo("StoreKeyStoreKeyStoreKey99");
+        assertThat(rc.passkey()).isEqualTo("storePasskeyStorePasskeyStorePasskey");
+        assertThat(rc.initiatorName()).isEqualTo("testapi");
+        assertThat(rc.initiatorPassword()).isEqualTo(PASS);
+        // the head office is untouched
+        assertThat(service.resolve(OWNER, h.id()).consumerKey()).isEqualTo(KEY);
+        assertThat(service.resolve(OWNER, h.id()).shortcode()).isEqualTo("174379");
+    }
+
+    @Test
+    void aStoreNumberUsingTheHeadOfficeCredentialsNeverBorrowsTheHeadOfficePasskey() {
+        BusinessAccountView h = fullHead();
+        BusinessAccountView store = service.create(OWNER, child("Kisumu store", h.id(), "600222", "5552345", "head", null, null, null, null, null));
+        assertThat(store.ownShortcode()).isTrue();
+        assertThat(store.inheritsCredentials()).isTrue();
+        assertThat(store.credentialSources().app()).isEqualTo("HEAD");
+        assertThat(store.credentialSources().passkey()).isEqualTo("NONE");
+        assertThat(store.capabilities()).filteredOn(c -> c.code().equals("STK_PUSH")).allMatch(c -> !c.ready());
+        assertThat(store.capabilities()).filteredOn(c -> c.code().equals("B2C")).allMatch(BusinessAccountView.Capability::ready);
+        assertThat(service.resolve(OWNER, store.id()).passkey()).isNull();
+        assertThat(service.resolve(OWNER, store.id()).shortcode()).isEqualTo("600222");
+
+        // adding the store's passkey later makes STK Push ready for it
+        BusinessAccountView withPasskey = service.update(OWNER, store.id(), child("Kisumu store", h.id(), null, "5552345", "own",
+                null, null, null, null, "kisumuPasskeyKisumuPasskeyKisumu"));
+        assertThat(withPasskey.credentialSources().passkey()).isEqualTo("OWN");
+        assertThat(withPasskey.credentialSources().app()).isEqualTo("HEAD");
+        assertThat(withPasskey.capabilities()).filteredOn(c -> c.code().equals("STK_PUSH")).allMatch(BusinessAccountView.Capability::ready);
+        assertThat(service.resolve(OWNER, store.id()).consumerKey()).isEqualTo(KEY);
+        assertThat(service.resolve(OWNER, store.id()).shortcode()).isEqualTo("600222");
+    }
+
+    @Test
+    void aChildOfAPaybillHasItsOwnShortcodeAndNoTill() {
+        BusinessAccountView h = service.create(OWNER, head("School fees", "production", "paybill", "400200", null, KEY, SECRET, null, null, null));
+        BusinessAccountView c = service.create(OWNER, child("Kisumu campus", h.id(), "400300", null, "own",
+                "CampusKeyCampusKeyCampus1", "CampusSecretCampusSecret1", null, null, "campusPasskeyCampusPasskeyCampus"));
+        assertThat(c.ownShortcode()).isTrue();
+        assertThat(c.tillNumber()).isEmpty();
+        assertThat(c.shortcodeType()).isEqualTo(ShortcodeType.PAYBILL);
+        assertThat(c.environment()).isEqualTo(DarajaEnvironment.PRODUCTION);
+        assertThat(service.resolve(OWNER, c.id()).partyB()).isEqualTo("400300");
+        assertThat(service.resolve(OWNER, c.id()).stkTransactionType()).isEqualTo("CustomerPayBillOnline");
+        assertThatThrownBy(() -> service.create(OWNER, child("Bad", h.id(), "400400", "123456", "head", null, null, null, null, null)))
+                .hasMessageContaining("no till number");
+        // an account reference is optional on a Paybill child with its own shortcode
+        BusinessAccountView withRef = service.create(OWNER, new BusinessAccountRequest("Ref", null, null, "400500", null, "KSM", h.id(), null, null, null, null, null, null, "head"));
+        assertThat(withRef.accountReference()).isEqualTo("KSM");
+    }
+
+    @Test
+    void aBuyGoodsStoreNumberMustHaveItsTillAndEveryShortcodeIsUnique() {
+        BusinessAccountView h = fullHead();
+        BusinessAccountView store = service.create(OWNER, child("Store A", h.id(), "600111", "5551234", "head", null, null, null, null, null));
+        assertThatThrownBy(() -> service.create(OWNER, child("No till", h.id(), "600333", null, "head", null, null, null, null, null)))
+                .hasMessageContaining("till number linked to it");
+        assertThatThrownBy(() -> service.create(OWNER, child("Same number", h.id(), "600111", "6667777", "head", null, null, null, null, null)))
+                .hasMessageContaining("must be a number of its own");
+        assertThatThrownBy(() -> service.create(OWNER, child("Short", h.id(), "6001", "6667777", "head", null, null, null, null, null)))
+                .hasMessageContaining("5 to 7 digits");
+        // a new head office cannot take a number a store already has
+        assertThatThrownBy(() -> service.create(OWNER, head("Other", "sandbox", "paybill", "600111", null, KEY, SECRET, null, null, null)))
+                .hasMessageContaining("child shortcode of another account");
+        // the store keeps its own number when the head office changes its number
+        service.update(OWNER, h.id(), head("Main shop", "sandbox", "buy_goods", "174380", null, null, null, null, null, null));
+        assertThat(service.get(OWNER, store.id()).shortcode()).isEqualTo("600111");
+        assertThat(service.get(OWNER, store.id()).headShortcode()).isEqualTo("174380");
+    }
+
+    @Test
+    void credentialChoicesAreCheckedAndCanBeSwitchedBack() {
+        BusinessAccountView h = fullHead();
+        assertThatThrownBy(() -> service.create(OWNER, child("A", h.id(), "600111", "5551234", "own", null, null, null, null, null)))
+                .hasMessageContaining("Add the consumer key");
+        assertThatThrownBy(() -> service.create(OWNER, child("B", h.id(), "600111", "5551234", "head", "StoreKeyStoreKeyStoreKey99", null, null, null, null)))
+                .hasMessageContaining("chose the head office's credentials");
+        assertThatThrownBy(() -> service.create(OWNER, child("C", h.id(), "600111", "5551234", "maybe", null, null, null, null, null)))
+                .hasMessageContaining("Choose the head office's credentials");
+        assertThatThrownBy(() -> service.create(OWNER, child("D", h.id(), "600111", "5551234", "own", "StoreKeyStoreKeyStoreKey99", null, null, null, null)))
+                .hasMessageContaining("consumer secret is required");
+
+        BusinessAccountView store = service.create(OWNER, child("Store", h.id(), "600111", "5551234", "own",
+                "StoreKeyStoreKeyStoreKey99", "StoreSecretStoreSecret99", null, null, null));
+        assertThat(store.credentialSources().app()).isEqualTo("OWN");
+        // saving again with no secrets keeps what is saved
+        BusinessAccountView renamed = service.update(OWNER, store.id(), child("Store renamed", h.id(), null, "5551234", null, null, null, null, null, null));
+        assertThat(renamed.credentialSources().app()).isEqualTo("OWN");
+        assertThat(service.resolve(OWNER, store.id()).consumerSecret()).isEqualTo("StoreSecretStoreSecret99");
+        // choosing the head office's credentials removes the store's own
+        BusinessAccountView back = service.update(OWNER, store.id(), child("Store renamed", h.id(), null, "5551234", "head", null, null, null, null, null));
+        assertThat(back.credentialSources().app()).isEqualTo("HEAD");
+        assertThat(rows.get(store.id()).getConsumerSecretEnc()).isNull();
+        assertThat(service.resolve(OWNER, store.id()).consumerKey()).isEqualTo(KEY);
+    }
+
+    @Test
+    void aHeadOfficeWithoutCredentialsIsAllowedWhenItsStoresWentLiveOnTheirOwn() {
+        BusinessAccountView h = service.create(OWNER, head("Head office", "production", "buy_goods", "500500", null, null, null, null, null, null));
+        assertThat(h.capabilities()).noneMatch(BusinessAccountView.Capability::ready);
+        assertThat(h.credentialSources().app()).isEqualTo("NONE");
+        assertThatThrownBy(() -> service.resolve(OWNER, h.id())).hasMessageContaining("no consumer key and secret");
+        BusinessAccountView store = service.create(OWNER, child("Store", h.id(), "600111", "5551234", "own",
+                "StoreKeyStoreKeyStoreKey99", "StoreSecretStoreSecret99", "storeapi", PASS, PASSKEY));
+        assertThat(store.capabilities()).allMatch(BusinessAccountView.Capability::ready);
+        assertThat(service.resolve(OWNER, store.id()).shortcode()).isEqualTo("600111");
+        // a key without its secret is still refused on a head office
+        assertThatThrownBy(() -> service.create(OWNER, head("x", "sandbox", "paybill", "400200", null, KEY, null, null, null, null)))
+                .hasMessageContaining("consumer secret is required");
+    }
+
+    @Test
+    void verifyUsesTheStoresOwnKeyWhenItHasOne() {
+        BusinessAccountView h = fullHead();
+        BusinessAccountView store = service.create(OWNER, child("Store", h.id(), "600111", "5551234", "own",
+                "StoreKeyStoreKeyStoreKey99", "StoreSecretStoreSecret99", null, null, null));
+        assertThat(service.verify(OWNER, store.id()).ok()).isTrue();
+        assertThat(probed).containsExactly("StoreKeyStoreKeyStoreKey99/StoreSecretStoreSecret99");
+        assertThat(service.get(OWNER, store.id()).verifiedAt()).isNotNull();
+        assertThat(service.get(OWNER, h.id()).verifiedAt()).isNull();
+    }
+
+    @Test
+    void aTillThatSharesTheHeadsShortcodeCannotHaveCredentialsOfItsOwn() {
+        BusinessAccountView h = fullHead();
+        assertThatThrownBy(() -> service.create(OWNER, child("Till", h.id(), "174379", "123456", "own", "StoreKeyStoreKeyStoreKey99", "StoreSecretStoreSecret99", null, null, null)))
+                .hasMessageContaining("give it its own shortcode");
+        BusinessAccountView till = service.create(OWNER, child("Till", h.id(), "174379", "123456", null, null, null, null, null, null));
+        assertThat(till.ownShortcode()).isFalse();
+        assertThat(till.shortcode()).isEqualTo("174379");
+    }
+
+    @Test
+    void aFileCanAddStoreNumbersWithTheirOwnCredentials() {
+        byte[] file = csv(HEADER,
+                "Head office,sandbox,buy_goods,174379,,,," + KEY + "," + SECRET + ",testapi," + PASS + "," + PASSKEY,
+                "Till 1,,,,123456,,174379,,,,,",
+                "Mombasa store,,,600111,5551234,,174379,StoreKeyStoreKeyStoreKey99,StoreSecretStoreSecret99,,,storePasskeyStorePasskeyStorePasskey",
+                "Kisumu store,,,600222,5552345,,174379,,,,,");
+        ImportResult dry = service.importCsv(OWNER, file, true);
+        assertThat(dry.issues()).isEmpty();
+        assertThat(service.importCsv(OWNER, file, false).saved()).isTrue();
+        List<BusinessAccountView> all = service.list(OWNER);
+        assertThat(all).hasSize(4);
+        BusinessAccountView mombasa = all.stream().filter(a -> a.shortcode().equals("600111")).findFirst().orElseThrow();
+        BusinessAccountView kisumu = all.stream().filter(a -> a.shortcode().equals("600222")).findFirst().orElseThrow();
+        assertThat(mombasa.credentialSources().app()).isEqualTo("OWN");
+        assertThat(mombasa.credentialSources().passkey()).isEqualTo("OWN");
+        assertThat(kisumu.credentialSources().app()).isEqualTo("HEAD");
+        assertThat(kisumu.credentialSources().passkey()).isEqualTo("NONE");
+        assertThat(all.stream().filter(a -> a.tillNumber().equals("123456")).findFirst().orElseThrow().ownShortcode()).isFalse();
+
+        // reading the same file again changes nothing and keeps the stores' secrets
+        ImportResult again = service.importCsv(OWNER, file, false);
+        assertThat(again.issues()).isEmpty();
+        assertThat(again.updated()).isEqualTo(4);
+        assertThat(service.list(OWNER)).hasSize(4);
+        assertThat(service.resolve(OWNER, mombasa.id()).consumerKey()).isEqualTo("StoreKeyStoreKeyStoreKey99");
+
+        // a store number used twice in one file is refused
+        ImportResult twice = service.importCsv(OWNER, csv(HEADER,
+                "Head,sandbox,paybill,400200,,,," + KEY + "," + SECRET + ",,,",
+                "Store 1,,,400300,,,400200,,,,,",
+                "Store 2,,,400300,,,400200,,,,,"), true);
+        assertThat(twice.issues()).anyMatch(i -> i.row() == 4);
+        // a Buy Goods store without its till is refused
+        ImportResult noTill = service.importCsv(OWNER, csv(HEADER, "Store,,,600777,,,174379,,,,,"), true);
+        assertThat(noTill.issues()).anyMatch(i -> i.message().contains("till number linked to it"));
     }
 
     // ---------------------------------------------------------------- owners

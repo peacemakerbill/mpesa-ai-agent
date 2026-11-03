@@ -986,8 +986,10 @@ E('co.ch.media.get', 'agentx', CC, 'Download a chat file', 'GET', '/api/chat/med
 E('co.ch.clear', 'agentx', CC, 'Clear the chat', 'DELETE', '/api/chat/messages', { auth: 'bearer' });
 const BA = 'Business accounts (app side)';
 E('co.b.list', 'agentx', BA, 'List my business accounts', 'GET', '/api/business-accounts', { auth: 'bearer', save: { bizAccountId: '0.id' }, note: 'Secrets never come back. Each account only says whether the secret, passkey and initiator password are saved, and the last 4 characters of the consumer key.' });
-E('co.b.create', 'agentx', BA, 'Add a business account', 'POST', '/api/business-accounts', { auth: 'bearer', body: { label: 'Main shop', environment: 'sandbox', shortcodeType: 'buy_goods', shortcode: '174379', consumerKey: 'sandbox-consumer-key-0001', consumerSecret: 'sandbox-consumer-secret-0001', passkey: 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919', initiatorName: 'testapi', initiatorPassword: 'Safaricom999!*!' }, save: { bizAccountId: 'id' }, note: 'Needs AGENTX_VAULT_KEY on the Daraja Agent-X API, otherwise the feature is off. environment is sandbox or production. shortcodeType is paybill or buy_goods. The consumer key, secret and passkey above are placeholders: use the ones from your Daraja app.' });
-E('co.b.branch', 'agentx', BA, 'Add a till or branch', 'POST', '/api/business-accounts', { auth: 'bearer', body: { label: 'Till 1', parentId: '{{bizAccountId}}', tillNumber: '123456' }, note: 'A branch shares its head account\'s shortcode, environment and credentials. Buy Goods takes tillNumber, Paybill takes accountReference (up to 12 letters or digits).' });
+E('co.b.create', 'agentx', BA, 'Add a business account', 'POST', '/api/business-accounts', { auth: 'bearer', body: { label: 'Main shop', environment: 'sandbox', shortcodeType: 'buy_goods', shortcode: '174379', consumerKey: 'sandbox-consumer-key-0001', consumerSecret: 'sandbox-consumer-secret-0001', passkey: 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919', initiatorName: 'testapi', initiatorPassword: 'Safaricom999!*!' }, save: { bizAccountId: 'id' }, note: 'Needs AGENTX_VAULT_KEY on the Daraja Agent-X API, otherwise the feature is off. environment is sandbox or production. shortcodeType is paybill or buy_goods. The consumer key, secret and passkey above are placeholders: use the ones from your Daraja app. A head office whose stores went live on their own can be saved without credentials.' });
+E('co.b.branch', 'agentx', BA, 'Add a till or branch', 'POST', '/api/business-accounts', { auth: 'bearer', body: { label: 'Till 1', parentId: '{{bizAccountId}}', tillNumber: '123456' }, note: 'A till or branch shares its head office\'s shortcode, environment and credentials. Buy Goods takes tillNumber, Paybill takes accountReference (up to 12 letters or digits). For a store number or child shortcode with its own number, use the next two requests.' });
+E('co.b.store', 'agentx', BA, 'Add a store number (Buy Goods child)', 'POST', '/api/business-accounts', { auth: 'bearer', body: { label: 'Mombasa store', parentId: '{{bizAccountId}}', shortcode: '600111', tillNumber: '5551234', credentials: 'own', consumerKey: 'store-consumer-key-0001', consumerSecret: 'store-consumer-secret-0001', passkey: 'store-stk-passkey-0000001' }, note: 'A child shortcode (store number) has its own number and the till number linked to it. credentials is own when the store went live on its own: send what it has, and anything left out (key and secret, initiator) comes from the head office. The passkey belongs to one shortcode, so it is never taken from the head office. Use credentials head with nothing else to use the head office\'s.' });
+E('co.b.child', 'agentx', BA, 'Add a child shortcode (Paybill child)', 'POST', '/api/business-accounts', { auth: 'bearer', body: { label: 'Kisumu campus', parentId: '{{bizAccountId}}', shortcode: '400300', credentials: 'head' }, note: 'Use this when the head office is a Paybill. A child of a Paybill has its own shortcode and no till number. accountReference is optional. credentials is head or own, as for a store number.' });
 E('co.b.get', 'agentx', BA, 'Get a business account', 'GET', '/api/business-accounts/{{bizAccountId}}', { auth: 'bearer' });
 E('co.b.update', 'agentx', BA, 'Change a business account', 'PUT', '/api/business-accounts/{{bizAccountId}}', { auth: 'bearer', body: { label: 'Main shop' }, note: 'An empty secret keeps the saved one. Send only what changes.' });
 E('co.b.verify', 'agentx', BA, 'Check with Safaricom', 'POST', '/api/business-accounts/{{bizAccountId}}/verify', { auth: 'bearer', timeout: 45000, note: 'Asks Daraja for an access token with the saved key and secret, and tests that the certificate can lock the initiator password. It does not move money.' });
@@ -2528,9 +2530,9 @@ const OP_TONE = { PENDING_APPROVAL: 'warn', SUBMITTED: 'info', SUCCEEDED: 'good'
 const OP_LABEL = { PENDING_APPROVAL: 'Waiting for approval', SUBMITTED: 'Sent to Safaricom, waiting for the result', SUCCEEDED: 'Done', FAILED: 'Failed', DECLINED: 'Declined', EXPIRED: 'Expired', UNKNOWN: 'Unclear, check M-Pesa before trying again' };
 const CSV_COLUMNS = [
   ['label', 'a name', 'a name'], ['environment', 'sandbox or production', 'empty, unless the head exists in both'], ['shortcode_type', 'paybill or buy_goods', 'empty'],
-  ['shortcode', '5 to 7 digits', 'empty'], ['till_number', 'empty', 'Buy Goods: 5 to 7 digits'], ['account_reference', 'empty', 'Paybill: up to 12 letters or digits'],
-  ['parent_shortcode', 'empty', "the head's shortcode"], ['consumer_key, consumer_secret', 'yes', 'must be empty'],
-  ['initiator_name, initiator_password', 'for B2C, B2B, balance', 'must be empty'], ['passkey', 'for STK Push', 'must be empty'],
+  ['shortcode', '5 to 7 digits', 'empty to share the head\'s, or its own number for a store number'], ['till_number', 'empty', 'Buy Goods: 5 to 7 digits (the till linked to a store number)'], ['account_reference', 'empty', 'Paybill: up to 12 letters or digits (optional for a child shortcode)'],
+  ['parent_shortcode', 'empty', "the head's shortcode"], ['consumer_key, consumer_secret', 'if it went live', 'only for a store number with its own'],
+  ['initiator_name, initiator_password', 'for B2C, B2B, balance', 'only for a store number with its own'], ['passkey', 'for STK Push', 'only for a store number with its own'],
 ];
 const bz = (method, path, extra = {}) => http(Object.assign({ svc: 'agentx', method, path, auth: 'bearer' }, extra));
 /** True when the token was refused, after showing the sign-in forms again. */
@@ -2589,24 +2591,26 @@ function bzCaps(a) {
 function bzRow(a) {
   const branch = !!a.parentId;
   const where = `<span class="tag ${a.environment === 'PRODUCTION' ? 'warn' : 'info'}">${a.environment === 'PRODUCTION' ? 'Production' : 'Sandbox'}</span> <span class="tag">${a.shortcodeType === 'BUY_GOODS' ? 'Buy Goods' : 'Paybill'}</span>`;
-  const num = esc(a.shortcode) + (a.tillNumber ? `<br><span class="muted small">till ${esc(a.tillNumber)}</span>` : '') + (a.accountReference ? `<br><span class="muted small">account ${esc(a.accountReference)}</span>` : '');
-  const creds = branch ? '<span class="muted small">Uses its head account</span>'
-    : `<span class="small">Key ${a.consumerKeyHint ? '<code>••••' + esc(a.consumerKeyHint) + '</code>' : '<span class="muted">not saved</span>'}</span><br>
-       <span class="tag ${a.hasConsumerSecret ? 'good' : ''}">Secret ${a.hasConsumerSecret ? 'saved' : 'missing'}</span>
-       <span class="tag ${a.hasPasskey ? 'good' : ''}">Passkey ${a.hasPasskey ? 'saved' : 'missing'}</span>
-       <span class="tag ${a.hasInitiatorPassword ? 'good' : ''}">Initiator ${a.hasInitiatorPassword ? esc(a.initiatorName || 'saved') : 'missing'}</span>`;
+  const own = !!a.ownShortcode, bg = a.shortcodeType === 'BUY_GOODS';
+  const num = esc(a.shortcode) + (own ? `<br><span class="muted small">under ${esc(a.headShortcode)}</span>` : '') + (a.tillNumber ? `<br><span class="muted small">till ${esc(a.tillNumber)}</span>` : '') + (a.accountReference ? `<br><span class="muted small">account ${esc(a.accountReference)}</span>` : '');
+  const src = a.credentialSources || { app: a.consumerKeyHint ? (branch ? 'HEAD' : 'OWN') : 'NONE', passkey: a.hasPasskey ? (branch ? 'HEAD' : 'OWN') : 'NONE', initiator: a.hasInitiatorPassword ? (branch ? 'HEAD' : 'OWN') : 'NONE' };
+  const from = (v) => (v === 'OWN' ? 'its own' : v === 'HEAD' ? 'head office' : 'missing');
+  const creds = `<span class="small">Key ${a.consumerKeyHint ? '<code>••••' + esc(a.consumerKeyHint) + '</code>' : '<span class="muted">not saved</span>'}</span><br>
+       <span class="tag ${src.app !== 'NONE' ? 'good' : ''}">Key and secret: ${from(src.app)}</span>
+       <span class="tag ${src.passkey !== 'NONE' ? 'good' : ''}">Passkey: ${from(src.passkey)}</span>
+       <span class="tag ${src.initiator !== 'NONE' ? 'good' : ''}">Initiator${a.initiatorName && src.initiator !== 'NONE' ? ' ' + esc(a.initiatorName) : ''}: ${from(src.initiator)}</span>`;
   const del = BZ.delConfirm === a.id
-    ? `<button type="button" class="btn sm danger" data-bz="del" data-id="${a.id}">${branch ? 'Press again to delete' : 'Delete it and its branches'}</button><button type="button" class="btn sm ghost" data-bz="del-cancel">Keep</button>`
+    ? `<button type="button" class="btn sm danger" data-bz="del" data-id="${a.id}">${branch ? 'Press again to delete' : 'Delete it and everything under it'}</button><button type="button" class="btn sm ghost" data-bz="del-cancel">Keep</button>`
     : `<button type="button" class="btn sm danger" data-bz="del" data-id="${a.id}">Delete</button>`;
   const chk = BZ.checks[a.id];
   const result = chk ? `<tr class="bz-note"><td></td><td colspan="5"><div class="callout ${chk.ok ? '' : 'warn'}"><b>${chk.ok ? 'Safaricom accepted the key and secret.' : 'Safaricom did not accept it.'}</b> ${esc(chk.message || '')}
       <div class="small" style="margin-top:4px">Security credential: <span class="tag ${chk.securityCredentialReady ? 'good' : 'warn'}">${chk.securityCredentialReady ? 'ready' : 'not ready'}</span> ${esc(chk.securityCredentialMessage || '')}</div></div></td></tr>` : '';
-  return `<tr class="${branch ? 'bz-branch' : ''}"><td><b>${branch ? '↳ ' : ''}${esc(a.label)}</b><br><span class="muted small">${branch ? 'Branch' : 'Head account'}</span></td>
+  return `<tr class="${branch ? 'bz-branch' : ''}"><td><b>${branch ? '↳ ' : ''}${esc(a.label)}</b><br><span class="muted small">${branch ? (own ? (bg ? 'Store number' : 'Child shortcode') : (bg ? 'Till' : 'Branch')) : 'Head office'}</span></td>
     <td>${where}</td><td class="mono">${num}</td><td>${creds}</td>
     <td>${bzCaps(a)}<div class="muted small" style="margin-top:4px">${a.verifiedAt ? 'Checked ' + esc(bzWhen(a.verifiedAt)) : 'Not checked with Safaricom'}</div></td>
     <td><div class="row tight"><button type="button" class="btn sm" data-bz="edit" data-id="${a.id}">Edit</button>
       <button type="button" class="btn sm" data-bz="verify" data-id="${a.id}" ${BZ.checking === a.id ? 'disabled' : ''}>${BZ.checking === a.id ? 'Checking' : 'Check with Safaricom'}</button>
-      ${branch ? '' : `<button type="button" class="btn sm" data-bz="add-branch" data-id="${a.id}">Add a till or branch</button>`}${del}</div></td></tr>${result}`;
+      ${branch ? '' : `<button type="button" class="btn sm" data-bz="add-branch" data-id="${a.id}">${bg ? 'Add a till' : 'Add a branch'}</button><button type="button" class="btn sm" data-bz="add-store" data-id="${a.id}">${bg ? 'Add a store number' : 'Add a child shortcode'}</button>`}${del}</div></td></tr>${result}`;
 }
 function drawBzAccounts() {
   const box = $('#bzAccounts'); if (!box) return;
@@ -2619,7 +2623,8 @@ function drawBzAccounts() {
 }
 
 /* ---------------------------------------------------------------- the account form */
-const blankForm = (mode, head) => ({
+const blankForm = (mode, head, what) => ({
+  what: what || 'shared', credentials: what === 'own' ? 'own' : 'head',
   id: null, mode, label: '', environment: 'sandbox', shortcodeType: 'paybill', shortcode: '', tillNumber: '', accountReference: '',
   parentId: head ? head.id : '', consumerKey: '', consumerSecret: '', initiatorName: '', initiatorPassword: '', passkey: '', has: null,
 });
@@ -2638,37 +2643,55 @@ function drawBzForm() {
   const inp = (key, label, o = {}) => `<div class="field"><label for="bzf-${key}">${label}</label><input id="bzf-${key}" data-bf="${key}" type="${o.type || 'text'}" ${o.type === 'password' ? 'autocomplete="new-password"' : 'autocomplete="off"'} value="${esc(f[key])}" placeholder="${esc(o.ph || '')}"${o.max ? ` maxlength="${o.max}"` : ''}>${o.help ? `<small class="muted">${o.help}</small>` : ''}</div>`;
   const sel = (key, label, opts, o = {}) => `<div class="field"><label for="bzf-${key}">${label}</label><select id="bzf-${key}" data-bf="${key}" ${o.redraw ? 'data-redraw="1"' : ''}>${opts.map(([v, t]) => `<option value="${esc(v)}" ${String(f[key]) === String(v) ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div>`;
   const keep = (has, what) => (edit && has ? `Saved. Leave empty to keep the ${what}.` : '');
+  const credFields = (h, note) => `<div class="grid2">${inp('consumerKey', 'Consumer key', { type: 'password', help: edit && h.keyHint ? 'Saved, ends with ' + esc(h.keyHint) + '. Leave empty to keep it.' : (note ? 'From the Daraja app of this shortcode. Empty uses the head office\'s.' : 'From your app on the Daraja portal.') })}
+      ${inp('consumerSecret', 'Consumer secret', { type: 'password', help: keep(h.secret, 'secret') || (note ? 'From the same app. Empty uses the head office\'s.' : 'From the same app.') })}</div>
+      <div class="grid2">${inp('passkey', 'STK passkey', { type: 'password', help: keep(h.passkey, 'passkey') || (note ? 'Belongs to this shortcode only, so it is never taken from the head office.' : 'Needed for STK Push. The sandbox passkey is on the Daraja portal.') })}
+      <div></div></div>
+      <div class="grid2">${inp('initiatorName', 'Initiator name', { help: note ? 'For payouts, balance, status and reversals. Empty uses the head office\'s.' : 'For payouts, balance, status and reversals.' })}
+      ${inp('initiatorPassword', 'Initiator password', { type: 'password', help: keep(h.initPw, 'password') || 'The security credential is made for you from this and Safaricom\'s certificate.' })}</div>`;
   let fields;
   if (branch) {
     const head = bzHeadOf(f);
-    const till = head && head.shortcodeType === 'BUY_GOODS';
-    fields = `${sel('parentId', 'Belongs to', [['', 'Choose a head account'], ...heads.map((h) => [h.id, `${h.label} (${h.shortcode}, ${h.environment === 'PRODUCTION' ? 'production' : 'sandbox'})`])], { redraw: true })}
-      ${head ? (till ? inp('tillNumber', 'Till number', { ph: '5 to 7 digits', max: 7 }) : inp('accountReference', 'Account reference', { ph: 'Up to 12 letters or digits', max: 12 })) : '<div class="callout">Choose the head account first. A branch uses its head account\'s shortcode, environment and credentials.</div>'}`;
+    const bg = head && head.shortcodeType === 'BUY_GOODS';
+    const own = f.what === 'own';
+    const h = (f.has || {});
+    const chooser = head ? sel('what', 'What is it?', [['shared', bg ? 'A till, on the head office\'s shortcode' : 'An account reference, on the head office\'s shortcode'], ['own', bg ? 'A store number, with its own shortcode' : 'A child shortcode, with its own number']], { redraw: true }) : '';
+    let more = '';
+    if (!head) more = '<div class="callout">Choose the head office first. A child belongs to a head office and is in its environment.</div>';
+    else if (!own) more = `<div class="callout">This one shares the head office\'s shortcode and credentials. ${bg ? 'Add its till number.' : 'Add its account reference.'}</div>${bg ? inp('tillNumber', 'Till number', { ph: '5 to 7 digits', max: 7 }) : inp('accountReference', 'Account reference', { ph: 'Up to 12 letters or digits', max: 12 })}`;
+    else {
+      more = `<div class="callout">${bg ? 'A store number is a shortcode of its own, with the till number linked to it.' : 'A child of a Paybill is a shortcode of its own and has no till number.'}</div>
+        ${inp('shortcode', bg ? 'Store number (child shortcode)' : 'Child shortcode', { ph: '5 to 7 digits', max: 7 })}
+        ${bg ? inp('tillNumber', 'Till number linked to this store', { ph: '5 to 7 digits', max: 7 }) : inp('accountReference', 'Account reference (optional)', { ph: 'Up to 12 letters or digits', max: 12 })}
+        ${sel('credentials', 'Which credentials does it use?', [['own', 'Its own (it went live on its own)'], ['head', 'The head office\'s']], { redraw: true })}
+        ${f.credentials === 'own' ? credFields(h, true) : '<div class="callout">The key and secret, and the initiator, come from the head office. STK Push also needs this shortcode\'s own passkey, so choose its own credentials to add it.</div>'}`;
+    }
+    fields = `${sel('parentId', 'Belongs to', [['', 'Choose a head office'], ...heads.map((x) => [x.id, `${x.label} (${x.shortcode}, ${x.environment === 'PRODUCTION' ? 'production' : 'sandbox'})`])], { redraw: true })}
+      ${chooser}${more}`;
   } else {
     const h = (f.has || {});
     fields = `<div class="grid2">${sel('environment', 'Environment', [['sandbox', 'Sandbox (testing)'], ['production', 'Production (real money)']])}
       ${sel('shortcodeType', 'Shortcode type', [['paybill', 'Paybill'], ['buy_goods', 'Buy Goods (store or head office)']])}</div>
       ${inp('shortcode', 'Shortcode', { ph: '5 to 7 digits', max: 7 })}
-      <div class="grid2">${inp('consumerKey', 'Consumer key', { type: 'password', help: edit && h.keyHint ? 'Saved, ends with ' + esc(h.keyHint) + '. Leave empty to keep it.' : 'From your app on the Daraja portal.' })}
-      ${inp('consumerSecret', 'Consumer secret', { type: 'password', help: keep(h.secret, 'secret') || 'From the same app.' })}</div>
-      <div class="grid2">${inp('passkey', 'STK passkey', { type: 'password', help: keep(h.passkey, 'passkey') || 'Needed for STK Push. The sandbox passkey is on the Daraja portal.' })}
-      <div></div></div>
-      <div class="grid2">${inp('initiatorName', 'Initiator name', { help: 'For payouts, balance, status and reversals.' })}
-      ${inp('initiatorPassword', 'Initiator password', { type: 'password', help: keep(h.initPw, 'password') || 'The security credential is made for you from this and Safaricom\'s certificate.' })}</div>`;
+      <div class="callout">Fill in what this head office has from the Daraja portal. If its stores or child shortcodes went live on their own, you can leave the credentials empty and add them on each one.</div>
+      ${credFields(h, false)}`;
   }
-  p.innerHTML = `<div class="ph"><h2>${edit ? 'Edit ' + esc(f.labelWas || 'account') : branch ? 'Add a till or branch' : 'Add a business account'}</h2><button type="button" class="btn sm ghost" data-bz="form-close">Close</button></div>
+  p.innerHTML = `<div class="ph"><h2>${edit ? 'Edit ' + esc(f.labelWas || 'account') : branch ? (f.what === 'own' ? 'Add a child shortcode' : 'Add a till or branch') : 'Add a business account'}</h2><button type="button" class="btn sm ghost" data-bz="form-close">Close</button></div>
     <div class="pb stack">${BZ.formErr ? `<div class="err" role="alert">${esc(BZ.formErr)}</div>` : ''}
-      ${inp('label', 'Name', { ph: branch ? 'For example Till 1' : 'For example Main shop', max: 80 })}
+      ${inp('label', 'Name', { ph: branch ? (f.what === 'own' ? 'For example Mombasa store' : 'For example Till 1') : 'For example Main shop', max: 80 })}
       ${fields}
       <div class="row"><button type="button" class="btn primary" data-bz="form-save" ${BZ.formBusy ? 'disabled' : ''}>${BZ.formBusy ? 'Saving' : 'Save'}</button><button type="button" class="btn" data-bz="form-close">Cancel</button></div>
     </div>`;
 }
 function bzEdit(a) {
   const branch = !!a.parentId;
-  BZ.form = Object.assign(blankForm(branch ? 'branch' : 'head'), {
+  const s = a.credentialSources || { app: branch ? 'HEAD' : 'OWN', passkey: branch ? 'HEAD' : 'OWN', initiator: branch ? 'HEAD' : 'OWN' };
+  const anyOwn = s.app === 'OWN' || s.passkey === 'OWN' || s.initiator === 'OWN';
+  BZ.form = Object.assign(blankForm(branch ? 'branch' : 'head', null, a.ownShortcode ? 'own' : 'shared'), {
     id: a.id, labelWas: a.label, label: a.label, environment: (a.environment || 'SANDBOX').toLowerCase(), shortcodeType: a.shortcodeType === 'BUY_GOODS' ? 'buy_goods' : 'paybill',
-    shortcode: branch ? '' : a.shortcode, tillNumber: a.tillNumber || '', accountReference: a.accountReference || '', parentId: a.parentId || '', initiatorName: a.initiatorName || '',
-    has: { secret: a.hasConsumerSecret, passkey: a.hasPasskey, initPw: a.hasInitiatorPassword, keyHint: a.consumerKeyHint },
+    shortcode: branch && !a.ownShortcode ? '' : a.shortcode, tillNumber: a.tillNumber || '', accountReference: a.accountReference || '', parentId: a.parentId || '',
+    initiatorName: s.initiator === 'HEAD' ? '' : (a.initiatorName || ''), credentials: branch ? (anyOwn ? 'own' : 'head') : 'own',
+    has: { secret: s.app === 'OWN' && a.hasConsumerSecret, passkey: s.passkey === 'OWN' && a.hasPasskey, initPw: s.initiator === 'OWN' && a.hasInitiatorPassword, keyHint: s.app === 'OWN' ? a.consumerKeyHint : '' },
   });
   BZ.formErr = ''; drawBzForm(); $('#bzFormPanel').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
@@ -2678,6 +2701,18 @@ async function bzSave() {
   const body = { label: f.label };
   if (f.mode === 'branch') {
     body.parentId = f.parentId || null; body.tillNumber = f.tillNumber; body.accountReference = f.accountReference;
+    const head = bzHeadOf(f);
+    if (f.what === 'own') {
+      body.shortcode = f.shortcode; body.credentials = f.credentials;
+      if (f.credentials === 'own') {
+        Object.assign(body, { consumerKey: f.consumerKey, consumerSecret: f.consumerSecret, passkey: f.passkey, initiatorName: f.initiatorName, initiatorPassword: f.initiatorPassword });
+        const nothing = !(f.consumerKey || f.consumerSecret || f.passkey || f.initiatorName || f.initiatorPassword);
+        const had = f.has && (f.has.secret || f.has.passkey || f.has.initPw || f.has.keyHint);
+        if (nothing && !had) { BZ.formErr = 'Add the credentials from this shortcode\'s own Daraja app, or choose the head office\'s credentials.'; drawBzForm(); return; }
+      }
+    } else if (head) {
+      body.shortcode = head.shortcode; // the head office\'s own number keeps it on the shared shortcode
+    }
   } else {
     Object.assign(body, { environment: f.environment, shortcodeType: f.shortcodeType, shortcode: f.shortcode, consumerKey: f.consumerKey, consumerSecret: f.consumerSecret, passkey: f.passkey, initiatorName: f.initiatorName, initiatorPassword: f.initiatorPassword });
   }
@@ -2807,6 +2842,7 @@ function onBizClick(e) {
     case 'refresh': loadBzAccounts(); break;
     case 'add-head': BZ.form = blankForm('head'); BZ.formErr = ''; drawBzForm(); $('#bzFormPanel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); break;
     case 'add-branch': BZ.form = blankForm('branch', a); BZ.formErr = ''; drawBzForm(); $('#bzFormPanel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); break;
+    case 'add-store': BZ.form = blankForm('branch', a, 'own'); BZ.formErr = ''; drawBzForm(); $('#bzFormPanel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); break;
     case 'edit': if (a) bzEdit(a); break;
     case 'form-close': BZ.form = null; BZ.formErr = ''; drawBzForm(); break;
     case 'form-save': bzSave(); break;

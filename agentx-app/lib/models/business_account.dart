@@ -35,6 +35,30 @@ class AccountCapability {
       );
 }
 
+/// Where each group of credentials of an account comes from: "OWN" (saved on the account itself), "HEAD" (the head
+/// office's) or "NONE" (not saved anywhere).
+class CredentialSources {
+  const CredentialSources({required this.app, required this.passkey, required this.initiator});
+
+  final String app;
+  final String passkey;
+  final String initiator;
+
+  bool get anyOwn => app == 'OWN' || passkey == 'OWN' || initiator == 'OWN';
+
+  factory CredentialSources.fromJson(Map<String, dynamic> json) => CredentialSources(
+        app: json['app'] as String? ?? 'NONE',
+        passkey: json['passkey'] as String? ?? 'NONE',
+        initiator: json['initiator'] as String? ?? 'NONE',
+      );
+
+  /// For older answers without the field: a head office owns what it has, a child uses the head office's.
+  factory CredentialSources.guess({required bool isChild, required bool key, required bool passkey, required bool initiator}) {
+    String pick(bool has) => isChild ? 'HEAD' : (has ? 'OWN' : 'NONE');
+    return CredentialSources(app: pick(key), passkey: pick(passkey), initiator: pick(initiator));
+  }
+}
+
 /// A business account as agentx-api returns it. There are never any secrets in here, only whether each one is saved.
 class BusinessAccount {
   const BusinessAccount({
@@ -47,6 +71,9 @@ class BusinessAccount {
     required this.accountReference,
     required this.parentId,
     required this.inheritsCredentials,
+    this.ownShortcode = false,
+    this.headShortcode = '',
+    this.sources = const CredentialSources(app: 'NONE', passkey: 'NONE', initiator: 'NONE'),
     required this.consumerKeyHint,
     required this.hasConsumerSecret,
     required this.initiatorName,
@@ -65,8 +92,17 @@ class BusinessAccount {
   final String accountReference;
   final String? parentId;
 
-  /// True for a branch. The credentials shown belong to its parent.
+  /// True for a child that has no credentials of its own. The credentials shown belong to its head office.
   final bool inheritsCredentials;
+
+  /// True for a child shortcode (a store number) that has its own shortcode, not the head office's.
+  final bool ownShortcode;
+
+  /// The head office's shortcode, for a child.
+  final String headShortcode;
+
+  /// Where the key and secret, the passkey and the initiator come from.
+  final CredentialSources sources;
   final String consumerKeyHint;
   final bool hasConsumerSecret;
   final String initiatorName;
@@ -78,11 +114,20 @@ class BusinessAccount {
   bool get isBranch => parentId != null;
   bool get hasKey => consumerKeyHint.isNotEmpty;
 
+  /// True when this account itself holds any credential.
+  bool get holdsOwnCredentials => sources.anyOwn;
+
   /// The number the customer pays: the till for a Buy Goods branch, otherwise the shortcode.
   String get payTo => kind == ShortcodeKind.buyGoods && tillNumber.isNotEmpty ? tillNumber : shortcode;
 
-  /// A short line for lists, for example "Paybill 174379" or "Till 123456 under 174379".
+  /// A short line for lists, for example "Paybill 174379", "Till 123456, shortcode 174379" or "Store 600111, till 5551234".
   String get headline {
+    if (ownShortcode) {
+      if (kind == ShortcodeKind.buyGoods) {
+        return tillNumber.isEmpty ? 'Store $shortcode' : 'Store $shortcode, till $tillNumber';
+      }
+      return accountReference.isEmpty ? 'Paybill $shortcode' : 'Paybill $shortcode, account $accountReference';
+    }
     if (kind == ShortcodeKind.buyGoods) {
       return tillNumber.isEmpty ? 'Buy Goods $shortcode' : 'Till $tillNumber, shortcode $shortcode';
     }
@@ -94,6 +139,15 @@ class BusinessAccount {
   factory BusinessAccount.fromJson(Map<String, dynamic> json) {
     final caps = json['capabilities'];
     final verified = json['verifiedAt'];
+    final rawSources = json['credentialSources'];
+    final sources = rawSources is Map<String, dynamic>
+        ? CredentialSources.fromJson(rawSources)
+        : CredentialSources.guess(
+            isChild: json['parentId'] != null,
+            key: (json['consumerKeyHint'] as String? ?? '').isNotEmpty,
+            passkey: json['hasPasskey'] == true,
+            initiator: json['hasInitiatorPassword'] == true,
+          );
     return BusinessAccount(
       id: json['id'] as String,
       label: json['label'] as String? ?? '',
@@ -104,6 +158,9 @@ class BusinessAccount {
       accountReference: json['accountReference'] as String? ?? '',
       parentId: json['parentId'] as String?,
       inheritsCredentials: json['inheritsCredentials'] == true,
+      ownShortcode: json['ownShortcode'] == true,
+      headShortcode: json['headShortcode'] as String? ?? '',
+      sources: sources,
       consumerKeyHint: json['consumerKeyHint'] as String? ?? '',
       hasConsumerSecret: json['hasConsumerSecret'] == true,
       initiatorName: json['initiatorName'] as String? ?? '',

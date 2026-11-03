@@ -92,6 +92,9 @@ public class BusinessTools {
         for (Map<String, Object> a : accounts) {
             sb.append("- ").append(str(a.get("label"))).append(" | ").append(lower(a.get("environment")))
                     .append(" | ").append(lower(a.get("shortcodeType")).replace('_', ' ')).append(' ').append(str(a.get("shortcode")));
+            if (Boolean.TRUE.equals(a.get("ownShortcode"))) {
+                sb.append(" (child shortcode of ").append(str(a.get("headShortcode"))).append(')');
+            }
             if (!str(a.get("tillNumber")).isEmpty()) {
                 sb.append(" | till ").append(str(a.get("tillNumber")));
             }

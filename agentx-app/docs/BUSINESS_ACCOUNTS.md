@@ -37,16 +37,39 @@ Secrets are encrypted with AES-256-GCM on the server. The key is `AGENTX_VAULT_K
 field, so a copied value does not open under another owner. The phone never gets a secret back, only whether it is saved. Leave a secret box empty
 when editing to keep the saved one.
 
-## One shortcode with many tills or branches
+## Head offices, tills, store numbers and child shortcodes
 
-A **head** account holds the shortcode and the credentials. A **branch** belongs to a head, shares its shortcode, environment, type and credentials,
-and adds only what is different:
+A **head office** holds a shortcode and, once it has gone live on the Daraja portal, its credentials. The credentials are optional on a head office,
+so a head office whose stores each went live on their own can be saved with none. Under a head office there are **children**, and a child is one of two things.
+
+**1. A till or branch that shares the head office's shortcode.** It uses the head office's shortcode, environment, type and credentials, and adds only
+what is different:
 
 - Buy Goods: the till number (5 to 7 digits). The shortcode is the head office number.
 - Paybill: the account reference (letters and numbers, up to 12).
 
-Rules: one head per environment and shortcode. A branch cannot carry credentials. Changing a head's shortcode, environment or type changes its
-branches. Removing a head removes its branches.
+**2. A store number or child shortcode with its own number.** It went live on its own, so it has its own shortcode (5 to 7 digits):
+
+| Head office is | A child shortcode has |
+|---|---|
+| Buy Goods | its own store number **and the till number linked to it** |
+| Paybill | its own shortcode and **no till number** (an account reference is optional) |
+
+STK Push and the other calls use the child's own shortcode as the business shortcode, and for Buy Goods the linked till as the receiving party.
+
+**Which credentials a child shortcode uses.** Each child shortcode chooses:
+
+- **The head office's.** The key and secret, and the initiator, come from the head office. The passkey is never taken from the head office, because a
+  passkey belongs to one shortcode, so STK Push needs the child's own passkey.
+- **Its own.** Send what the shortcode has: key and secret, passkey, initiator name and password. Anything you leave empty (the key and secret, or the
+  initiator) comes from the head office. The account list shows, for each group, whether it is its own, the head office's, or missing.
+
+A till that shares the head office's shortcode always uses the head office's credentials. If it has credentials of its own, give it its own shortcode.
+
+Rules: one head per environment and shortcode, and a child shortcode must be a number no other account has. A child is always in its head office's
+environment and has its head office's type. Changing a head's environment or type changes its children, and changing its shortcode changes the children
+that share it (a child with its own shortcode keeps it). Removing a head removes its children. Choosing the head office's credentials on a child
+removes the credentials it had saved.
 
 ## Uploading a CSV file
 
@@ -63,13 +86,15 @@ If any row has a problem, nothing at all is saved.
 | `label` | a name | a name |
 | `environment` | sandbox or production | empty, unless the head exists in both |
 | `shortcode_type` | paybill or buy_goods | empty |
-| `shortcode` | 5 to 7 digits | empty |
-| `till_number` | empty | Buy Goods: 5 to 7 digits |
-| `account_reference` | empty | Paybill: up to 12 letters or digits |
+| `shortcode` | 5 to 7 digits | empty to share the head's, or its own number for a store number |
+| `till_number` | empty | Buy Goods: 5 to 7 digits (the till linked to a store number) |
+| `account_reference` | empty | Paybill: up to 12 letters or digits (optional for a child shortcode) |
 | `parent_shortcode` | empty | the head's shortcode |
-| `consumer_key`, `consumer_secret` | yes | must be empty |
-| `initiator_name`, `initiator_password` | for B2C, B2B, balance | must be empty |
-| `passkey` | for STK Push | must be empty |
+| `consumer_key`, `consumer_secret` | if it went live | only for a store number with its own |
+| `initiator_name`, `initiator_password` | for B2C, B2B, balance | only for a store number with its own |
+| `passkey` | for STK Push | only for a store number with its own |
+
+On a branch row, filling any credential column means "its own credentials". The columns it leaves empty come from the head office, except the passkey.
 
 Example:
 
@@ -80,6 +105,8 @@ Till 1,sandbox,buy_goods,,123456,,174379,,,,,
 Till 2,sandbox,buy_goods,,654321,,174379,,,,,
 School fees,production,paybill,400200,,,,KEY,SECRET,,,
 Nairobi branch,production,paybill,,,NAIROBI,400200,,,,,
+Mombasa store,,,600111,543210,,174379,STOREKEY,STORESECRET,,,STOREPASSKEY
+Kisumu campus,,,400300,,,400200,KEY,SECRET,,,PASSKEY
 ```
 
 The app can copy or open the same example, and it comes from the server (`GET /api/business-accounts/csv-template`), so the two never disagree.
@@ -88,7 +115,7 @@ Treat a filled-in file as a secret. Delete it after uploading.
 ## Checking
 
 **Check with Safaricom** on an account asks Daraja for an access token with the saved key and secret, and tests that the certificate can lock the
-initiator password. It does not move money. Branches are checked through their head.
+initiator password. It does not move money. A child is checked with its own key and secret when it has them, otherwise through its head office.
 
 ## Server setup
 

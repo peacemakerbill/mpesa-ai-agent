@@ -3193,7 +3193,7 @@
                     "business-accounts"
                   ]
                 },
-                "description": "Needs AGENTX_VAULT_KEY on the API, otherwise the feature is off. environment is sandbox or production. shortcodeType is paybill or buy_goods. The key, secret and passkey here are placeholders: use the ones from your Daraja app.",
+                "description": "Needs AGENTX_VAULT_KEY on the API, otherwise the feature is off. environment is sandbox or production. shortcodeType is paybill or buy_goods. The key, secret and passkey here are placeholders: use the ones from your Daraja app. A head office whose stores went live on their own can be saved without credentials.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"label\": \"Main shop\",\n  \"environment\": \"sandbox\",\n  \"shortcodeType\": \"buy_goods\",\n  \"shortcode\": \"174379\",\n  \"consumerKey\": \"sandbox-consumer-key-0001\",\n  \"consumerSecret\": \"sandbox-consumer-secret-0001\",\n  \"passkey\": \"bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919\",\n  \"initiatorName\": \"testapi\",\n  \"initiatorPassword\": \"Safaricom999!*!\"\n}",
@@ -3237,10 +3237,96 @@
                     "business-accounts"
                   ]
                 },
-                "description": "A branch shares its head account's shortcode, environment and credentials. Buy Goods takes tillNumber, Paybill takes accountReference (up to 12 letters or digits).",
+                "description": "A till or branch shares its head office's shortcode, environment and credentials. Buy Goods takes tillNumber, Paybill takes accountReference (up to 12 letters or digits). For a store number or child shortcode with its own number, use the next two requests.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"label\": \"Till 1\",\n  \"parentId\": \"{{bizAccountId}}\",\n  \"tillNumber\": \"123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 201', function () { pm.expect(pm.response.code).to.be.oneOf([201]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Add a store number (Buy Goods child)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-accounts",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-accounts"
+                  ]
+                },
+                "description": "A child shortcode (store number) has its own number and the till number linked to it. credentials is own when the store went live on its own: send what it has, and anything left out (key and secret, initiator) comes from the head office. The passkey belongs to one shortcode, so it is never taken from the head office. Use credentials head with nothing else to use the head office's.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"label\": \"Mombasa store\",\n  \"parentId\": \"{{bizAccountId}}\",\n  \"shortcode\": \"600111\",\n  \"tillNumber\": \"5551234\",\n  \"credentials\": \"own\",\n  \"consumerKey\": \"store-consumer-key-0001\",\n  \"consumerSecret\": \"store-consumer-secret-0001\",\n  \"passkey\": \"store-stk-passkey-0000001\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 201', function () { pm.expect(pm.response.code).to.be.oneOf([201]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Add a child shortcode (Paybill child)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-accounts",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-accounts"
+                  ]
+                },
+                "description": "Use this when the head office is a Paybill. A child of a Paybill has its own shortcode and no till number. accountReference is optional. credentials is head or own, as for a store number.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"label\": \"Kisumu campus\",\n  \"parentId\": \"{{bizAccountId}}\",\n  \"shortcode\": \"400300\",\n  \"credentials\": \"head\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"

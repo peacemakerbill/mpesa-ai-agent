@@ -30,8 +30,15 @@ import java.util.stream.Collectors;
 /**
  * A customer's business shortcodes and the Daraja credentials for them.
  *
- * <p>A head account holds the credentials. A branch (a Buy Goods till, or a Paybill branch code) belongs to a head
- * account, shares its shortcode and credentials, and only adds its own till number or account reference.
+ * <p>A head office holds its own shortcode and credentials, when it has gone live. A child belongs to a head office and
+ * is one of two things:
+ * <ul>
+ *   <li>a till or branch code that shares the head office's shortcode and credentials and only adds its own till number
+ *       or account reference;</li>
+ *   <li>a child shortcode (a store number) with its own number. A Buy Goods store number has the till number linked to
+ *       it, a Paybill child has none. It uses the head office's credentials, or its own when it went live on its own, and
+ *       any group of those it leaves empty comes from the head office, except the passkey, which belongs to one shortcode.</li>
+ * </ul>
  * Everything is scoped to the signed-in owner. Secrets are locked with {@link SecretVault}, never returned,
  * and a blank secret on an edit means "keep what is saved".
  */
@@ -73,11 +80,11 @@ public class BusinessAccountService {
     }
 
     private BusinessAccountView view(BusinessAccount a, Map<UUID, BusinessAccount> byId) {
-        BusinessAccount source = null;
+        BusinessAccount head = null;
         if (a.isBranch()) {
-            source = byId != null ? byId.get(a.getParentId()) : accounts.findByIdAndOwnerPhone(a.getParentId(), a.getOwnerPhone()).orElse(null);
+            head = byId != null ? byId.get(a.getParentId()) : accounts.findByIdAndOwnerPhone(a.getParentId(), a.getOwnerPhone()).orElse(null);
         }
-        return BusinessAccountView.of(a, source);
+        return BusinessAccountView.of(a, head);
     }
 
     // ------------------------------------------------------------------ writing one account
@@ -200,9 +207,10 @@ public class BusinessAccountService {
     /** Asks Daraja for an access token with the saved key and secret, and checks the certificate can lock the initiator password. */
     public VerifyResult verify(String owner, UUID id) {
         BusinessAccount a = require(owner, id);
-        BusinessAccount source = a.isBranch() ? require(owner, a.getParentId()) : a;
-        if (!source.hasConsumerCredentials()) {
-            return new VerifyResult(false, "Add the consumer key and secret first.", false, "", source.getVerifiedAt());
+        BusinessAccount head = a.isBranch() ? require(owner, a.getParentId()) : null;
+        BusinessAccount source = pick(a, head, BusinessAccount::hasConsumerCredentials);
+        if (source == null) {
+            return new VerifyResult(false, "Add the consumer key and secret first.", false, "", a.getVerifiedAt());
         }
         String key = vault.decrypt(source.getConsumerKeyEnc(), ctx(source.getOwnerPhone(), "consumerKey"));
         String secret = vault.decrypt(source.getConsumerSecretEnc(), ctx(source.getOwnerPhone(), "consumerSecret"));
@@ -221,9 +229,10 @@ public class BusinessAccountService {
 
         boolean credentialReady = false;
         String credentialMessage = "";
-        if (source.hasInitiator()) {
+        BusinessAccount initiator = pick(a, head, BusinessAccount::hasInitiator);
+        if (initiator != null) {
             try {
-                certificates.generate(a.getEnvironment(), vault.decrypt(source.getInitiatorPasswordEnc(), ctx(source.getOwnerPhone(), "initiatorPassword")));
+                certificates.generate(a.getEnvironment(), vault.decrypt(initiator.getInitiatorPasswordEnc(), ctx(initiator.getOwnerPhone(), "initiatorPassword")));
                 credentialReady = true;
                 credentialMessage = "The initiator password can be locked with the " + env + " certificate.";
             } catch (CertificateMissingException e) {
@@ -242,18 +251,30 @@ public class BusinessAccountService {
     /** The unlocked credentials for one account, branch values filled in from the parent. */
     public ResolvedCredentials resolve(String owner, UUID id) {
         BusinessAccount a = require(owner, id);
-        BusinessAccount source = a.isBranch() ? require(owner, a.getParentId()) : a;
-        if (!source.hasConsumerCredentials()) {
+        BusinessAccount head = a.isBranch() ? require(owner, a.getParentId()) : null;
+        BusinessAccount app = pick(a, head, BusinessAccount::hasConsumerCredentials);
+        if (app == null) {
             throw new InvalidActionRequestException("This business account has no consumer key and secret saved.");
         }
-        String owner2 = source.getOwnerPhone();
+        BusinessAccount initiator = pick(a, head, BusinessAccount::hasInitiator);
+        // A passkey belongs to one shortcode, so a child with its own shortcode never borrows the head office's.
+        BusinessAccount passkey = a.hasPasskey() ? a : (head != null && head.getShortcode().equals(a.getShortcode()) && head.hasPasskey() ? head : null);
+        String o = a.getOwnerPhone();
         return new ResolvedCredentials(a.getId(), a.getEnvironment(), a.getShortcodeType(), a.getShortcode(), a.getTillNumber(),
                 a.getAccountReference(),
-                vault.decrypt(source.getConsumerKeyEnc(), ctx(owner2, "consumerKey")),
-                vault.decrypt(source.getConsumerSecretEnc(), ctx(owner2, "consumerSecret")),
-                source.hasInitiator() ? source.getInitiatorName() : null,
-                source.hasInitiator() ? vault.decrypt(source.getInitiatorPasswordEnc(), ctx(owner2, "initiatorPassword")) : null,
-                source.hasPasskey() ? vault.decrypt(source.getPasskeyEnc(), ctx(owner2, "passkey")) : null);
+                vault.decrypt(app.getConsumerKeyEnc(), ctx(o, "consumerKey")),
+                vault.decrypt(app.getConsumerSecretEnc(), ctx(o, "consumerSecret")),
+                initiator == null ? null : initiator.getInitiatorName(),
+                initiator == null ? null : vault.decrypt(initiator.getInitiatorPasswordEnc(), ctx(o, "initiatorPassword")),
+                passkey == null ? null : vault.decrypt(passkey.getPasskeyEnc(), ctx(o, "passkey")));
+    }
+
+    /** The account itself when it holds the group, otherwise the head office when it does, otherwise null. */
+    private static BusinessAccount pick(BusinessAccount a, BusinessAccount head, java.util.function.Predicate<BusinessAccount> holds) {
+        if (holds.test(a)) {
+            return a;
+        }
+        return head != null && holds.test(head) ? head : null;
     }
 
     /** The value Daraja wants in SecurityCredential for this account, made fresh from the saved initiator password. */
@@ -282,6 +303,9 @@ public class BusinessAccountService {
         String initName;
         String initPass;
         String passkey;
+        boolean ownCode;
+        boolean ownCredentials;
+        boolean clearOwn;
         BusinessAccount headAccount;
         Draft headDraft;
         BusinessAccount existing;
@@ -313,6 +337,7 @@ public class BusinessAccountService {
         final Map<UUID, BusinessAccount> byId;
         final Map<String, BusinessAccount> byKey = new HashMap<>();
         final Map<String, BusinessAccount> headByCode = new HashMap<>();
+        final Map<String, List<BusinessAccount>> byCode = new HashMap<>();
         final List<Draft> newHeads = new ArrayList<>();
 
         Context(String owner, List<BusinessAccount> all, boolean importMode) {
@@ -321,6 +346,7 @@ public class BusinessAccountService {
             this.byId = index(all);
             for (BusinessAccount a : all) {
                 byKey.put(keyOf(a.getEnvironment(), a.getShortcode(), a.getTillNumber(), a.getAccountReference()), a);
+                byCode.computeIfAbsent(codeKey(a.getEnvironment(), a.getShortcode()), k -> new ArrayList<>()).add(a);
                 if (!a.isBranch()) {
                     headByCode.put(codeKey(a.getEnvironment(), a.getShortcode()), a);
                 }
@@ -410,13 +436,42 @@ public class BusinessAccountService {
             if (!blank(in.shortcodeType()) && ShortcodeType.parse(in.shortcodeType()) != headType) {
                 d.problem("shortcode_type", "A branch has the same type as its head account. Leave the type empty.");
             }
-            if (!blank(in.shortcode()) && !digits(in.shortcode()).equals(headCode)) {
-                d.problem("shortcode", "A branch uses its head account's shortcode. Leave the shortcode empty.");
+            // A child shares the head office's shortcode, or has its own (a store number that went live on its own).
+            String given = digits(in.shortcode());
+            if (!given.isEmpty() && !CODE.matcher(given).matches()) {
+                d.problem("shortcode", "The shortcode must be 5 to 7 digits.");
+                given = "";
             }
-            if (!blank(in.consumerKey()) || !blank(in.consumerSecret()) || !blank(in.initiatorName())
-                    || !blank(in.initiatorPassword()) || !blank(in.passkey())) {
-                d.problem("consumer_key", "A branch uses its head account's credentials. Leave the key, secret, initiator and passkey empty. "
-                        + "If this till has its own credentials, add it as a separate account.");
+            d.shortcode = !given.isEmpty() ? given : (d.existing != null ? d.existing.getShortcode() : headCode);
+            d.ownCode = !d.shortcode.equals(headCode);
+
+            boolean sent = !blank(in.consumerKey()) || !blank(in.consumerSecret()) || !blank(in.initiatorName())
+                    || !blank(in.initiatorPassword()) || !blank(in.passkey());
+            String mode = blank(in.credentials()) ? null : in.credentials().trim().toLowerCase(Locale.ROOT);
+            if (mode != null && !mode.equals("head") && !mode.equals("own")) {
+                d.problem("credentials", "Choose the head office's credentials or this account's own.");
+                mode = null;
+            }
+            boolean heldOwn = d.existing != null && d.existing.holdsOwnCredentials();
+            if (!d.ownCode) {
+                // Same shortcode as the head office, so the same passkey and credentials.
+                if (sent || "own".equals(mode)) {
+                    d.problem("consumer_key", "This one uses the head office's shortcode, so it uses the head office's credentials. "
+                            + "If it has its own credentials, give it its own shortcode (store number).");
+                }
+                d.ownCredentials = false;
+                d.clearOwn = heldOwn;
+            } else {
+                d.ownCredentials = mode != null ? mode.equals("own") : (sent || heldOwn);
+                if (!d.ownCredentials && sent) {
+                    d.problem("consumer_key", "You chose the head office's credentials, so leave the key, secret, initiator and passkey empty. "
+                            + "If this shortcode has its own, choose its own credentials.");
+                }
+                if (d.ownCredentials && !sent && !heldOwn) {
+                    d.problem("consumer_key", "Add the consumer key and secret, passkey or initiator from this shortcode's own Daraja app, "
+                            + "or choose the head office's credentials.");
+                }
+                d.clearOwn = !d.ownCredentials && heldOwn;
             }
         } else {
             if (blank(in.environment())) {
@@ -464,9 +519,11 @@ public class BusinessAccountService {
         }
         if (d.type == ShortcodeType.PAYBILL) {
             if (!till.isEmpty()) {
-                d.problem("till_number", "A till number belongs to Buy Goods, not to a Paybill.");
+                d.problem("till_number", branch && d.ownCode
+                        ? "A child of a Paybill has no till number. Leave it empty."
+                        : "A till number belongs to Buy Goods, not to a Paybill.");
             }
-            if (branch && ref.isEmpty() && !d.issuesHave("account_reference")) {
+            if (branch && !d.ownCode && ref.isEmpty() && !d.issuesHave("account_reference")) {
                 d.problem("account_reference", "A Paybill branch needs an account reference, for example the branch code.");
             }
         } else if (d.type == ShortcodeType.BUY_GOODS) {
@@ -474,14 +531,16 @@ public class BusinessAccountService {
                 d.problem("account_reference", "An account reference belongs to a Paybill, not to Buy Goods.");
             }
             if (branch && till.isEmpty() && !d.issuesHave("till_number")) {
-                d.problem("till_number", "A Buy Goods branch needs its till number.");
+                d.problem("till_number", d.ownCode
+                        ? "A Buy Goods child shortcode (store number) needs the till number linked to it."
+                        : "A Buy Goods branch needs its till number.");
             }
         }
         d.till = till;
         d.accountRef = ref;
 
-        // credentials, only on a head account
-        if (!branch) {
+        // credentials: on a head office, and on a child that has its own
+        if (!branch || d.ownCredentials) {
             d.key = secret(d, "consumer_key", in.consumerKey(), 8, 100);
             d.secret = secret(d, "consumer_secret", in.consumerSecret(), 8, 100);
             d.initName = clean(in.initiatorName());
@@ -520,11 +579,31 @@ public class BusinessAccountService {
                             + "\". To add another till, add it as a branch of that account.");
                 }
             }
+            if (branch && d.ownCode) {
+                for (BusinessAccount o : ctx.byCode.getOrDefault(codeKey(d.env, d.shortcode), List.of())) {
+                    if (d.existing == null || !o.getId().equals(d.existing.getId())) {
+                        d.problem("shortcode", "The shortcode " + d.shortcode + " is already saved as \"" + o.getLabel()
+                                + "\". A child shortcode (store number) must be a number of its own.");
+                        break;
+                    }
+                }
+            } else if (!branch) {
+                for (BusinessAccount o : ctx.byCode.getOrDefault(codeKey(d.env, d.shortcode), List.of())) {
+                    BusinessAccount oHead = o.isBranch() ? ctx.byId.get(o.getParentId()) : null;
+                    boolean ownedByChild = oHead != null && !oHead.getShortcode().equals(o.getShortcode());
+                    boolean mine = d.existing != null && (o.getId().equals(d.existing.getId()) || d.existing.getId().equals(o.getParentId()));
+                    if (ownedByChild && !mine) {
+                        d.problem("shortcode", "The shortcode " + d.shortcode + " is already saved as \"" + o.getLabel()
+                                + "\", a child shortcode of another account.");
+                        break;
+                    }
+                }
+            }
             if (seenKeys != null) {
                 Draft earlier = seenKeys.putIfAbsent(key, d);
                 if (earlier != null && earlier != d) {
                     d.problem("shortcode", "This repeats row " + earlier.row + ".");
-                } else if (!branch && !d.issuesHave("shortcode")) {
+                } else if ((!branch || d.ownCode) && !d.issuesHave("shortcode")) {
                     Draft sameCode = seenKeys.putIfAbsent("HEAD|" + codeKey(d.env, d.shortcode), d);
                     if (sameCode != null && sameCode != d) {
                         d.problem("shortcode", "Row " + sameCode.row + " already uses the shortcode " + d.shortcode
@@ -534,16 +613,21 @@ public class BusinessAccountService {
             }
         }
 
-        // what must be present on a new head account
-        if (!branch && d.existing == null) {
-            if (d.key == null && !d.issuesHave("consumer_key")) {
-                d.problem("consumer_key", "The consumer key is required.");
-            }
-            if (d.secret == null && !d.issuesHave("consumer_secret")) {
-                d.problem("consumer_secret", "The consumer secret is required.");
+        // The key and the secret go together. An account may have neither, for example a head office whose
+        // stores each went live on their own.
+        if (!branch || d.ownCredentials) {
+            boolean hasKey = d.key != null || (d.existing != null && d.existing.getConsumerKeyEnc() != null);
+            boolean hasSecret = d.secret != null || (d.existing != null && d.existing.getConsumerSecretEnc() != null);
+            if ((d.key != null || d.secret != null) && hasKey != hasSecret) {
+                if (!hasKey && !d.issuesHave("consumer_key")) {
+                    d.problem("consumer_key", "The consumer key is required.");
+                }
+                if (!hasSecret && !d.issuesHave("consumer_secret")) {
+                    d.problem("consumer_secret", "The consumer secret is required.");
+                }
             }
         }
-        if (!branch) {
+        if (!branch || d.ownCredentials) {
             boolean hasName = d.initName != null || (d.existing != null && d.existing.getInitiatorName() != null && !d.existing.getInitiatorName().isBlank());
             boolean hasPass = d.initPass != null || (d.existing != null && d.existing.getInitiatorPasswordEnc() != null);
             if (hasName != hasPass && (d.initName != null || d.initPass != null)) {
@@ -611,6 +695,7 @@ public class BusinessAccountService {
         }
         for (Draft d : ordered) {
             BusinessAccount e = d.existing != null ? d.existing : new BusinessAccount(owner);
+            String oldCode = d.existing != null ? d.existing.getShortcode() : null;
             e.setLabel(d.label);
             e.setEnvironment(d.env);
             e.setShortcodeType(d.type);
@@ -619,7 +704,10 @@ public class BusinessAccountService {
             e.setAccountReference(d.accountRef);
             if (d.branch()) {
                 e.setParentId(d.headAccount != null ? d.headAccount.getId() : d.headDraft.saved.getId());
-            } else {
+            }
+            if (d.clearOwn) {
+                e.clearCredentials();
+            } else if (!d.branch() || d.ownCredentials) {
                 if (d.key != null) {
                     e.setConsumerKeyEnc(vault.encrypt(d.key, ctx(owner, "consumerKey")));
                     e.setConsumerKeyHint(d.key.substring(Math.max(0, d.key.length() - 4)));
@@ -641,19 +729,25 @@ public class BusinessAccountService {
             }
             d.saved = accounts.save(e);
             if (!d.branch() && d.existing != null) {
-                carryToBranches(owner, d.saved);
+                carryToBranches(owner, d.saved, oldCode);
             }
         }
     }
 
-    /** A head account's shortcode, type and environment are shared with its branches, so changes are copied to them. */
-    private void carryToBranches(String owner, BusinessAccount head) {
+    /**
+     * A head office's type and environment are shared with all its children, and its shortcode with the children that
+     * share it, so changes are copied to them. A child with its own shortcode keeps it.
+     */
+    private void carryToBranches(String owner, BusinessAccount head, String oldCode) {
         for (BusinessAccount b : accounts.findByOwnerPhoneAndParentId(owner, head.getId())) {
+            boolean sharesCode = oldCode != null && b.getShortcode().equals(oldCode);
             if (b.getEnvironment() != head.getEnvironment() || b.getShortcodeType() != head.getShortcodeType()
-                    || !b.getShortcode().equals(head.getShortcode())) {
+                    || (sharesCode && !b.getShortcode().equals(head.getShortcode()))) {
                 b.setEnvironment(head.getEnvironment());
                 b.setShortcodeType(head.getShortcodeType());
-                b.setShortcode(head.getShortcode());
+                if (sharesCode) {
+                    b.setShortcode(head.getShortcode());
+                }
                 accounts.save(b);
             }
         }

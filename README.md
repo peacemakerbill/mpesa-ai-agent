@@ -7,7 +7,7 @@
 
 <br/>
 
-<img src="docs/assets/badges-root.svg" alt="Spring Boot 4.1.2, Java 21, Flutter 3.22 or later, Claude with tool use, status reference build. Databases MongoDB, PostgreSQL and MySQL, Redis, RabbitMQ, Flyway 12, Docker compose, Postman with 106 requests." width="880"/>
+<img src="docs/assets/badges-root.svg" alt="Spring Boot 4.1.2, Java 21, Flutter 3.22 or later, Claude with tool use, status reference build. Databases MongoDB, PostgreSQL and MySQL, Redis, RabbitMQ, Flyway 12, Docker compose, Postman with 108 requests." width="880"/>
 
 <br/><br/>
 
@@ -346,7 +346,7 @@ With the switch off, the assistant is told nothing about these tools, the code r
 ## Business accounts, chat transactions and chat files
 
 A customer can save a Paybill or Buy Goods shortcode under **Settings, Business accounts**: consumer key and secret, STK passkey, initiator name and password
-(secrets encrypted with `AGENTX_VAULT_KEY`), several tills or branches under one shortcode, and a CSV upload with a check before anything is saved.
+(secrets encrypted with `AGENTX_VAULT_KEY`), several tills or branches under one shortcode, store numbers and child shortcodes that went live on their own (with the head office's credentials or their own), and a CSV upload with a check before anything is saved.
 The security credential is made by the server from the initiator password and Safaricom's public certificate (sandbox and production folders).
 See [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md).
 

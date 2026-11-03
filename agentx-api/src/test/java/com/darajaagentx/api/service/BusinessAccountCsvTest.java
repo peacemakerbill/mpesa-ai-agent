@@ -13,7 +13,7 @@ class BusinessAccountCsvTest {
     void theTemplateReadsCleanly() {
         BusinessAccountCsv.Parsed parsed = BusinessAccountCsv.parse(BusinessAccountCsv.TEMPLATE.getBytes(StandardCharsets.UTF_8));
         assertThat(parsed.issues()).isEmpty();
-        assertThat(parsed.rows()).hasSize(5);
+        assertThat(parsed.rows()).hasSize(7);
         assertThat(parsed.rows().get(0).row()).isEqualTo(2);
         assertThat(parsed.rows().get(1).request().parentShortcode()).isEqualTo("174379");
     }

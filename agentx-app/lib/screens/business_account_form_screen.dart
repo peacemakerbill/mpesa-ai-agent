@@ -13,11 +13,13 @@ final RegExp _noSpace = RegExp(r'^\S+$');
 
 /// Adds a business account or changes one.
 ///
-/// A head account holds the shortcode and the Daraja credentials. A branch is a Buy Goods till or a Paybill account
-/// reference that belongs to a head and uses the head's credentials, so they are typed once. Pops with true when
-/// something was saved or removed, so the list reads again.
+/// A head office holds its shortcode and, when it has gone live, its Daraja credentials. A child belongs to a head
+/// office and is one of two things: a till or account reference that shares the head office's shortcode and
+/// credentials, or a child shortcode (a store number) with its own number. A Buy Goods store number has the till
+/// number linked to it, a Paybill child has none. A child shortcode uses the head office's credentials, or its own
+/// when it went live on its own. Pops with true when something was saved or removed, so the list reads again.
 class BusinessAccountFormScreen extends StatefulWidget {
-  const BusinessAccountFormScreen({super.key, required this.state, this.account, this.parent});
+  const BusinessAccountFormScreen({super.key, required this.state, this.account, this.parent, this.startWithOwnShortcode = false});
 
   final AppState state;
 
@@ -26,6 +28,9 @@ class BusinessAccountFormScreen extends StatefulWidget {
 
   /// The head a new branch is added to, or the head of the branch being changed.
   final BusinessAccount? parent;
+
+  /// When adding a child: start with "its own shortcode" chosen.
+  final bool startWithOwnShortcode;
 
   @override
   State<BusinessAccountFormScreen> createState() => _BusinessAccountFormScreenState();
@@ -44,8 +49,13 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
   final _key = TextEditingController();
   final _secret = TextEditingController();
   final _passkey = TextEditingController();
-  late final _initiatorName = TextEditingController(text: widget.account?.initiatorName ?? '');
+  late final _initiatorName = TextEditingController(
+      text: widget.account != null && widget.account!.sources.initiator != 'HEAD' ? widget.account!.initiatorName : '');
   final _initiatorPassword = TextEditingController();
+
+  late bool _ownCode = widget.startWithOwnShortcode || (widget.account?.ownShortcode ?? false);
+  // A store number that went live on its own has its own credentials, so that is the starting choice for a new one.
+  late bool _ownCreds = widget.account != null ? widget.account!.holdsOwnCredentials : widget.startWithOwnShortcode;
 
   bool _busy = false;
   bool _checking = false;
@@ -54,6 +64,13 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
 
   bool get _editing => widget.account != null;
   bool get _branch => widget.parent != null || (widget.account?.isBranch ?? false);
+
+  /// The shortcode box is the account's own unless it is a child that shares the head office's.
+  bool get _codeLocked => _branch && !_ownCode;
+
+  bool get _showCredentials => !_branch || (_ownCode && _ownCreds);
+
+  String get _headCode => widget.parent?.shortcode ?? widget.account?.headShortcode ?? '';
 
   @override
   void dispose() {
@@ -68,6 +85,11 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
   Future<void> _save() async {
     if (_busy) return;
     if (!(_form.currentState?.validate() ?? false)) return;
+    if (_branch && _ownCode && _ownCreds && !(widget.account?.holdsOwnCredentials ?? false) &&
+        [_key, _secret, _passkey, _initiatorName, _initiatorPassword].every((c) => c.text.trim().isEmpty)) {
+      setState(() => _error = 'Add the credentials from this shortcode\'s own Daraja app, or choose the head office\'s credentials.');
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
@@ -102,16 +124,24 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
     final out = <String, dynamic>{'label': _label.text.trim()};
     if (_branch) {
       out['parentId'] = widget.parent?.id ?? widget.account?.parentId;
+      // Sending the head office's own number is how a child goes back to sharing it.
+      if (_ownCode) {
+        out['shortcode'] = _shortcode.text.trim();
+        out['credentials'] = _ownCreds ? 'own' : 'head';
+      } else if (_headCode.isNotEmpty) {
+        out['shortcode'] = _headCode;
+      }
       if (_kind == ShortcodeKind.buyGoods) {
         out['tillNumber'] = _till.text.trim();
       } else {
         out['accountReference'] = _reference.text.trim();
       }
-      return out;
+      if (!(_ownCode && _ownCreds)) return out;
+    } else {
+      out['environment'] = _env.wire;
+      out['shortcodeType'] = _kind.wire;
+      out['shortcode'] = _shortcode.text.trim();
     }
-    out['environment'] = _env.wire;
-    out['shortcodeType'] = _kind.wire;
-    out['shortcode'] = _shortcode.text.trim();
     final extras = <String, String?>{
       'consumerKey': text(_key),
       'consumerSecret': text(_secret),
@@ -203,7 +233,7 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
   Widget build(BuildContext context) {
     final title = _editing
         ? (_branch ? 'Edit branch' : 'Edit account')
-        : (_branch ? 'Add a branch' : 'Add a business account');
+        : (_branch ? (widget.startWithOwnShortcode ? 'Add a child shortcode' : 'Add a branch') : 'Add a business account');
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: SafeArea(
@@ -214,7 +244,8 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
             if (_editing) ..._summary(context),
             if (_branch) _parentNote(context),
             _basics(context),
-            if (!_branch) ..._credentials(context),
+            if (_branch && _ownCode) ..._credentialChoice(context),
+            if (_showCredentials) ..._credentials(context),
             const SizedBox(height: 16),
             if (_error != null) ...[Callout(_error!, tone: Tone.bad), const SizedBox(height: 12)],
             FilledButton(
@@ -235,15 +266,18 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
 
   Widget _parentNote(BuildContext context) {
     final head = widget.parent;
-    final text = head == null
-        ? 'This branch uses the credentials of its head account.'
-        : 'This branch uses the credentials of "${head.label}" (${head.headline}, ${head.environment.label}). You only add the ${_kind == ShortcodeKind.buyGoods ? 'till number' : 'account reference'} here.';
+    final name = head == null ? 'its head office' : '"${head.label}" (${head.headline}, ${head.environment.label})';
+    final text = _ownCode
+        ? 'This is a shortcode of its own under $name. ${_kind == ShortcodeKind.buyGoods ? 'Add the till number linked to it.' : 'A child of a Paybill has no till number.'}'
+        : 'This one shares the shortcode and credentials of $name. You only add the ${_kind == ShortcodeKind.buyGoods ? 'till number' : 'account reference'} here.';
     return Padding(padding: const EdgeInsets.only(bottom: 16), child: Callout(text, tone: Tone.info));
   }
 
   Widget _basics(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final locked = _branch;
+    final codeLocked = _codeLocked;
+    final buyGoods = _kind == ShortcodeKind.buyGoods;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       TextFormField(
         controller: _label,
@@ -274,21 +308,42 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
         selected: {_kind},
         onSelectionChanged: locked ? null : (s) => setState(() => _kind = s.first),
       ),
+      if (_branch) ...[
+        const SizedBox(height: 16),
+        Text('What is this?', style: text.labelLarge),
+        const SizedBox(height: 6),
+        SegmentedButton<bool>(
+          segments: [
+            ButtonSegment(value: false, label: Text(buyGoods ? 'A till' : 'An account reference')),
+            ButtonSegment(value: true, label: Text(buyGoods ? 'A store number' : 'A child shortcode')),
+          ],
+          selected: {_ownCode},
+          onSelectionChanged: (s) => setState(() {
+            _ownCode = s.first;
+            if (_ownCode && !_editing) _ownCreds = true;
+            if (_ownCode && _shortcode.text.trim() == _headCode) _shortcode.clear();
+          }),
+        ),
+      ],
       const SizedBox(height: 16),
       TextFormField(
         controller: _shortcode,
-        enabled: !locked,
+        enabled: !codeLocked,
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(7)],
         decoration: InputDecoration(
-          labelText: _kind == ShortcodeKind.paybill ? 'Paybill number' : 'Shortcode (head office)',
-          helperText: locked
-              ? 'Taken from the head account.'
-              : _kind == ShortcodeKind.paybill
-                  ? '5 to 7 digits.'
-                  : '5 to 7 digits. The head office number you registered on Daraja. Tills are added as branches.',
+          labelText: _branch
+              ? (_ownCode ? (buyGoods ? 'Store number (child shortcode)' : 'Child shortcode') : 'Shortcode')
+              : (_kind == ShortcodeKind.paybill ? 'Paybill number' : 'Shortcode (head office)'),
+          helperText: codeLocked
+              ? 'Taken from the head office.'
+              : _branch
+                  ? '5 to 7 digits. The number that went live on Daraja for this ${buyGoods ? 'store' : 'shortcode'}.'
+                  : _kind == ShortcodeKind.paybill
+                      ? '5 to 7 digits.'
+                      : '5 to 7 digits. The head office number you registered on Daraja. Tills and store numbers are added under it.',
         ),
-        validator: (v) => locked || _shortcodePattern.hasMatch((v ?? '').trim()) ? null : 'Enter 5 to 7 digits.',
+        validator: (v) => codeLocked || _shortcodePattern.hasMatch((v ?? '').trim()) ? null : 'Enter 5 to 7 digits.',
       ),
       if (_branch && _kind == ShortcodeKind.buyGoods) ...[
         const SizedBox(height: 16),
@@ -296,7 +351,10 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
           controller: _till,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(7)],
-          decoration: const InputDecoration(labelText: 'Till number', helperText: '5 to 7 digits.'),
+          decoration: InputDecoration(
+            labelText: _ownCode ? 'Till number linked to this store' : 'Till number',
+            helperText: '5 to 7 digits.',
+          ),
           validator: (v) => _shortcodePattern.hasMatch((v ?? '').trim()) ? null : 'Enter the 5 to 7 digit till number.',
         ),
       ],
@@ -306,21 +364,60 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
           controller: _reference,
           textCapitalization: TextCapitalization.characters,
           inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')), LengthLimitingTextInputFormatter(12)],
-          decoration: const InputDecoration(labelText: 'Account reference', helperText: 'Letters and numbers, up to 12. For example the branch code.'),
-          validator: (v) => (v ?? '').trim().isEmpty ? 'Enter the account reference for this branch.' : null,
+          decoration: InputDecoration(
+            labelText: _ownCode ? 'Account reference (optional)' : 'Account reference',
+            helperText: 'Letters and numbers, up to 12. For example the branch code.',
+          ),
+          validator: (v) => _ownCode || (v ?? '').trim().isNotEmpty ? null : 'Enter the account reference for this branch.',
         ),
       ],
     ]);
   }
 
-  List<Widget> _credentials(BuildContext context) {
-    final saved = widget.account;
+  /// For a child shortcode: use the head office's credentials, or the ones this shortcode got when it went live.
+  List<Widget> _credentialChoice(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return [
       const SizedBox(height: 20),
+      const SectionTitle('Which credentials does it use?'),
+      SegmentedButton<bool>(
+        segments: const [
+          ButtonSegment(value: false, label: Text('The head office\'s')),
+          ButtonSegment(value: true, label: Text('Its own')),
+        ],
+        selected: {_ownCreds},
+        onSelectionChanged: (s) => setState(() => _ownCreds = s.first),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        _ownCreds
+            ? 'Fill in what this shortcode got when it went live. Anything you leave empty (the key and secret, or the initiator) is taken from the head office. The passkey belongs to one shortcode, so it is never taken from the head office.'
+            : 'The key and secret, and the initiator, come from the head office. STK Push also needs this shortcode\'s own passkey, so choose "Its own" to add it.',
+        style: text.bodySmall,
+      ),
+    ];
+  }
+
+  String? _keptNote(String label, String from, {String? hint}) {
+    final saved = widget.account;
+    if (saved == null) return null;
+    if (from == 'OWN') return 'Saved${hint == null || hint.isEmpty ? '' : ', ends in $hint'}. Leave empty to keep it.';
+    if (_branch && from == 'HEAD') return 'The head office\'s $label is used. Fill this in to use another.';
+    return null;
+  }
+
+  List<Widget> _credentials(BuildContext context) {
+    final saved = widget.account;
+    final text = Theme.of(context).textTheme;
+    final src = saved?.sources;
+    final headOffice = !_branch;
+    return [
+      const SizedBox(height: 20),
       const SectionTitle('Daraja credentials'),
-      const Callout(
-        'Secrets are encrypted on the server and are never shown again. The security credential is made for you from the initiator password, you do not need to create it.',
+      Callout(
+        headOffice
+            ? 'Fill in what this head office has from the Daraja portal. If its stores or child shortcodes went live on their own, you can leave this empty and add the credentials on each one. Secrets are encrypted on the server and are never shown again. The security credential is made for you from the initiator password.'
+            : 'Secrets are encrypted on the server and are never shown again. The security credential is made for you from the initiator password, you do not need to create it.',
         tone: Tone.info,
         icon: Icons.lock_outline,
       ),
@@ -328,23 +425,23 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
       _SecretField(
         controller: _key,
         label: 'Consumer key',
-        savedNote: saved != null && saved.hasKey ? 'Saved, ends in ${saved.consumerKeyHint}. Leave empty to keep it.' : null,
-        mandatory: !_editing,
+        savedNote: _keptNote('key', src?.app ?? 'NONE', hint: saved?.consumerKeyHint),
         minLength: 8,
+        extra: (v) => v.isEmpty && _secret.text.trim().isNotEmpty && (src?.app ?? 'NONE') != 'OWN' ? 'Add the consumer key too.' : null,
       ),
       const SizedBox(height: 16),
       _SecretField(
         controller: _secret,
         label: 'Consumer secret',
-        savedNote: saved != null && saved.hasConsumerSecret ? 'Saved. Leave empty to keep it.' : null,
-        mandatory: !_editing,
+        savedNote: _keptNote('secret', src?.app ?? 'NONE'),
         minLength: 8,
+        extra: (v) => v.isEmpty && _key.text.trim().isNotEmpty && (src?.app ?? 'NONE') != 'OWN' ? 'Add the consumer secret too.' : null,
       ),
       const SizedBox(height: 16),
       _SecretField(
         controller: _passkey,
         label: 'STK Push passkey',
-        savedNote: saved != null && saved.hasPasskey ? 'Saved. Leave empty to keep it.' : null,
+        savedNote: _keptNote('passkey', src?.passkey ?? 'NONE'),
         help: 'Needed for STK Push and STK Push query.',
         minLength: 20,
       ),
@@ -369,13 +466,18 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
       _SecretField(
         controller: _initiatorPassword,
         label: 'Initiator password',
-        savedNote: saved != null && saved.hasInitiatorPassword ? 'Saved. Leave empty to keep it.' : null,
+        savedNote: _keptNote('initiator', src?.initiator ?? 'NONE'),
         minLength: 6,
-        extra: (v) => v.isEmpty && _initiatorName.text.trim().isNotEmpty && !(saved?.hasInitiatorPassword ?? false)
+        extra: (v) => v.isEmpty && _initiatorName.text.trim().isNotEmpty && (src?.initiator ?? 'NONE') != 'OWN'
             ? 'Add the password for this initiator.'
             : null,
       ),
     ];
+  }
+
+  static String _sourcesLine(BusinessAccount a) {
+    String from(String s) => s == 'OWN' ? 'its own' : (s == 'HEAD' ? 'the head office\'s' : 'not saved');
+    return 'Key and secret: ${from(a.sources.app)}. Passkey: ${from(a.sources.passkey)}. Initiator: ${from(a.sources.initiator)}.';
   }
 
   List<Widget> _summary(BuildContext context) {
@@ -390,8 +492,13 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
           Wrap(spacing: 8, runSpacing: 8, children: [
             StatusTag(account.environment.label, tone: account.environment == DarajaEnv.production ? Tone.warn : Tone.neutral),
             StatusTag(account.kind.label),
+            if (account.ownShortcode) StatusTag(account.kind == ShortcodeKind.buyGoods ? 'Store number' : 'Child shortcode'),
             StatusTag(account.verifiedAt == null ? 'Not checked yet' : 'Checked with Safaricom', tone: account.verifiedAt == null ? Tone.neutral : Tone.good),
           ]),
+          if (account.isBranch) ...[
+            const SizedBox(height: 12),
+            Text(_sourcesLine(account), style: text.bodySmall),
+          ],
           const SizedBox(height: 12),
           Text('What this account can do', style: text.titleSmall),
           const SizedBox(height: 8),

@@ -59,8 +59,10 @@ public final class BusinessAccountCsv {
             "Main shop,sandbox,buy_goods,174379,,,,PASTE_CONSUMER_KEY,PASTE_CONSUMER_SECRET,testapi,PASTE_INITIATOR_PASSWORD,PASTE_PASSKEY",
             "Till 1,sandbox,buy_goods,,123456,,174379,,,,,",
             "Till 2,sandbox,buy_goods,,654321,,174379,,,,,",
+            "Mombasa store,,,600111,543210,,174379,PASTE_CONSUMER_KEY,PASTE_CONSUMER_SECRET,,,PASTE_PASSKEY",
             "School fees,production,paybill,400200,,,,PASTE_CONSUMER_KEY,PASTE_CONSUMER_SECRET,,,",
             "Nairobi branch,production,paybill,,,NAIROBI,400200,,,,,",
+            "Kisumu campus,,,400300,,,400200,PASTE_CONSUMER_KEY,PASTE_CONSUMER_SECRET,,,PASTE_PASSKEY",
             "");
 
     private BusinessAccountCsv() {
@@ -151,7 +153,8 @@ public final class BusinessAccountCsv {
                     cell(cells, columnAt, "consumer_secret"),
                     cell(cells, columnAt, "initiator_name"),
                     cell(cells, columnAt, "initiator_password"),
-                    cell(cells, columnAt, "passkey"))));
+                    cell(cells, columnAt, "passkey"),
+                    null)));
         }
         return new Parsed(rows, issues, ignored);
     }

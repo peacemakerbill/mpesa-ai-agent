@@ -7,7 +7,7 @@
 
 <br/>
 
-<img src="../docs/assets/badges-postman.svg" alt="Postman collection with 106 requests, a local environment, and chaining by test scripts." width="880"/>
+<img src="../docs/assets/badges-postman.svg" alt="Postman collection with 108 requests, a local environment, and chaining by test scripts." width="880"/>
 
 <br/><br/>
 
@@ -23,7 +23,7 @@ A collection and an environment for every HTTP endpoint of the services, with a 
 
 | File | What it is |
 |---|---|
-| `daraja-agent-x.postman_collection.json` | 106 requests for every HTTP endpoint of the three services |
+| `daraja-agent-x.postman_collection.json` | 108 requests for every HTTP endpoint of the three services |
 | `daraja-agent-x-local.postman_environment.json` | Addresses, the internal key, test phone numbers and secrets for a local run |
 
 ## Use it

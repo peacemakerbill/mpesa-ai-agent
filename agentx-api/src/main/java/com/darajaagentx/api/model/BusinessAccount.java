@@ -25,8 +25,9 @@ import java.util.UUID;
  * One M-Pesa shortcode a customer runs a business on, with the Daraja credentials for it.
  *
  * <p>The consumer key, consumer secret, initiator password and passkey are stored encrypted (see SecretVault) and are
- * never sent back to the phone. A branch (a till or a branch code under a head shortcode) has a parent and leaves its
- * own credential fields empty, which means it uses the parent's.
+ * never sent back to the phone. A child (a till, a branch code or a store number under a head office) has a parent.
+ * A child either shares the head office's shortcode and credentials, or has its own shortcode (a store number that
+ * went live on its own) and then its own credentials, any group of which it can leave empty to use the head office's.
  */
 @Document("business_accounts")
 @CompoundIndexes({
@@ -60,7 +61,7 @@ public class BusinessAccount {
     @Column(nullable = false, length = 12)
     private ShortcodeType shortcodeType;
 
-    /** The head shortcode: the Paybill number, or the Buy Goods store (head office) number. */
+    /** The shortcode this account transacts on: the Paybill number, or the Buy Goods store (head office) number. A child shares its head's, or has its own. */
     @Column(nullable = false, length = 12)
     private String shortcode;
 
@@ -72,7 +73,7 @@ public class BusinessAccount {
     @Column(nullable = false, length = 12)
     private String accountReference = "";
 
-    /** Set on a branch. A branch has no credentials of its own and uses the parent's. */
+    /** Set on a child (a till, branch code or store number under a head office). */
     @Column
     private UUID parentId;
 
@@ -143,6 +144,23 @@ public class BusinessAccount {
 
     public boolean isBranch() {
         return parentId != null;
+    }
+
+    /** True when this account itself holds any credential. A child with none uses the head office's. */
+    public boolean holdsOwnCredentials() {
+        return consumerKeyEnc != null || consumerSecretEnc != null || passkeyEnc != null || initiatorPasswordEnc != null
+                || (initiatorName != null && !initiatorName.isBlank());
+    }
+
+    /** Removes every credential saved on this account. */
+    public void clearCredentials() {
+        consumerKeyEnc = null;
+        consumerKeyHint = null;
+        consumerSecretEnc = null;
+        initiatorName = null;
+        initiatorPasswordEnc = null;
+        passkeyEnc = null;
+        verifiedAt = null;
     }
 
     public UUID getId() {

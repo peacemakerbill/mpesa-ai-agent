@@ -87,6 +87,9 @@ class _BusinessAccountsScreenState extends State<BusinessAccountsScreen> {
   void _addBranch(BusinessAccount head) =>
       _open(BusinessAccountFormScreen(state: widget.state, parent: head), doneMessage: 'Branch saved.');
 
+  void _addStore(BusinessAccount head) =>
+      _open(BusinessAccountFormScreen(state: widget.state, parent: head, startWithOwnShortcode: true), doneMessage: 'Saved.');
+
   void _edit(BusinessAccount account) {
     BusinessAccount? parent;
     if (account.parentId != null) {
@@ -157,6 +160,7 @@ class _BusinessAccountsScreenState extends State<BusinessAccountsScreen> {
               branches: g.branches,
               onOpen: _edit,
               onAddBranch: () => _addBranch(g.head),
+              onAddStore: () => _addStore(g.head),
             ),
             const SizedBox(height: 12),
           ],
@@ -167,12 +171,21 @@ class _BusinessAccountsScreenState extends State<BusinessAccountsScreen> {
 }
 
 class _HeadCard extends StatelessWidget {
-  const _HeadCard({required this.head, required this.branches, required this.onOpen, required this.onAddBranch});
+  const _HeadCard({required this.head, required this.branches, required this.onOpen, required this.onAddBranch, required this.onAddStore});
 
   final BusinessAccount head;
   final List<BusinessAccount> branches;
   final void Function(BusinessAccount) onOpen;
   final VoidCallback onAddBranch;
+  final VoidCallback onAddStore;
+
+  static String _childLine(BusinessAccount b) {
+    if (b.ownShortcode) {
+      final own = b.holdsOwnCredentials ? 'own credentials' : 'head office credentials';
+      return '${b.headline}. ${own[0].toUpperCase()}${own.substring(1)}.';
+    }
+    return b.kind == ShortcodeKind.buyGoods ? 'Till ${b.tillNumber}' : 'Account ${b.accountReference}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +227,7 @@ class _HeadCard extends StatelessWidget {
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(b.label, style: text.bodyLarge, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    Text(b.kind == ShortcodeKind.buyGoods ? 'Till ${b.tillNumber}' : 'Account ${b.accountReference}', style: text.bodySmall),
+                    Text(_childLine(b), style: text.bodySmall),
                   ]),
                 ),
                 const Icon(Icons.chevron_right, size: 20),
@@ -223,11 +236,18 @@ class _HeadCard extends StatelessWidget {
           ),
         ],
         Divider(height: 1, color: t.p.line),
-        TextButton.icon(
-          onPressed: onAddBranch,
-          icon: const Icon(Icons.add, size: 18),
-          label: Text(head.kind == ShortcodeKind.buyGoods ? 'Add a till' : 'Add an account reference'),
-        ),
+        Wrap(alignment: WrapAlignment.center, children: [
+          TextButton.icon(
+            onPressed: onAddBranch,
+            icon: const Icon(Icons.add, size: 18),
+            label: Text(head.kind == ShortcodeKind.buyGoods ? 'Add a till' : 'Add an account reference'),
+          ),
+          TextButton.icon(
+            onPressed: onAddStore,
+            icon: const Icon(Icons.add_business_outlined, size: 18),
+            label: Text(head.kind == ShortcodeKind.buyGoods ? 'Add a store number' : 'Add a child shortcode'),
+          ),
+        ]),
       ]),
     );
   }

@@ -22,8 +22,14 @@ public record BusinessAccountView(
         String tillNumber,
         String accountReference,
         UUID parentId,
-        /** True for a branch: the credentials below are the parent's. */
+        /** True for a child that has no credentials of its own: it uses the head office's. */
         boolean inheritsCredentials,
+        /** True for a child that has its own shortcode (a store number), not the head office's. */
+        boolean ownShortcode,
+        /** The head office's shortcode, for a child. Empty for a head office. */
+        String headShortcode,
+        /** Where each group of credentials comes from. */
+        CredentialSources credentialSources,
         String consumerKeyHint,
         boolean hasConsumerSecret,
         String initiatorName,
@@ -34,21 +40,39 @@ public record BusinessAccountView(
         Instant createdAt
 ) {
 
+    /** For each group of credentials: OWN (saved on this account), HEAD (the head office's) or NONE (not saved anywhere). */
+    public record CredentialSources(String app, String passkey, String initiator) {
+    }
+
     /** One thing the saved credentials allow, for example STK Push. */
     public record Capability(String code, String label, boolean ready, String needs) {
     }
 
-    /** @param credentialSource the account whose credentials apply: the same account, or the parent for a branch */
-    public static BusinessAccountView of(BusinessAccount a, BusinessAccount credentialSource) {
-        BusinessAccount src = credentialSource == null ? a : credentialSource;
-        boolean creds = src.hasConsumerCredentials();
-        boolean initiator = src.hasInitiator();
-        boolean passkey = src.hasPasskey();
+    /**
+     * @param head the head account when {@code a} is a child, otherwise null
+     */
+    public static BusinessAccountView of(BusinessAccount a, BusinessAccount head) {
+        boolean ownCode = head != null && !a.getShortcode().equals(head.getShortcode());
+        BusinessAccount app = pick(a, head, a.hasConsumerCredentials(), head != null && head.hasConsumerCredentials());
+        BusinessAccount ini = pick(a, head, a.hasInitiator(), head != null && head.hasInitiator());
+        // A passkey belongs to one shortcode, so a child with its own shortcode never uses the head office's.
+        BusinessAccount pk = pick(a, head, a.hasPasskey(), !ownCode && head != null && head.hasPasskey());
+        CredentialSources sources = new CredentialSources(from(a, app), from(a, pk), from(a, ini));
+        boolean holdsOwn = a.holdsOwnCredentials();
         return new BusinessAccountView(a.getId(), a.getLabel(), a.getEnvironment(), a.getShortcodeType(), a.getShortcode(),
-                a.getTillNumber(), a.getAccountReference(), a.getParentId(), a.isBranch(),
-                src.getConsumerKeyHint(), src.getConsumerSecretEnc() != null,
-                src.getInitiatorName(), src.getInitiatorPasswordEnc() != null, passkey,
-                capabilities(creds, passkey, initiator), src.getVerifiedAt(), a.getCreatedAt());
+                a.getTillNumber(), a.getAccountReference(), a.getParentId(), a.isBranch() && !holdsOwn, ownCode,
+                head == null ? "" : head.getShortcode(), sources,
+                app == null ? null : app.getConsumerKeyHint(), app != null && app.getConsumerSecretEnc() != null,
+                ini == null ? null : ini.getInitiatorName(), ini != null && ini.getInitiatorPasswordEnc() != null, pk != null,
+                capabilities(app != null, pk != null, ini != null), app == null ? null : app.getVerifiedAt(), a.getCreatedAt());
+    }
+
+    private static BusinessAccount pick(BusinessAccount a, BusinessAccount head, boolean own, boolean fromHead) {
+        return own ? a : (fromHead ? head : null);
+    }
+
+    private static String from(BusinessAccount a, BusinessAccount source) {
+        return source == null ? "NONE" : (source == a ? "OWN" : "HEAD");
     }
 
     static List<Capability> capabilities(boolean creds, boolean passkey, boolean initiator) {

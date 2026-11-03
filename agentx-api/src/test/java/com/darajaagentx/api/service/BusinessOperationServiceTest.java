@@ -203,9 +203,9 @@ class BusinessOperationServiceTest {
         SecurityCredentialGenerator generator = new SecurityCredentialGenerator(new DarajaProperties("a", "b", certs.toString()));
         accounts = new BusinessAccountService(accountStore(), vault, generator, (env, key, secret) -> new TokenProbe.Outcome(TokenProbe.Kind.ACCEPTED, 200), clock);
         service = serviceWith(new BusinessOpsProperties(150000, Duration.ofMinutes(30), false, 3, 2), daraja);
-        shop = accounts.create(OWNER, new BusinessAccountRequest("Main shop", "sandbox", "buy_goods", "174379", "", null, null, null, KEY, SECRET, "testapi", PASS, PASSKEY));
-        counter = accounts.create(OWNER, new BusinessAccountRequest("Counter two", "sandbox", "buy_goods", "174379", "9876543", null, shop.id(), null, null, null, null, null, null));
-        accounts.create(OWNER, new BusinessAccountRequest("Bare", "sandbox", "paybill", "600111", "", null, null, null, KEY, SECRET, null, null, null));
+        shop = accounts.create(OWNER, new BusinessAccountRequest("Main shop", "sandbox", "buy_goods", "174379", "", null, null, null, KEY, SECRET, "testapi", PASS, PASSKEY, null));
+        counter = accounts.create(OWNER, new BusinessAccountRequest("Counter two", "sandbox", "buy_goods", "174379", "9876543", null, shop.id(), null, null, null, null, null, null, null));
+        accounts.create(OWNER, new BusinessAccountRequest("Bare", "sandbox", "paybill", "600111", "", null, null, null, KEY, SECRET, null, null, null, null));
     }
 
     private static Map<String, String> params(String... keyValues) {
