@@ -1,6 +1,7 @@
 package com.darajaagentx.agent.chat;
 
 import com.darajaagentx.agent.TestSupport;
+import com.darajaagentx.agent.chat.media.StateBlobStore;
 import com.darajaagentx.agent.exception.ChatException;
 import com.darajaagentx.agent.store.InMemoryStateStore;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ class ChatChannelTest {
 
     private final InMemoryStateStore state = new InMemoryStateStore();
     private final ChatLog log = new ChatLog(state, TestSupport.mapper());
-    private final ChatMedia media = new ChatMedia(state, TestSupport.mapper());
+    private final ChatMedia media = new ChatMedia(new StateBlobStore(state));
     private final ChatChannel channel = new ChatChannel(log, media);
 
     @Test

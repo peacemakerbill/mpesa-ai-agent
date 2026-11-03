@@ -23,7 +23,8 @@ public interface BusinessApi {
     Map<String, Object> cancel(String id, String phone);
 
     /** agentx-api answered with an error, or could not be reached (status 0). The message is safe to show. */
-    class BusinessApiException extends RuntimeException {
+    @SuppressWarnings("serial")
+	class BusinessApiException extends RuntimeException {
         private final int status;
 
         public BusinessApiException(int status, String message) {

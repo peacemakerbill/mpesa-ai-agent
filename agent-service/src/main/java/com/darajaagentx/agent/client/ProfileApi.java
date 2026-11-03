@@ -34,7 +34,8 @@ public interface ProfileApi {
     Map<String, Object> sendReport(String phone, Map<String, Object> request);
 
     /** agentx-api answered with an error, or could not be reached (status 0). The message is safe to show. */
-    class ProfileApiException extends RuntimeException {
+    @SuppressWarnings("serial")
+	class ProfileApiException extends RuntimeException {
         private final int status;
 
         public ProfileApiException(int status, String message) {

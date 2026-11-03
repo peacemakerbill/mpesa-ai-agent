@@ -16,7 +16,7 @@ import java.time.Duration;
 public class MediaStorageConfig {
 
     @Bean
-    public MediaBlobStore mediaBlobStore(
+    MediaBlobStore mediaBlobStore(
             StateStore state,
             @Value("${chat.media.store:state}") String store,
             @Value("${chat.media.local-dir:./data/chat-media}") String localDir,
