@@ -1,3 +1,21 @@
+<div align="center">
+
+<img src="../../docs/assets/banner-business.svg" alt="" width="100%"/>
+
+<br/>
+
+<img src="../../docs/assets/badges-business.svg" alt="Secrets encrypted at rest, Paybill and Buy Goods shortcodes, branches under one head, CSV upload up to 500 accounts, money out needs approval." width="880"/>
+
+<br/><br/>
+
+Save a business shortcode and its credentials once, then use it from the chat.
+
+<sub><a href="../README.md">Back to the Daraja Agent-X app</a> &nbsp;|&nbsp; <a href="../../README.md">Project overview</a></sub>
+
+<img src="../../docs/assets/divider.svg" alt="" width="100%"/>
+
+</div>
+
 # Business accounts
 
 For businesses that use Daraja: STK Push, STK Push query, Dynamic QR, C2B, pull transactions, B2C, B2B, Pochi la Biashara, account balance,

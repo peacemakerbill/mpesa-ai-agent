@@ -1,3 +1,21 @@
+<div align="center">
+
+<img src="../../docs/assets/banner-files.svg" alt="" width="100%"/>
+
+<br/>
+
+<img src="../../docs/assets/badges-files.svg" alt="Flutter 3.22 or later, file cache limit with a 200 MB default, sign out clears the cache, no M-Pesa account link by design." width="880"/>
+
+<br/><br/>
+
+How the phone keeps files, and what the My OneApp screen does.
+
+<sub><a href="../README.md">Back to the Daraja Agent-X app</a> &nbsp;|&nbsp; <a href="../../README.md">Project overview</a></sub>
+
+<img src="../../docs/assets/divider.svg" alt="" width="100%"/>
+
+</div>
+
 # Files on the phone, and My OneApp
 
 ## Files and storage (Settings)

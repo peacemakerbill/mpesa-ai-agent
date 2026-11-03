@@ -1,3 +1,21 @@
+<div align="center">
+
+<img src="../../../../../../docs/assets/banner-certs.svg" alt="" width="100%"/>
+
+<br/>
+
+<img src="../../../../../../docs/assets/badges-certs.svg" alt="Sandbox and production folders, public certificate only, never a private key, other location with DARAJA_CERTS_DIR." width="880"/>
+
+<br/><br/>
+
+Put the sandbox certificate in this folder.
+
+<sub><a href="../../../../../README.md">Back to agentx-api</a></sub>
+
+<img src="../../../../../../docs/assets/divider.svg" alt="" width="100%"/>
+
+</div>
+
 # Safaricom sandbox public certificate
 
 Put the **sandbox** certificate here, for example `SandboxCertificate.cer`.

@@ -1,3 +1,21 @@
+<div align="center">
+
+<img src="../docs/assets/banner-storage.svg" alt="" width="100%"/>
+
+<br/>
+
+<img src="../docs/assets/badges-storage.svg" alt="Redis for 24 hours by default, a folder or network share, S3 compatible object storage including MinIO and Cloudflare R2, private encrypted bucket." width="880"/>
+
+<br/><br/>
+
+Choose where chat photos, voice notes and documents are kept.
+
+<sub><a href="README.md">Back to agent-service</a> &nbsp;|&nbsp; <a href="../README.md">Project overview</a></sub>
+
+<img src="../docs/assets/divider.svg" alt="" width="100%"/>
+
+</div>
+
 # Where chat files are kept
 
 Photos, voice notes, documents and the receipts the assistant sends all go through `ChatMedia`. The bytes now live in one of three places,

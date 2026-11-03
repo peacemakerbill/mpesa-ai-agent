@@ -1,0 +1,46 @@
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/badges-certs-test.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="880" height="44" viewBox="0 0 880 44" role="img" aria-label="Made with keytool, not from Safaricom, for tests only.">
+<title>Made with keytool, not from Safaricom, for tests only.</title>
+<defs><clipPath id="c123"><rect width="123" height="42" rx="6"/></clipPath><clipPath id="c147"><rect width="147" height="42" rx="6"/></clipPath><clipPath id="c141"><rect width="141" height="42" rx="6"/></clipPath><clipPath id="cl"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z"/></clipPath><clipPath id="od"><rect x="-1" y="21" width="10" height="17"/></clipPath></defs>
+<style>
+:root { --bg:#F6F7F4; --pn:#FFFFFF; --ink:#14211A; --mut:#5B6A62; --rule:#D8DDD6; --grn:#17803D; --amb:#A8650A; --red:#B3261E; --blu:#1F5FBF; --dot:#C9D0C8; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0F1512; --pn:#151D19; --ink:#E7EDE9; --mut:#8D9C94; --rule:#2A352F; --grn:#47C27A; --amb:#E0A84A; --red:#FF7B72; --blu:#6EA8FF; --dot:#26312B; } }
+text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+:where(text:not([fill])) { fill: var(--ink); }
+.m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+.mut { fill: var(--mut); }
+.bg { fill: var(--bg); stroke: var(--rule); }
+.pn { fill: var(--pn); stroke: var(--rule); }
+.hl { stroke: var(--rule); fill: none; }
+.hf { fill: var(--rule); }
+.g { fill: var(--grn); } .gs { stroke: var(--grn); fill: none; }
+.ms { stroke: var(--mut); fill: none; }
+.wt { fill: #fff; } .w8 { fill: #fff; fill-opacity: .82; } .w6 { fill: #fff; fill-opacity: .6; }
+.halo { paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.fu { opacity: 0; animation: fu .8s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes fu { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+.lf { animation: lf .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lf { from { fill-opacity: 0; fill: #47C27A } to { fill-opacity: 1; fill: #fff } }
+.wipe { animation: wipe 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes wipe { from { clip-path: inset(-12% 100% -12% 0) } to { clip-path: inset(-12% -3% -12% 0) } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } .fu { opacity: 1 !important; } }
+
+.pp { animation: pp .5s cubic-bezier(.2,.9,.3,1.3) both; transform-box: fill-box; transform-origin: center; }
+@keyframes pp { from { opacity: 0; transform: translate(0,0) scale(.4) } to { opacity: 1 } }
+.dr * { stroke-dasharray: 1; animation: dr .9s ease-in-out both; animation-delay: inherit; }
+.dr { }
+@keyframes dr { from { stroke-dashoffset: 1; opacity: 0 } 6% { opacity: 1 } to { stroke-dashoffset: 0; opacity: 1 } }
+.sh { animation: sh 9s ease-in-out infinite both; }
+@keyframes sh { 0% { transform: translateX(0) skewX(-18deg) } 9% { transform: translateX(110px) skewX(-18deg) } 100% { transform: translateX(110px) skewX(-18deg) } }
+.ac { transform-box: fill-box; transform-origin: left center; animation: ac .8s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes ac { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+.rg { transform-box: fill-box; transform-origin: center; animation: rg 2.4s ease-out infinite; }
+@keyframes rg { 0% { transform: scale(1); opacity: .8 } 100% { transform: scale(2.6); opacity: 0 } }
+.od { animation: od 1.3s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes od { from { transform: translateY(0) } }
+@media (prefers-reduced-motion: reduce) { .sh, .rg { display: none; } .dr *, .pp, .ac { animation: none !important; } }
+</style>
+<g transform="translate(226.2,1)"><g class="fu" style="animation-delay:0.15s"><rect class="pn" x=".5" y=".5" width="122.1" height="41" rx="6"/><g clip-path="url(#c123)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#2B3A32"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.40s"><path pathLength="1" d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:1.35s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.50s" x="42" y="39" width="81.1" height="3" fill="#2B3A32"/><text x="54" y="17" font-size="10.5" class="mut">Made with</text><text x="54" y="34" font-size="13.5" font-weight="700">keytool</text></g></g></g><g transform="translate(357.2,1)"><g class="fu" style="animation-delay:0.22s"><rect class="pn" x=".5" y=".5" width="146.6" height="41" rx="6"/><g clip-path="url(#c147)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#B3261E"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.47s"><path pathLength="1" d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  <path pathLength="1" d="m9 12 2 2 4-4" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:1.82s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.57s" x="42" y="39" width="105.6" height="3" fill="#B3261E"/><text x="54" y="17" font-size="10.5" class="mut">From Safaricom</text><text x="54" y="34" font-size="13.5" font-weight="700">no</text></g></g></g><g transform="translate(512.8,1)"><g class="fu" style="animation-delay:0.29s"><rect class="pn" x=".5" y=".5" width="140.0" height="41" rx="6"/><g clip-path="url(#c141)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#A8650A"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.54s"><rect pathLength="1" width="18" height="11" x="3" y="11" rx="2" ry="2" />
+  <path pathLength="1" d="M7 11V7a5 5 0 0 1 10 0v4" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:2.29s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.64s" x="42" y="39" width="99.0" height="3" fill="#A8650A"/><text x="54" y="17" font-size="10.5" class="mut">Use</text><text x="54" y="34" font-size="13.5" font-weight="700">tests only</text></g></g></g>
+</svg>

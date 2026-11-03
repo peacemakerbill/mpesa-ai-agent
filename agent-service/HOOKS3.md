@@ -1,3 +1,21 @@
+<div align="center">
+
+<img src="../docs/assets/banner-hooks.svg" alt="" width="100%"/>
+
+<br/>
+
+<img src="../docs/assets/badges-hooks.svg" alt="Spring Boot agent-service, edits to existing files, new files are complete and copied in, package com.darajaagentx.agent." width="880"/>
+
+<br/><br/>
+
+Three small edits connect chat file storage to the agent-service.
+
+<sub><a href="README.md">Back to agent-service</a> &nbsp;|&nbsp; <a href="../README.md">Project overview</a></sub>
+
+<img src="../docs/assets/divider.svg" alt="" width="100%"/>
+
+</div>
+
 # Part 3 edits to existing agent-service files
 
 New files (copy in): everything under `chat/media/`, and the replacement `chat/ChatMedia.java`. These use no JSON library, so they work with
