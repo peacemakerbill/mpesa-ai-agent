@@ -65,7 +65,7 @@ Customers chat with an AI assistant, in the app or on the web, in English or Swa
 ### The approval flow
 
 1. The assistant prepares the request and sends a link, plus a Cancel button, in the chat.
-2. The link opens the M-Ganji app. It shows the request in plain words with warnings.
+2. The link opens the Daraja Agent-X app. It shows the request in plain words with warnings.
 3. The customer approves with fingerprint, face or phone lock (the phone's own check).
 4. The app opens the dialler (code typed in, customer presses call) or the M-Pesa app, and shows numbered steps with copy buttons.
 5. The customer types the M-Pesa PIN inside M-Pesa.
@@ -76,18 +76,18 @@ Customers chat with an AI assistant, in the app or on the web, in English or Swa
 <img src="docs/assets/divider.svg" alt="" width="100%"/>
 </div>
 
-## The M-Ganji app
+## The Daraja Agent-X app
 
-Flutter, for Android, iOS, macOS, Linux and Windows. More in [`ganji_app/README.md`](ganji_app/README.md).
+Flutter, for Android, iOS, macOS, Linux and Windows. More in [`agentx-app/README.md`](agentx-app/README.md).
 
 - **Sign in** with the phone number and a 6 digit code sent by SMS. Sign out at any time.
 - **Chat tab** with the assistant: message bubbles, buttons and menus the assistant sends, photos, videos, documents, voice notes (record and play), shared locations and contacts, typing indicator, and a **Requests tab** beside it.
 - Request list and request detail, with warnings (details read from a voice note, photo or file are flagged).
 - Approval with biometrics or device lock. Decline with one tap.
 - Hand-off to M-Pesa: dialler, optional M-Pesa app launch, guided steps, copy buttons. Values come from the server, so they can be corrected without a new release.
-- **Contact search** across this phone (with permission, or its own chooser without one), Google contacts, Outlook contacts, a vCard or CSV file, or a typed number. Searching happens on the phone. See [`ganji_app/docs/CONTACTS.md`](ganji_app/docs/CONTACTS.md).
-- **M-Pesa message check (Android only):** reads only messages from the sender `MPESA`, only on request, matches on the phone, and sends the code, kind, amount and payee, never the text. See [`ganji_app/docs/SMS.md`](ganji_app/docs/SMS.md).
-- Deep links from `https://host/a/ID` and `mganji://a/ID`.
+- **Contact search** across this phone (with permission, or its own chooser without one), Google contacts, Outlook contacts, a vCard or CSV file, or a typed number. Searching happens on the phone. See [`agentx-app/docs/CONTACTS.md`](agentx-app/docs/CONTACTS.md).
+- **M-Pesa message check (Android only):** reads only messages from the sender `MPESA`, only on request, matches on the phone, and sends the code, kind, amount and payee, never the text. See [`agentx-app/docs/SMS.md`](agentx-app/docs/SMS.md).
+- Deep links from `https://host/a/ID` and `agentx://a/ID`.
 - iPhone: no message reading is possible. Customers send the M-Pesa message in the chat instead.
 
 ### Ten looks, saved on the phone
@@ -183,11 +183,11 @@ Request states: `CREATED`, `APPROVED`, `HANDED_OFF`, `DONE_REPORTED`, `NOT_DONE`
 | Service | Port | What it does |
 |---|---|---|
 | [agent-service](agent-service/README.md) | 8082 | Claude model with tool use, the chat (messages and files) and conversation memory, role handling, menus, media understanding, contact lookup |
-| [ganji-api](ganji-api/README.md) | 8084 | Signs customers in by SMS code, relays the chat, stores requests, serves the app, matches message evidence, publishes events, serves app-link files |
-| [ganji_app](ganji_app/README.md) | none | The Flutter app above |
+| [agentx-api](agentx-api/README.md) | 8084 | Signs customers in by SMS code, relays the chat, stores requests, serves the app, matches message evidence, publishes events, serves app-link files |
+| [agentx_app](agentx-app/README.md) | none | The Flutter app above |
 | [payment-service](payment-service/README.md) | 8083 | **Optional** Daraja module for a business, off by default |
 
-**Infrastructure.** A database you choose with `DATABASE_TYPE` (MongoDB, PostgreSQL or MySQL, with separate `payments` and `ganji` databases), Redis and RabbitMQ. payment-service defaults to MongoDB when run directly, and the compose file starts PostgreSQL unless you say otherwise. See [`docs/DATABASES.md`](docs/DATABASES.md). All Java services use the same layered packages: controller, service, repository, model, dto, exception, config.
+**Infrastructure.** A database you choose with `DATABASE_TYPE` (MongoDB, PostgreSQL or MySQL, with separate `payments` and `agentx` databases), Redis and RabbitMQ. payment-service defaults to MongoDB when run directly, and the compose file starts PostgreSQL unless you say otherwise. See [`docs/DATABASES.md`](docs/DATABASES.md). All Java services use the same layered packages: controller, service, repository, model, dto, exception, config.
 
 **Engineering features.** Flyway migrations for the SQL databases, idempotency keys, row locking on state changes, events sent only after commit, Docker Compose for everything, per-service `.env.example` files read through `spring.config.import`, and unit and integration tests for the Java services and Dart tests for the app.
 
@@ -200,7 +200,7 @@ Request states: `CREATED`, `APPROVED`, `HANDED_OFF`, `DONE_REPORTED`, `NOT_DONE`
 | Database, query timeout or RabbitMQ failure inside a payment call | payment-service answers **503 Service Unavailable** with a plain body |
 | The model API answers 408, 429, 5xx or 529 | agent-service tries up to 3 times before giving up |
 
-The 503 handler is in payment-service today. agent-service and ganji-api still need the same treatment.
+The 503 handler is in payment-service today. agent-service and agentx-api still need the same treatment.
 
 <div align="center">
 <img src="docs/assets/divider.svg" alt="" width="100%"/>
@@ -241,7 +241,7 @@ One HTML file, run with `python3 -m http.server`, that simulates the frontend. I
 
 The console has:
 
-- a journey view that draws one request as a trace across customer, agent, M-Ganji API, phone and M-Pesa,
+- a journey view that draws one request as a trace across customer, agent, Daraja Agent-X API, phone and M-Pesa,
 - a real chat against the real agent: sign in with a code, attach menu, file pickers, voice notes, camera and video recording, drag and drop, location, and contact search across Google, Microsoft, a phone picker and vCard or CSV,
 - a phone app simulator and an explorer for every endpoint,
 - a command palette (Ctrl+K), and the same ten themes as the app, with an upload slot for your own logo.

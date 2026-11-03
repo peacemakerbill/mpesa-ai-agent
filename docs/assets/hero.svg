@@ -1,6 +1,6 @@
 <!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/hero.svg  (create the docs/assets folder if it does not exist) -->
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="392" viewBox="0 0 1200 392" role="img" aria-label="M-Ganji. A request slip moves from created to approved, handed off and recorded, with a ticker of what the assistant can prepare.">
-<title>M-Ganji. A request slip moves from created to approved, handed off and recorded, with a ticker of what the assistant can prepare.</title>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="392" viewBox="0 0 1200 392" role="img" aria-label="Daraja Agent-X. A request slip moves from created to approved, handed off and recorded, with a ticker of what the assistant can prepare.">
+<title>Daraja Agent-X. A request slip moves from created to approved, handed off and recorded, with a ticker of what the assistant can prepare.</title>
 <defs><clipPath id="hc"><rect width="1200" height="392" rx="10"/></clipPath><clipPath id="tk"><rect x="0" y="340" width="1200" height="52"/></clipPath><pattern id="hw" width="48" height="48" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="48" height="5" fill="#fff" fill-opacity="0.05"/><rect x="0" y="22" width="48" height="2" fill="#fff" fill-opacity="0.035"/><rect x="0" y="0" width="5" height="48" fill="#fff" fill-opacity="0.05"/><rect x="22" y="0" width="2" height="48" fill="#fff" fill-opacity="0.035"/><rect x="0" y="0" width="5" height="5" fill="#fff" fill-opacity="0.05"/></pattern></defs>
 <style>
 :root { --bg:#F6F7F4; --pn:#FFFFFF; --ink:#14211A; --mut:#5B6A62; --rule:#D8DDD6; --grn:#17803D; --amb:#A8650A; --red:#B3261E; --blu:#1F5FBF; --dot:#C9D0C8; }

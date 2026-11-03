@@ -18,15 +18,15 @@
       "defaultValue": "http://localhost:8083"
     },
     {
-      "name": "ganji.base-url",
+      "name": "agentx.base-url",
       "type": "java.lang.String",
-      "description": "Private address of ganji-api. Set with GANJI_BASE_URL.",
+      "description": "Private address of agentx-api. Set with AGENTX_BASE_URL.",
       "defaultValue": "http://localhost:8084"
     },
     {
-      "name": "ganji.public-url",
+      "name": "agentx.public-url",
       "type": "java.lang.String",
-      "description": "Public address of ganji-api, which customers' phones open from links in chat. Set with GANJI_PUBLIC_BASE_URL.",
+      "description": "Public address of agentx-api, which customers' phones open from links in chat. Set with AGENTX_PUBLIC_BASE_URL.",
       "defaultValue": "http://localhost:8084"
     },
     {
@@ -211,7 +211,7 @@
     {
       "name": "agent.business-payments",
       "type": "java.lang.Boolean",
-      "description": "Off: the agent only prepares requests for the customer's own M-Pesa (ganji-api). On: it also offers the business tools that need payment-service (Daraja): paying the business by STK Push, refunds, payouts and staff roles. Set with AGENT_BUSINESS_PAYMENTS.",
+      "description": "Off: the agent only prepares requests for the customer's own M-Pesa (agentx-api). On: it also offers the business tools that need payment-service (Daraja): paying the business by STK Push, refunds, payouts and staff roles. Set with AGENT_BUSINESS_PAYMENTS.",
       "defaultValue": false
     }
   ]

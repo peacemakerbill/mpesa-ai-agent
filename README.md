@@ -3,7 +3,7 @@
 
 <div align="center">
 
-<img src="docs/assets/hero.svg" alt="M-Ganji: chat, approve, pay inside M-Pesa" width="100%"/>
+<img src="docs/assets/hero.svg" alt="Daraja Agent-X: chat, approve, pay inside M-Pesa" width="100%"/>
 
 <br/>
 
@@ -22,7 +22,7 @@
 Customers chat with an assistant in the app or on the web, in English or Swahili, by text, voice note, photo, video, file, shared contact or shared location. The assistant understands requests such as "send 500 to Mama", "pay Paybill 888880 account 1234" or "buy 50 airtime", and **prepares** them. The customer then approves on their own phone and finishes inside M-Pesa, using the system that already works.
 
 > [!NOTE]
-> **About the name.** *Ganji* is Sheng for money. M-Ganji is an assistant that helps people use their own M-Pesa, in a chat they already know how to use.
+> **About the name.** *AgentX* is Sheng for money. Daraja Agent-X is an assistant that helps people use their own M-Pesa, in a chat they already know how to use.
 > M-Pesa and Daraja are Safaricom's names. This project uses them only to say what it works with.
 
 <div align="center">
@@ -57,8 +57,8 @@ Customers chat with an assistant in the app or on the web, in English or Swahili
 <table>
 <tr>
 <td><a href="agent-service/README.md"><img src="docs/assets/card-agent.svg" alt="agent-service" width="384"/></a></td>
-<td><a href="ganji-api/README.md"><img src="docs/assets/card-ganji-api.svg" alt="ganji-api" width="384"/></a></td>
-<td><a href="ganji_app/README.md"><img src="docs/assets/card-ganji-app.svg" alt="ganji_app" width="384"/></a></td>
+<td><a href="agentx-api/README.md"><img src="docs/assets/card-agentx-api.svg" alt="agentx-api" width="384"/></a></td>
+<td><a href="agentx-app/README.md"><img src="docs/assets/card-agentx-app.svg" alt="agentx_app" width="384"/></a></td>
 </tr>
 <tr>
 <td><a href="payment-service/README.md"><img src="docs/assets/card-payment.svg" alt="payment-service" width="384"/></a></td>
@@ -71,8 +71,8 @@ Customers chat with an assistant in the app or on the web, in English or Swahili
 | Part | Port | Job | Needed |
 |---|---|---|---|
 | agent-service | 8082 | Talks to Claude, keeps each customer's chat and files, prepares requests with tools | Yes |
-| ganji-api | 8084 | Signs customers in by SMS code, relays the chat to the agent, stores prepared requests, serves the app and its link files | Yes |
-| ganji_app | none | Flutter app for Android, iOS, macOS, Linux and Windows: chat, find contacts, approve, hand over to M-Pesa, report | Yes |
+| agentx-api | 8084 | Signs customers in by SMS code, relays the chat to the agent, stores prepared requests, serves the app and its link files | Yes |
+| agentx_app | none | Flutter app for Android, iOS, macOS, Linux and Windows: chat, find contacts, approve, hand over to M-Pesa, report | Yes |
 | payment-service | 8083 | Daraja for a **business**: STK Push to your own shortcode, refunds, payouts, staff roles | Optional, off by default |
 | console | 8000 | One HTML file that behaves like a frontend for every endpoint | For testing |
 | postman | none | Collection and environment for every endpoint | For testing |
@@ -86,7 +86,7 @@ All Java services share the same layered packages: `controller`, `service`, `rep
 ## Architecture
 
 <div align="center">
-<img src="docs/assets/architecture.svg" alt="Architecture: app, ganji-api, agent-service, Claude, infrastructure and the optional payment-service" width="100%"/>
+<img src="docs/assets/architecture.svg" alt="Architecture: app, agentx-api, agent-service, Claude, infrastructure and the optional payment-service" width="100%"/>
 </div>
 
 <br/>
@@ -97,8 +97,8 @@ A single request, end to end:
 sequenceDiagram
     autonumber
     participant C as Customer
-    participant A as M-Ganji app
-    participant API as ganji-api
+    participant A as Daraja Agent-X app
+    participant API as agentx-api
     participant AG as agent-service
     participant M as M-Pesa on the phone
 
@@ -172,9 +172,9 @@ None of these is a Safaricom confirmation. A message can also correct a request 
 ## Quick start
 
 > [!WARNING]
-> **Status: a reference build.** The code was written and then migrated to Spring Boot 4.1.2 with Jackson 3. agent-service has been seen starting on Boot 4 (Tomcat 11, RabbitMQ connected). payment-service and ganji-api are migrated but have not yet been confirmed running end to end. Nothing has been through a full end to end test. Verify the M-Pesa hand-off values and the SMS wording on real phones before relying on any of it.
+> **Status: a reference build.** The code was written and then migrated to Spring Boot 4.1.2 with Jackson 3. agent-service has been seen starting on Boot 4 (Tomcat 11, RabbitMQ connected). payment-service and agentx-api are migrated but have not yet been confirmed running end to end. Nothing has been through a full end to end test. Verify the M-Pesa hand-off values and the SMS wording on real phones before relying on any of it.
 
-**1. Prerequisites.** Java 21, Maven 3.9 or later, Docker, Flutter 3.22 or later, an Anthropic API key, and a public HTTPS address for ganji-api (a Cloudflare Tunnel is fine for testing). Real sign-in codes need an Africa's Talking account.
+**1. Prerequisites.** Java 21, Maven 3.9 or later, Docker, Flutter 3.22 or later, an Anthropic API key, and a public HTTPS address for agentx-api (a Cloudflare Tunnel is fine for testing). Real sign-in codes need an Africa's Talking account.
 
 **2. Configure.** Copy each `.env.example` to `.env` in its own folder. Use the **same** `INTERNAL_KEY` everywhere.
 
@@ -189,19 +189,19 @@ docker compose up --build
 ```bash
 docker compose up -d redis rabbitmq        # plus a database, see below
 cd agent-service && mvn spring-boot:run
-cd ganji-api && mvn spring-boot:run
+cd agentx-api && mvn spring-boot:run
 ```
 
 **5. Check the build before trusting it.**
 
 ```bash
 cd agent-service   && mvn clean verify
-cd ganji-api       && mvn clean verify
+cd agentx-api       && mvn clean verify
 cd payment-service && mvn clean verify
-cd ganji_app && flutter pub get && flutter analyze && flutter test
+cd agentx_app && flutter pub get && flutter analyze && flutter test
 ```
 
-**6. Try it without a phone.** Start ganji-api with `CODE_DELIVERY=dev`, then open the console.
+**6. Try it without a phone.** Start agentx-api with `CODE_DELIVERY=dev`, then open the console.
 
 ```bash
 cd console && python3 -m http.server 8000     # then open http://localhost:8000/console.html
@@ -217,7 +217,7 @@ Pick the database with `DATABASE_TYPE` (`mongodb`, `postgresql` or `mysql`). pay
 If PostgreSQL already has a data volume from an earlier run, the init script is skipped, so create the database once by hand:
 
 ```bash
-docker compose exec postgres createdb -U app ganji
+docker compose exec postgres createdb -U app agentx
 ```
 
 </details>
@@ -231,7 +231,7 @@ docker compose exec postgres createdb -U app ganji
 
 | Value | Behaviour | Use it |
 |---|---|---|
-| `log` | Writes the code to the ganji-api log. This is the default | Developer machine |
+| `log` | Writes the code to the agentx-api log. This is the default | Developer machine |
 | `dev` | Also returns the code to the app and console so a test can sign in alone | Local testing only |
 | `sms` | Sends a text through Africa's Talking (`SMS_USERNAME`, `SMS_API_KEY`, `SMS_SENDER_ID`) | Real use |
 
@@ -245,7 +245,7 @@ docker compose exec postgres createdb -U app ganji
 
 <br/>
 
-The app can dial a code with the details already typed in, or open the M-Pesa app. Those values are **not hard coded** because they were not verified. They live in the ganji-api `.env`:
+The app can dial a code with the details already typed in, or open the M-Pesa app. Those values are **not hard coded** because they were not verified. They live in the agentx-api `.env`:
 
 ```properties
 HANDOFF_USSD_MAIN=*334#
@@ -280,9 +280,9 @@ The Flutter app and the browser console share the same ten looks. Seven are ever
 |---|---|---|
 | `INTERNAL_KEY` | every service | Shared secret sent as `X-Internal-Key` between services. Use the same value everywhere |
 | `ANTHROPIC_API_KEY` | agent-service | Lets the assistant answer. Without it, messages are accepted but nothing replies |
-| `GANJI_TOKEN_SECRET` | ganji-api | 32 or more random characters, signs phone sessions |
-| `GANJI_PUBLIC_BASE_URL` | agent-service, ganji-api | Public HTTPS address of ganji-api |
-| `CODE_DELIVERY` | ganji-api | `log`, `dev` or `sms` |
+| `AGENTX_TOKEN_SECRET` | agentx-api | 32 or more random characters, signs phone sessions |
+| `AGENTX_PUBLIC_BASE_URL` | agent-service, agentx-api | Public HTTPS address of agentx-api |
+| `CODE_DELIVERY` | agentx-api | `log`, `dev` or `sms` |
 | `DATABASE_TYPE` | services with a database | `mongodb`, `postgresql` or `mysql` |
 | `MONGODB_URI` | when using MongoDB | Include `serverSelectionTimeoutMS=5000` so a missing database fails fast |
 | `CORS_ALLOWED_ORIGINS` | any service the console calls | Leave empty in production. A wildcard is ignored on purpose |
@@ -319,7 +319,7 @@ The retry and timeout values sit in the profile ymls, so they are easy to tune.
 |---|---|---|
 | Dialler with the code filled in | Opens the dialler, the customer presses call | Same, with a system confirmation |
 | Open the M-Pesa app | Possible by package name (not verified) | Only if it has a URL scheme (not verified) |
-| Matching the M-Pesa SMS to a request | On request, with permission. See [`ganji_app/docs/SMS.md`](ganji_app/docs/SMS.md). Google Play restricts this permission | Not possible. The customer sends the message in the chat |
+| Matching the M-Pesa SMS to a request | On request, with permission. See [`agentx-app/docs/SMS.md`](agentx-app/docs/SMS.md). Google Play restricts this permission | Not possible. The customer sends the message in the chat |
 | Approval | Fingerprint, face or phone lock | Face ID, Touch ID or passcode |
 
 ## Voice, images and files
@@ -353,15 +353,15 @@ With the switch off, the assistant is told nothing about these tools, the code r
 - Request expiry is checked when a request is read, not by a timer. A request opened in M-Pesa never expires on its own.
 - The chat is read by polling about every 1.5 seconds while the app is open. There is no push notification yet.
 - SIM swap is a risk for any SMS sign-in.
-- The Google and Microsoft contact sign-ins need your own OAuth client ids and were not run against real accounts. See [`ganji_app/docs/CONTACTS.md`](ganji_app/docs/CONTACTS.md).
+- The Google and Microsoft contact sign-ins need your own OAuth client ids and were not run against real accounts. See [`agentx-app/docs/CONTACTS.md`](agentx-app/docs/CONTACTS.md).
 - The phone check protects our approval step only. Whether a biometric or the device lock was used is a best guess recorded for the audit trail.
-- The M-Pesa SMS patterns in `ganji_app/lib/models/mpesa_sms.dart` were written from memory. Test them with real messages.
-- 503 handling is in payment-service. agent-service and ganji-api still need the same treatment in their exception handlers.
+- The M-Pesa SMS patterns in `agentx-app/lib/models/mpesa_sms.dart` were written from memory. Test them with real messages.
+- 503 handling is in payment-service. agent-service and agentx-api still need the same treatment in their exception handlers.
 - No admin dashboard, offline mode or Swahili text in the app screens yet. The assistant itself replies in the customer's language.
 
 ## Security notes
 
-- Only the ganji-api HTTPS paths (`/a/*`, `/api/*`, `/.well-known/*`) should be public. Keep agent-service (8082) private, and block `/internal/*` on ganji-api at your proxy.
+- Only the agentx-api HTTPS paths (`/a/*`, `/api/*`, `/.well-known/*`) should be public. Keep agent-service (8082) private, and block `/internal/*` on agentx-api at your proxy.
 - Every call between services carries `X-Internal-Key`.
 - Phone sessions are signed tokens (30 days by default) that are revoked by signing the phone out.
 - There are no M-Pesa customer secrets to leak because none are held.
@@ -372,9 +372,9 @@ With the switch off, the assistant is told nothing about these tools, the code r
 |---|---|
 | [`FEATURES.md`](FEATURES.md) | Everything the system does today, for customers and for operators |
 | [`docs/DATABASES.md`](docs/DATABASES.md) | PostgreSQL, MySQL and MongoDB: setup, trade-offs, what was tested |
-| [`ganji_app/docs/CONTACTS.md`](ganji_app/docs/CONTACTS.md) | Contact search and the Google and Microsoft sign-ins |
-| [`ganji_app/docs/SMS.md`](ganji_app/docs/SMS.md) | How the M-Pesa message check works and what it sends |
-| [`ganji_app/docs/PLATFORM_SETUP.md`](ganji_app/docs/PLATFORM_SETUP.md) | Settings for each platform, signing and app links |
+| [`agentx-app/docs/CONTACTS.md`](agentx-app/docs/CONTACTS.md) | Contact search and the Google and Microsoft sign-ins |
+| [`agentx-app/docs/SMS.md`](agentx-app/docs/SMS.md) | How the M-Pesa message check works and what it sends |
+| [`agentx-app/docs/PLATFORM_SETUP.md`](agentx-app/docs/PLATFORM_SETUP.md) | Settings for each platform, signing and app links |
 
 <div align="center">
 <br/>

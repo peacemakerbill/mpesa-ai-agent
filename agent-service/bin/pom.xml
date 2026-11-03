@@ -11,11 +11,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.mganji</groupId>
+    <groupId>com.darajaagentx</groupId>
     <artifactId>agent-service</artifactId>
     <version>0.1.0</version>
     <name>agent-service</name>
-    <description>The AI brain of M-Ganji: Claude, tools, voice, files, the in-app chat and notifications</description>
+    <description>The AI brain of Daraja Agent-X: Claude, tools, voice, files, the in-app chat and notifications</description>
 
     <properties>
         <java.version>21</java.version>

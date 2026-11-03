@@ -11,7 +11,7 @@
 
 <br/><br/>
 
-`ganji-api` and `payment-service` can each run on **PostgreSQL**, **MySQL** or **MongoDB**. You pick one word.
+`agentx-api` and `payment-service` can each run on **PostgreSQL**, **MySQL** or **MongoDB**. You pick one word.
 
 <sub><a href="../README.md">Back to the project overview</a></sub>
 
@@ -36,7 +36,7 @@ spring:
 Or leave the file alone and set `DATABASE_TYPE` in the environment or in the service's `.env`. **The environment wins.** Each service can use a different database.
 
 > [!NOTE]
-> **Defaults.** payment-service defaults to `mongodb` when you run it directly. The compose file still starts PostgreSQL unless `DATABASE_TYPE` says otherwise. If ganji-api's `application.yml` still reads `${DATABASE_TYPE:postgresql}`, that is its default. Check the line above in each service so you know what you are running.
+> **Defaults.** payment-service defaults to `mongodb` when you run it directly. The compose file still starts PostgreSQL unless `DATABASE_TYPE` says otherwise. If agentx-api's `application.yml` still reads `${DATABASE_TYPE:postgresql}`, that is its default. Check the line above in each service so you know what you are running.
 
 Each service reads its local `.env` through `spring.config.import: optional:file:.env[.properties]`. Spring Boot does not read `.env` on its own, so this line must stay in `application.yml`. Real environment variables always win over the file.
 
@@ -48,7 +48,7 @@ The connection details live in three small files next to `application.yml`:
 | `application-mysql.yml` | `mysql` | `MYSQL_URL` (or `DB_URL`) |
 | `application-mongodb.yml` | `mongodb` | `MONGODB_URI` |
 
-SQL databases also read `DB_USER` and `DB_PASSWORD`. Defaults point at `localhost`, with database names `ganji` and `payments`.
+SQL databases also read `DB_USER` and `DB_PASSWORD`. Defaults point at `localhost`, with database names `agentx` and `payments`.
 
 ## With Docker Compose
 
@@ -128,7 +128,7 @@ MONGODB_URI=mongodb://localhost:27017/payments?serverSelectionTimeoutMS=5000
 
 The driver gives up looking for a server after 5 seconds, so a missing database fails fast.
 
-At run time, payment-service answers **503 Service Unavailable** when a database, a query timeout or RabbitMQ fails inside a request. agent-service and ganji-api do not have that handler yet.
+At run time, payment-service answers **503 Service Unavailable** when a database, a query timeout or RabbitMQ fails inside a request. agent-service and agentx-api do not have that handler yet.
 
 </td>
 </tr>
@@ -175,7 +175,7 @@ YAML map keys that contain dots or other special characters must be wrapped in b
 ```yaml
 logging:
   level:
-    "[com.mganji]": INFO
+    "[com.darajaagentx]": INFO
 spring:
   jpa:
     properties:

@@ -27,21 +27,21 @@ agent-service is the only part that talks to the model. It never moves money. It
 |---|---|
 | Understand the customer | Text, voice notes (optional speech to text), photos, PDFs, Word, Excel, CSV and text files, shared contacts and locations |
 | Keep the chat | Messages and files per phone number, with conversation memory in Redis |
-| Prepare requests | Send money, Paybill, Till, Pochi la Biashara, airtime, Ratiba, and list or cancel requests, by calling ganji-api |
+| Prepare requests | Send money, Paybill, Till, Pochi la Biashara, airtime, Ratiba, and list or cancel requests, by calling agentx-api |
 | Hand over to a person | Escalates to the phones in `AGENT_ESCALATION_PHONES` |
 | Stay safe | Refuses the PIN, treats text inside images and files as data, adds scam warnings, rate limits each customer |
 
 > [!IMPORTANT]
-> Keep this service private. Only ganji-api should reach port 8082, and every call must carry the `X-Internal-Key` header.
+> Keep this service private. Only agentx-api should reach port 8082, and every call must carry the `X-Internal-Key` header.
 
 ## Package layout
 
 ```text
-com.mganji.agent
+com.darajaagentx.agent
   AgentServiceApplication
   controller/   InboundController, ChatController            (HTTP in)
   service/      the agent loop, tools, memory, media understanding
-  client/       ClaudeClient, ganji and payment clients  (HTTP out)
+  client/       ClaudeClient, agentx and payment clients  (HTTP out)
   chat/         message and file storage
   store/        Redis backed conversation state
   config/       typed properties, internal key filter, RabbitMQ, CORS
@@ -68,8 +68,8 @@ The service reads `.env` through `spring.config.import: optional:file:.env[.prop
 | `INTERNAL_KEY` | required | Shared secret for calls between services |
 | `ANTHROPIC_API_KEY` | required | Without it, messages are accepted but nothing replies |
 | `ANTHROPIC_MODEL` | `claude-sonnet-5-5` | Model name. `ANTHROPIC_MAX_TOKENS` defaults to 1024 |
-| `GANJI_BASE_URL` | `http://localhost:8084` | Private address of ganji-api |
-| `GANJI_PUBLIC_BASE_URL` | `http://localhost:8084` | Public address used in the links sent to customers |
+| `AGENTX_BASE_URL` | `http://localhost:8084` | Private address of agentx-api |
+| `AGENTX_PUBLIC_BASE_URL` | `http://localhost:8084` | Public address used in the links sent to customers |
 | `PAYMENT_BASE_URL` | `http://localhost:8083` | Only used when business payments are on |
 | `BUSINESS_NAME`, `BUSINESS_SUPPORT_PHONE` | `Our Business`, empty | Shown to customers |
 | `AGENT_STORE` | `redis` | Where conversation state lives |
