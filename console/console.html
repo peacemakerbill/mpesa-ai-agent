@@ -623,6 +623,19 @@ dialog.find-dlg { width: min(620px, calc(100vw - 20px)); }
 .find-who small { color: var(--ink-3); font-size: .74rem; }
 .find-nums { display: flex; gap: 6px; flex-wrap: wrap; }
 .find-nums .btn small { margin-left: 6px; opacity: .75; font-size: .72rem; }
+
+/* business accounts */
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 720px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.bz-branch td:first-child { padding-left: 26px; }
+.bz-branch td { background: color-mix(in srgb, var(--surface-2) 55%, transparent); }
+.bz-note td { background: var(--surface-2); }
+.bz-note .kv { margin: 2px 0 6px; }
+#bzMain .field small { font-size: .76rem; }
+#bzMain input[type=file] { max-width: 100%; }
+@media (max-width: 560px) { .tab:not([aria-current="page"]) span { display: none; } .tab { padding: 0 12px; } }
+#bzMain select[data-bz-method] { width: auto; max-width: 220px; }
+#bzMain summary { cursor: pointer; color: var(--ink-2); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -647,6 +660,7 @@ dialog.find-dlg { width: min(620px, calc(100vw - 20px)); }
     <section class="view" id="v-route" aria-label="Journey"></section>
     <section class="view" id="v-chat" aria-label="Chat" hidden></section>
     <section class="view" id="v-phone" aria-label="Phone" hidden></section>
+    <section class="view" id="v-biz" aria-label="Business" hidden></section>
     <section class="view" id="v-api" aria-label="Explorer" hidden></section>
   </main>
 
@@ -757,6 +771,7 @@ const ICON = {
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
   x: '<path d="M6 6l12 12M18 6 6 18"/>',
   sliders: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+  biz: '<path d="M4 21V8l8-4 8 4v13"/><path d="M9 21v-6h6v6M8 11h2M14 11h2"/>',
   more: '<circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/>',
 };
 const icon = (name, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${ICON[name]}</svg>`;
@@ -787,7 +802,7 @@ const DEFAULTS = {
   googleClientId: '', microsoftClientId: '',
 };
 const VAR_DEFAULTS = {
-  actionId: '00000000-0000-0000-0000-000000000000', paymentId: '00000000-0000-0000-0000-000000000000', operationId: '00000000-0000-0000-0000-000000000000',
+  actionId: '00000000-0000-0000-0000-000000000000', paymentId: '00000000-0000-0000-0000-000000000000', operationId: '00000000-0000-0000-0000-000000000000', bizAccountId: '00000000-0000-0000-0000-000000000000', bizOperationId: '00000000-0000-0000-0000-000000000000',
   checkoutRequestId: 'ws_CO_000000000000000000', originatorConversationId: '00000000-0000-0000-0000-000000000000', linkCode: '', deviceToken: '', mediaId: '',
 };
 const cfg = Object.assign({}, DEFAULTS, store.get('cfg') || {});
@@ -826,11 +841,15 @@ async function http(o) {
   }
   const url = base + path + qs;
   const headers = { Accept: 'application/json, text/plain, */*' };
-  let bodyText;
+  let bodyText, formData;
   if (o.body != null && o.method !== 'GET') {
     bodyText = typeof o.body === 'string' ? f(o.body) : JSON.stringify(o.body);
     bodyText = f(bodyText.replace(/("smsAt":)"\{\{nowMs\}\}"/, '$1{{nowMs}}'));
     headers['Content-Type'] = 'application/json';
+  }
+  if (o.form) {
+    formData = o.form;
+    bodyText = '[multipart/form-data] ' + Array.from(o.form.entries()).map(([k, v]) => k + '=' + (v && v.name ? v.name + ' (' + v.size + ' bytes)' : v)).join(', ');
   }
   if (o.auth === 'internal') headers['X-Internal-Key'] = cfg.internalKey;
   if (o.auth === 'bearer') headers.Authorization = 'Bearer ' + (vars.deviceToken || '');
@@ -841,7 +860,7 @@ async function http(o) {
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), o.timeout || 30000);
     let res;
-    try { res = await fetch(url, { method: o.method, headers, body: bodyText, signal: ctl.signal }); } finally { clearTimeout(timer); }
+    try { res = await fetch(url, { method: o.method, headers, body: formData || bodyText, signal: ctl.signal }); } finally { clearTimeout(timer); }
     result.status = res.status; result.ok = res.ok;
     result.resHeaders = Array.from(res.headers.entries());
     const mime = (res.headers.get('content-type') || '').split(';')[0].trim();
@@ -965,6 +984,20 @@ E('co.ch.contact', 'agentx', CC, 'Share a contact', 'POST', '/api/chat/messages'
 E('co.ch.media', 'agentx', CC, 'Upload a file', 'POST', '/api/chat/media', { auth: 'bearer', headers: { 'Content-Type': 'text/plain', 'X-File-Name': 'hello.txt' }, body: 'Hello from the console', save: { mediaId: 'mediaId' }, note: 'The body is the raw file, up to 20 MB. Send a message that names the returned media id next.' });
 E('co.ch.media.get', 'agentx', CC, 'Download a chat file', 'GET', '/api/chat/media/{{mediaId}}', { auth: 'bearer' });
 E('co.ch.clear', 'agentx', CC, 'Clear the chat', 'DELETE', '/api/chat/messages', { auth: 'bearer' });
+const BA = 'Business accounts (app side)';
+E('co.b.list', 'agentx', BA, 'List my business accounts', 'GET', '/api/business-accounts', { auth: 'bearer', save: { bizAccountId: '0.id' }, note: 'Secrets never come back. Each account only says whether the secret, passkey and initiator password are saved, and the last 4 characters of the consumer key.' });
+E('co.b.create', 'agentx', BA, 'Add a business account', 'POST', '/api/business-accounts', { auth: 'bearer', body: { label: 'Main shop', environment: 'sandbox', shortcodeType: 'buy_goods', shortcode: '174379', consumerKey: 'sandbox-consumer-key-0001', consumerSecret: 'sandbox-consumer-secret-0001', passkey: 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919', initiatorName: 'testapi', initiatorPassword: 'Safaricom999!*!' }, save: { bizAccountId: 'id' }, note: 'Needs AGENTX_VAULT_KEY on the Daraja Agent-X API, otherwise the feature is off. environment is sandbox or production. shortcodeType is paybill or buy_goods. The consumer key, secret and passkey above are placeholders: use the ones from your Daraja app.' });
+E('co.b.branch', 'agentx', BA, 'Add a till or branch', 'POST', '/api/business-accounts', { auth: 'bearer', body: { label: 'Till 1', parentId: '{{bizAccountId}}', tillNumber: '123456' }, note: 'A branch shares its head account\'s shortcode, environment and credentials. Buy Goods takes tillNumber, Paybill takes accountReference (up to 12 letters or digits).' });
+E('co.b.get', 'agentx', BA, 'Get a business account', 'GET', '/api/business-accounts/{{bizAccountId}}', { auth: 'bearer' });
+E('co.b.update', 'agentx', BA, 'Change a business account', 'PUT', '/api/business-accounts/{{bizAccountId}}', { auth: 'bearer', body: { label: 'Main shop' }, note: 'An empty secret keeps the saved one. Send only what changes.' });
+E('co.b.verify', 'agentx', BA, 'Check with Safaricom', 'POST', '/api/business-accounts/{{bizAccountId}}/verify', { auth: 'bearer', timeout: 45000, note: 'Asks Daraja for an access token with the saved key and secret, and tests that the certificate can lock the initiator password. It does not move money.' });
+E('co.b.delete', 'agentx', BA, 'Delete a business account', 'DELETE', '/api/business-accounts/{{bizAccountId}}', { auth: 'bearer', note: 'Deleting a head account also deletes its branches. The answer says how many were removed.' });
+E('co.b.csv', 'agentx', BA, 'Download the CSV template', 'GET', '/api/business-accounts/csv-template', { auth: 'bearer', note: 'To upload a file, use the Business tab: this page sends files from there. The import call is POST /api/business-accounts/import with a multipart field called file and dryRun=true to check without saving.' });
+const BO = 'Business requests (app side)';
+E('co.o.list', 'agentx', BO, 'List my business requests', 'GET', '/api/business-operations', { auth: 'bearer', save: { bizOperationId: '0.id' }, note: 'The requests the assistant prepared from the chat. Ask it in the Chat tab, for example: what is the balance of Main shop.' });
+E('co.o.get', 'agentx', BO, 'Open a business request', 'GET', '/api/business-operations/{{bizOperationId}}', { auth: 'bearer' });
+E('co.o.approve', 'agentx', BO, 'Approve a business request', 'POST', '/api/business-operations/{{bizOperationId}}/approve', { auth: 'bearer', body: { method: 'BIOMETRIC' }, timeout: 60000, note: 'This is where money going out is sent to Safaricom, once. method is BIOMETRIC or DEVICE_CREDENTIAL and is only recorded.' });
+E('co.o.decline', 'agentx', BO, 'Decline a business request', 'POST', '/api/business-operations/{{bizOperationId}}/decline', { auth: 'bearer' });
 E('co.p.landing', 'agentx', 'Public pages', 'Link landing page', 'GET', '/a/' + ID, { note: 'The page behind the link the assistant puts in the chat.' });
 E('co.p.android', 'agentx', 'Public pages', 'Android app links file', 'GET', '/.well-known/assetlinks.json', { note: '404 until the Android package and fingerprint are set.' });
 E('co.p.ios', 'agentx', 'Public pages', 'iOS app links file', 'GET', '/.well-known/apple-app-site-association', { note: '404 until the iOS app id is set.' });
@@ -1078,7 +1111,7 @@ function initThemes() {
 }
 
 /* ------------------------------------------------------------------ navigation */
-const VIEWS = [{ id: 'route', title: 'Journey', icon: 'route' }, { id: 'chat', title: 'Chat', icon: 'chat' }, { id: 'phone', title: 'Phone', icon: 'phone' }, { id: 'api', title: 'Explorer', icon: 'api' }];
+const VIEWS = [{ id: 'route', title: 'Journey', icon: 'route' }, { id: 'chat', title: 'Chat', icon: 'chat' }, { id: 'phone', title: 'Phone', icon: 'phone' }, { id: 'biz', title: 'Business', icon: 'biz' }, { id: 'api', title: 'Explorer', icon: 'api' }];
 const onShow = {};
 function show(id) {
   if (!VIEWS.some((v) => v.id === id)) id = 'route';
@@ -1530,11 +1563,11 @@ async function authRun(kind, box) {
   AU.busy = false;
   redrawAuth();
 }
-function redrawAuth() { renderPhone(); drawChat(); }
+function redrawAuth() { renderPhone(); drawChat(); if ($('#v-biz').dataset.built) renderBiz(); }
 function afterSignIn() {
   CH.after = 0; CH.reqKeys = null;
   const id = P.pendingOpen; P.pendingOpen = null;
-  P.screen = 'list'; renderPhone(); drawChat(); pollChat(true);
+  P.screen = 'list'; renderPhone(); drawChat(); pollChat(true); if (!$('#v-biz').hidden) onShow.biz();
   if (id) openAction(id); else loadList();
 }
 /** The token is gone or was refused: show the sign-in forms again. */
@@ -2480,6 +2513,325 @@ async function onPhoneClick(ev) {
 async function loadConf() { const r = await send('co.a.config', { silent: true }); if (r.ok) P.conf = r.json; }
 onShow.phone = () => { renderPhone(); if (vars.deviceToken && P.screen === 'list') loadList(); };
 
+
+/* ------------------------------------------------------------------ business accounts, CSV upload and operations
+   The same screens the app has under Settings, Business accounts, plus the list of business requests the assistant
+   prepared from the chat. Secrets go to the server and never come back: the lists only say whether each one is saved. */
+const BZ = {
+  accounts: [], ops: [], loaded: false, loading: false, err: '', info: '',
+  form: null, formErr: '', formBusy: false,
+  file: null, csv: null, csvErr: '', csvBusy: false,
+  checks: {}, checking: null, delConfirm: null,
+  opBusy: null, opErr: '', opsLoaded: false, method: 'BIOMETRIC', openOp: null,
+};
+const OP_TONE = { PENDING_APPROVAL: 'warn', SUBMITTED: 'info', SUCCEEDED: 'good', FAILED: 'bad', DECLINED: 'bad', EXPIRED: '', UNKNOWN: 'warn' };
+const OP_LABEL = { PENDING_APPROVAL: 'Waiting for approval', SUBMITTED: 'Sent to Safaricom, waiting for the result', SUCCEEDED: 'Done', FAILED: 'Failed', DECLINED: 'Declined', EXPIRED: 'Expired', UNKNOWN: 'Unclear, check M-Pesa before trying again' };
+const CSV_COLUMNS = [
+  ['label', 'a name', 'a name'], ['environment', 'sandbox or production', 'empty, unless the head exists in both'], ['shortcode_type', 'paybill or buy_goods', 'empty'],
+  ['shortcode', '5 to 7 digits', 'empty'], ['till_number', 'empty', 'Buy Goods: 5 to 7 digits'], ['account_reference', 'empty', 'Paybill: up to 12 letters or digits'],
+  ['parent_shortcode', 'empty', "the head's shortcode"], ['consumer_key, consumer_secret', 'yes', 'must be empty'],
+  ['initiator_name, initiator_password', 'for B2C, B2B, balance', 'must be empty'], ['passkey', 'for STK Push', 'must be empty'],
+];
+const bz = (method, path, extra = {}) => http(Object.assign({ svc: 'agentx', method, path, auth: 'bearer' }, extra));
+/** True when the token was refused, after showing the sign-in forms again. */
+function bzFail(r) { if (r.status === 401) { dropSession('Your session ended. Sign in again.'); return true; } return false; }
+const bzWhen = (v) => (v ? new Date(v).toLocaleString('en-GB') : '');
+
+function bzOrdered() {
+  const heads = BZ.accounts.filter((a) => !a.parentId), out = [];
+  heads.forEach((h) => { out.push(h); BZ.accounts.filter((b) => b.parentId === h.id).forEach((b) => out.push(b)); });
+  BZ.accounts.forEach((a) => { if (!out.includes(a)) out.push(a); });
+  return out;
+}
+
+/* ---------------------------------------------------------------- shell */
+function renderBiz() {
+  const root = $('#v-biz');
+  if (!root.dataset.built) {
+    root.dataset.built = '1';
+    root.innerHTML = `
+    <div class="view-head"><div><h1>Business</h1><p>Save a business shortcode and its credentials once, add tills or branches under it, upload many accounts from a CSV file, and approve the requests the assistant prepares from the chat. This is the same data the app shows under Settings, Business accounts.</p></div></div>
+    <section class="panel signin-panel" id="bzSign" hidden aria-label="Sign in"><div class="ph"><h2>Sign in to use business accounts</h2></div><div class="pb" id="bzSignBody"></div></section>
+    <div class="stack" id="bzMain" hidden>
+      <section class="panel" aria-label="Business accounts"><div class="ph"><h2>Accounts</h2><div class="row tight"><button type="button" class="btn sm" data-bz="refresh">Refresh</button><button type="button" class="btn sm primary" data-bz="add-head">Add an account</button></div></div><div class="pb stack" id="bzAccounts"></div></section>
+      <section class="panel" id="bzFormPanel" aria-label="Account form" hidden></section>
+      <section class="panel" aria-label="Upload a CSV file"><div class="ph"><h2>Upload many accounts (CSV)</h2><div class="row tight"><button type="button" class="btn sm" data-bz="tpl-download">Download the template</button><button type="button" class="btn sm" data-bz="tpl-copy">Copy the template</button></div></div><div class="pb stack" id="bzCsv"></div></section>
+      <section class="panel" aria-label="Business requests"><div class="ph"><h2>Requests from the chat</h2><div class="row tight"><button type="button" class="btn sm" data-bz="ops-refresh">Refresh</button><button type="button" class="btn sm" data-bz="open-chat">Open the chat</button></div></div><div class="pb stack" id="bzOps"></div></section>
+    </div>`;
+    root.addEventListener('click', onBizClick);
+    root.addEventListener('input', onBizInput);
+  }
+  const on = signedIn();
+  $('#bzSign').hidden = on; $('#bzMain').hidden = !on;
+  if (!on) {
+    $('#bzSignBody').innerHTML = `<p class="muted">Business accounts belong to a phone number. Ask for a code, then enter it. This is the same sign-in the Chat and Phone tabs use.</p><div class="signin-box">${signInHtml('biz', false)}</div>`;
+    return;
+  }
+  drawBzAccounts(); drawBzForm(); drawBzCsv(); drawBzOps();
+}
+
+/* ---------------------------------------------------------------- accounts */
+async function loadBzAccounts() {
+  BZ.loading = true; BZ.err = ''; drawBzAccounts();
+  const r = await bz('GET', '/api/business-accounts');
+  BZ.loading = false;
+  if (bzFail(r)) return;
+  if (r.ok && Array.isArray(r.json)) {
+    BZ.accounts = r.json; BZ.loaded = true;
+    const keep = BZ.accounts.find((a) => a.id === vars.bizAccountId);
+    if (!keep && BZ.accounts[0]) { vars.bizAccountId = BZ.accounts[0].id; saveVars(); }
+  } else BZ.err = errText(r);
+  drawBzAccounts();
+}
+function bzCaps(a) {
+  return (a.capabilities || []).map((c) => `<span class="tag ${c.ready ? 'good' : ''}" title="${c.ready ? 'Ready' : 'Needs ' + esc(c.needs)}">${esc(c.label)}</span>`).join(' ');
+}
+function bzRow(a) {
+  const branch = !!a.parentId;
+  const where = `<span class="tag ${a.environment === 'PRODUCTION' ? 'warn' : 'info'}">${a.environment === 'PRODUCTION' ? 'Production' : 'Sandbox'}</span> <span class="tag">${a.shortcodeType === 'BUY_GOODS' ? 'Buy Goods' : 'Paybill'}</span>`;
+  const num = esc(a.shortcode) + (a.tillNumber ? `<br><span class="muted small">till ${esc(a.tillNumber)}</span>` : '') + (a.accountReference ? `<br><span class="muted small">account ${esc(a.accountReference)}</span>` : '');
+  const creds = branch ? '<span class="muted small">Uses its head account</span>'
+    : `<span class="small">Key ${a.consumerKeyHint ? '<code>••••' + esc(a.consumerKeyHint) + '</code>' : '<span class="muted">not saved</span>'}</span><br>
+       <span class="tag ${a.hasConsumerSecret ? 'good' : ''}">Secret ${a.hasConsumerSecret ? 'saved' : 'missing'}</span>
+       <span class="tag ${a.hasPasskey ? 'good' : ''}">Passkey ${a.hasPasskey ? 'saved' : 'missing'}</span>
+       <span class="tag ${a.hasInitiatorPassword ? 'good' : ''}">Initiator ${a.hasInitiatorPassword ? esc(a.initiatorName || 'saved') : 'missing'}</span>`;
+  const del = BZ.delConfirm === a.id
+    ? `<button type="button" class="btn sm danger" data-bz="del" data-id="${a.id}">${branch ? 'Press again to delete' : 'Delete it and its branches'}</button><button type="button" class="btn sm ghost" data-bz="del-cancel">Keep</button>`
+    : `<button type="button" class="btn sm danger" data-bz="del" data-id="${a.id}">Delete</button>`;
+  const chk = BZ.checks[a.id];
+  const result = chk ? `<tr class="bz-note"><td></td><td colspan="5"><div class="callout ${chk.ok ? '' : 'warn'}"><b>${chk.ok ? 'Safaricom accepted the key and secret.' : 'Safaricom did not accept it.'}</b> ${esc(chk.message || '')}
+      <div class="small" style="margin-top:4px">Security credential: <span class="tag ${chk.securityCredentialReady ? 'good' : 'warn'}">${chk.securityCredentialReady ? 'ready' : 'not ready'}</span> ${esc(chk.securityCredentialMessage || '')}</div></div></td></tr>` : '';
+  return `<tr class="${branch ? 'bz-branch' : ''}"><td><b>${branch ? '↳ ' : ''}${esc(a.label)}</b><br><span class="muted small">${branch ? 'Branch' : 'Head account'}</span></td>
+    <td>${where}</td><td class="mono">${num}</td><td>${creds}</td>
+    <td>${bzCaps(a)}<div class="muted small" style="margin-top:4px">${a.verifiedAt ? 'Checked ' + esc(bzWhen(a.verifiedAt)) : 'Not checked with Safaricom'}</div></td>
+    <td><div class="row tight"><button type="button" class="btn sm" data-bz="edit" data-id="${a.id}">Edit</button>
+      <button type="button" class="btn sm" data-bz="verify" data-id="${a.id}" ${BZ.checking === a.id ? 'disabled' : ''}>${BZ.checking === a.id ? 'Checking' : 'Check with Safaricom'}</button>
+      ${branch ? '' : `<button type="button" class="btn sm" data-bz="add-branch" data-id="${a.id}">Add a till or branch</button>`}${del}</div></td></tr>${result}`;
+}
+function drawBzAccounts() {
+  const box = $('#bzAccounts'); if (!box) return;
+  const err = BZ.err ? `<div class="err" role="alert">${esc(BZ.err)}</div>` : '', info = BZ.info ? `<div class="note" role="status">${esc(BZ.info)}</div>` : '';
+  let body;
+  if (BZ.loading && !BZ.loaded) body = '<div class="empty">Loading</div>';
+  else if (!BZ.accounts.length) body = '<div class="empty">No business accounts yet. Press <b>Add an account</b>, or upload a CSV file below.</div>';
+  else body = `<div style="overflow-x:auto"><table><thead><tr><th>Name</th><th>Where</th><th>Shortcode</th><th>Credentials</th><th>What it can do</th><th></th></tr></thead><tbody>${bzOrdered().map(bzRow).join('')}</tbody></table></div>`;
+  box.innerHTML = `${err}${info}${body}<div class="callout">Secrets are encrypted on the server (AES-256-GCM) and are never sent back. Money going out always waits for approval, see the requests below.</div>`;
+}
+
+/* ---------------------------------------------------------------- the account form */
+const blankForm = (mode, head) => ({
+  id: null, mode, label: '', environment: 'sandbox', shortcodeType: 'paybill', shortcode: '', tillNumber: '', accountReference: '',
+  parentId: head ? head.id : '', consumerKey: '', consumerSecret: '', initiatorName: '', initiatorPassword: '', passkey: '', has: null,
+});
+function bzReadForm() {
+  const f = BZ.form; if (!f) return;
+  $$('[data-bf]', $('#bzFormPanel')).forEach((el) => { f[el.dataset.bf] = el.value; });
+}
+function bzHeadOf(f) { return BZ.accounts.find((a) => a.id === f.parentId); }
+function drawBzForm() {
+  const p = $('#bzFormPanel'); if (!p) return;
+  const f = BZ.form;
+  p.hidden = !f;
+  if (!f) { p.innerHTML = ''; return; }
+  const edit = !!f.id, branch = f.mode === 'branch';
+  const heads = BZ.accounts.filter((a) => !a.parentId);
+  const inp = (key, label, o = {}) => `<div class="field"><label for="bzf-${key}">${label}</label><input id="bzf-${key}" data-bf="${key}" type="${o.type || 'text'}" ${o.type === 'password' ? 'autocomplete="new-password"' : 'autocomplete="off"'} value="${esc(f[key])}" placeholder="${esc(o.ph || '')}"${o.max ? ` maxlength="${o.max}"` : ''}>${o.help ? `<small class="muted">${o.help}</small>` : ''}</div>`;
+  const sel = (key, label, opts, o = {}) => `<div class="field"><label for="bzf-${key}">${label}</label><select id="bzf-${key}" data-bf="${key}" ${o.redraw ? 'data-redraw="1"' : ''}>${opts.map(([v, t]) => `<option value="${esc(v)}" ${String(f[key]) === String(v) ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div>`;
+  const keep = (has, what) => (edit && has ? `Saved. Leave empty to keep the ${what}.` : '');
+  let fields;
+  if (branch) {
+    const head = bzHeadOf(f);
+    const till = head && head.shortcodeType === 'BUY_GOODS';
+    fields = `${sel('parentId', 'Belongs to', [['', 'Choose a head account'], ...heads.map((h) => [h.id, `${h.label} (${h.shortcode}, ${h.environment === 'PRODUCTION' ? 'production' : 'sandbox'})`])], { redraw: true })}
+      ${head ? (till ? inp('tillNumber', 'Till number', { ph: '5 to 7 digits', max: 7 }) : inp('accountReference', 'Account reference', { ph: 'Up to 12 letters or digits', max: 12 })) : '<div class="callout">Choose the head account first. A branch uses its head account\'s shortcode, environment and credentials.</div>'}`;
+  } else {
+    const h = (f.has || {});
+    fields = `<div class="grid2">${sel('environment', 'Environment', [['sandbox', 'Sandbox (testing)'], ['production', 'Production (real money)']])}
+      ${sel('shortcodeType', 'Shortcode type', [['paybill', 'Paybill'], ['buy_goods', 'Buy Goods (store or head office)']])}</div>
+      ${inp('shortcode', 'Shortcode', { ph: '5 to 7 digits', max: 7 })}
+      <div class="grid2">${inp('consumerKey', 'Consumer key', { type: 'password', help: edit && h.keyHint ? 'Saved, ends with ' + esc(h.keyHint) + '. Leave empty to keep it.' : 'From your app on the Daraja portal.' })}
+      ${inp('consumerSecret', 'Consumer secret', { type: 'password', help: keep(h.secret, 'secret') || 'From the same app.' })}</div>
+      <div class="grid2">${inp('passkey', 'STK passkey', { type: 'password', help: keep(h.passkey, 'passkey') || 'Needed for STK Push. The sandbox passkey is on the Daraja portal.' })}
+      <div></div></div>
+      <div class="grid2">${inp('initiatorName', 'Initiator name', { help: 'For payouts, balance, status and reversals.' })}
+      ${inp('initiatorPassword', 'Initiator password', { type: 'password', help: keep(h.initPw, 'password') || 'The security credential is made for you from this and Safaricom\'s certificate.' })}</div>`;
+  }
+  p.innerHTML = `<div class="ph"><h2>${edit ? 'Edit ' + esc(f.labelWas || 'account') : branch ? 'Add a till or branch' : 'Add a business account'}</h2><button type="button" class="btn sm ghost" data-bz="form-close">Close</button></div>
+    <div class="pb stack">${BZ.formErr ? `<div class="err" role="alert">${esc(BZ.formErr)}</div>` : ''}
+      ${inp('label', 'Name', { ph: branch ? 'For example Till 1' : 'For example Main shop', max: 80 })}
+      ${fields}
+      <div class="row"><button type="button" class="btn primary" data-bz="form-save" ${BZ.formBusy ? 'disabled' : ''}>${BZ.formBusy ? 'Saving' : 'Save'}</button><button type="button" class="btn" data-bz="form-close">Cancel</button></div>
+    </div>`;
+}
+function bzEdit(a) {
+  const branch = !!a.parentId;
+  BZ.form = Object.assign(blankForm(branch ? 'branch' : 'head'), {
+    id: a.id, labelWas: a.label, label: a.label, environment: (a.environment || 'SANDBOX').toLowerCase(), shortcodeType: a.shortcodeType === 'BUY_GOODS' ? 'buy_goods' : 'paybill',
+    shortcode: branch ? '' : a.shortcode, tillNumber: a.tillNumber || '', accountReference: a.accountReference || '', parentId: a.parentId || '', initiatorName: a.initiatorName || '',
+    has: { secret: a.hasConsumerSecret, passkey: a.hasPasskey, initPw: a.hasInitiatorPassword, keyHint: a.consumerKeyHint },
+  });
+  BZ.formErr = ''; drawBzForm(); $('#bzFormPanel').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+async function bzSave() {
+  bzReadForm();
+  const f = BZ.form; if (!f || BZ.formBusy) return;
+  const body = { label: f.label };
+  if (f.mode === 'branch') {
+    body.parentId = f.parentId || null; body.tillNumber = f.tillNumber; body.accountReference = f.accountReference;
+  } else {
+    Object.assign(body, { environment: f.environment, shortcodeType: f.shortcodeType, shortcode: f.shortcode, consumerKey: f.consumerKey, consumerSecret: f.consumerSecret, passkey: f.passkey, initiatorName: f.initiatorName, initiatorPassword: f.initiatorPassword });
+  }
+  Object.keys(body).forEach((k) => { if (body[k] === '' || body[k] == null) delete body[k]; });
+  BZ.formBusy = true; BZ.formErr = ''; drawBzForm();
+  const r = f.id ? await bz('PUT', '/api/business-accounts/' + f.id, { body }) : await bz('POST', '/api/business-accounts', { body });
+  BZ.formBusy = false;
+  if (bzFail(r)) return;
+  if (!r.ok) { BZ.formErr = errText(r); drawBzForm(); return; }
+  if (r.json && r.json.id) { vars.bizAccountId = r.json.id; saveVars(); }
+  BZ.form = null; BZ.info = f.id ? 'Saved the changes.' : 'Saved the account.'; drawBzForm();
+  await loadBzAccounts();
+  setTimeout(() => { BZ.info = ''; drawBzAccounts(); }, 4000);
+}
+async function bzVerify(id) {
+  BZ.checking = id; drawBzAccounts();
+  const r = await bz('POST', `/api/business-accounts/${id}/verify`, { timeout: 45000 });
+  BZ.checking = null;
+  if (bzFail(r)) return;
+  if (r.json && typeof r.json.ok === 'boolean') BZ.checks[id] = r.json;
+  else BZ.checks[id] = { ok: false, message: errText(r), securityCredentialReady: false, securityCredentialMessage: '' };
+  await loadBzAccounts();
+}
+async function bzDelete(id) {
+  if (BZ.delConfirm !== id) { BZ.delConfirm = id; drawBzAccounts(); return; }
+  BZ.delConfirm = null;
+  const r = await bz('DELETE', '/api/business-accounts/' + id);
+  if (bzFail(r)) return;
+  if (!r.ok) BZ.err = errText(r); else { BZ.err = ''; BZ.info = r.json && r.json.removed > 1 ? `Deleted ${r.json.removed} accounts (the head and its branches).` : 'Deleted.'; delete BZ.checks[id]; if (BZ.form && BZ.form.id === id) BZ.form = null; drawBzForm(); }
+  await loadBzAccounts();
+  setTimeout(() => { BZ.info = ''; drawBzAccounts(); }, 4000);
+}
+
+/* ---------------------------------------------------------------- CSV upload */
+function drawBzCsv() {
+  const box = $('#bzCsv'); if (!box) return;
+  const c = BZ.csv;
+  let result = '';
+  if (BZ.csvErr) result = `<div class="err" role="alert">${esc(BZ.csvErr)}</div>`;
+  else if (c) {
+    const issues = c.issues || [], rows = c.rows || [];
+    result = `<div class="row tight"><span class="tag">${c.total} row${c.total === 1 ? '' : 's'}</span><span class="tag good">${c.created} to add</span><span class="tag info">${c.updated} to update</span>
+      ${issues.length ? `<span class="tag bad">${issues.length} problem${issues.length === 1 ? '' : 's'}</span>` : c.saved ? '<span class="tag good">Saved</span>' : '<span class="tag good">No problems</span>'}</div>
+      ${c.ignoredColumns && c.ignoredColumns.length ? `<div class="callout warn">These columns are not used and were ignored: <b>${esc(c.ignoredColumns.join(', '))}</b>.</div>` : ''}
+      ${issues.length ? `<div class="callout warn"><b>Nothing was saved.</b> Fix the file and check it again. Row 1 is the header line, so the first account is row 2.</div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Row</th><th>Column</th><th>Problem</th></tr></thead><tbody>${issues.map((i) => `<tr><td>${i.row || 'File'}</td><td class="mono">${esc(i.field || '')}</td><td>${esc(i.message)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+      ${rows.length ? `<div style="overflow-x:auto"><table><thead><tr><th>Row</th><th>Name</th><th>Environment</th><th>Type</th><th>Shortcode</th><th>Till or account</th><th>Under</th><th>What happens</th></tr></thead><tbody>${rows.map((x) => `<tr><td>${x.row}</td><td>${esc(x.label)}</td><td>${esc(x.environment || '')}</td><td>${esc(x.shortcodeType || '')}</td><td class="mono">${esc(x.shortcode || '')}</td><td class="mono">${esc(x.tillNumber || x.accountReference || '')}</td><td class="mono">${esc(x.parent || '')}</td><td><span class="tag ${x.action === 'create' ? 'good' : 'info'}">${x.action === 'create' ? 'Add' : 'Update'}</span></td></tr>`).join('')}</tbody></table></div>` : ''}
+      ${!issues.length && !c.saved && c.dryRun ? `<div class="row"><button type="button" class="btn primary" data-bz="csv-save" ${BZ.csvBusy ? 'disabled' : ''}>Save ${c.total} account${c.total === 1 ? '' : 's'}</button><span class="muted small">The file is sent again and saved only if it is still clean.</span></div>` : ''}`;
+  }
+  box.innerHTML = `<p class="muted small">Up to 500 accounts and 1 MB, UTF-8, the first line is the header. Columns can be in any order and can be left out, and commas, semicolons or tabs can separate them. Nothing is saved until the check is clean, and one bad row stops the whole file. <b>Treat a filled-in file as a secret and delete it after uploading.</b></p>
+    <div class="row"><input type="file" id="bzFile" accept=".csv,.tsv,.txt,text/csv" aria-label="CSV file"><button type="button" class="btn" data-bz="csv-check" ${BZ.file && !BZ.csvBusy ? '' : 'disabled'}>${BZ.csvBusy && !c ? 'Checking' : 'Check the file'}</button></div>
+    ${result}
+    <details><summary class="small">What goes in each column</summary><div style="overflow-x:auto;margin-top:8px"><table><thead><tr><th>Column</th><th>Head row</th><th>Branch row</th></tr></thead><tbody>${CSV_COLUMNS.map(([a, b, d]) => `<tr><td class="mono">${esc(a)}</td><td>${esc(b)}</td><td>${esc(d)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="muted small" style="margin-top:6px">A row for an account that is already saved updates it, and an empty consumer_secret keeps the saved one. Values that start with PASTE_ are refused, so the example file cannot be uploaded by mistake.</p></details>`;
+  const fi = $('#bzFile');
+  if (fi) fi.addEventListener('change', () => { BZ.file = fi.files[0] || null; BZ.csv = null; BZ.csvErr = ''; drawBzCsv(); });
+}
+async function bzCsv(dry) {
+  if (!BZ.file || BZ.csvBusy) return;
+  BZ.csvBusy = true; BZ.csvErr = ''; if (dry) BZ.csv = null; drawBzCsv();
+  const fd = new FormData(); fd.append('file', BZ.file, BZ.file.name);
+  const r = await bz('POST', '/api/business-accounts/import', { form: fd, query: { dryRun: dry ? 'true' : 'false' }, timeout: 60000 });
+  BZ.csvBusy = false;
+  if (bzFail(r)) return;
+  if (r.json && Array.isArray(r.json.rows)) {
+    BZ.csv = r.json;
+    if (r.json.saved) { BZ.file = null; BZ.info = `Saved: ${r.json.created} added, ${r.json.updated} updated.`; loadBzAccounts(); setTimeout(() => { BZ.info = ''; drawBzAccounts(); }, 5000); }
+  } else BZ.csvErr = errText(r);
+  drawBzCsv();
+}
+async function bzTemplate(copy) {
+  const r = await bz('GET', '/api/business-accounts/csv-template');
+  if (bzFail(r)) return;
+  if (!r.ok || !r.text) { toast(errText(r)); return; }
+  if (copy) { copyText(r.text, 'The template'); return; }
+  const url = URL.createObjectURL(new Blob([r.text], { type: 'text/csv' }));
+  const a = document.createElement('a'); a.href = url; a.download = 'agentx-business-accounts-template.csv'; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* ---------------------------------------------------------------- business requests from the chat */
+async function loadBzOps(quiet) {
+  const r = await bz('GET', '/api/business-operations', { silent: !!quiet });
+  if (bzFail(r)) return;
+  if (r.ok && Array.isArray(r.json)) {
+    BZ.ops = r.json; BZ.opsLoaded = true; BZ.opErr = '';
+    if (BZ.ops[0]) { vars.bizOperationId = BZ.ops[0].id; saveVars(); }
+  } else if (!quiet) BZ.opErr = errText(r);
+  drawBzOps();
+}
+function drawBzOps() {
+  const box = $('#bzOps'); if (!box) return;
+  const err = BZ.opErr ? `<div class="err" role="alert">${esc(BZ.opErr)}</div>` : '';
+  const list = BZ.ops.length ? `<div style="overflow-x:auto"><table><thead><tr><th>Request</th><th>Account</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>${BZ.ops.map(bzOpRow).join('')}</tbody></table></div>`
+    : `<div class="empty">${BZ.opsLoaded ? 'No business requests yet. Ask the assistant in the chat, for example: <i>what is the balance of Main shop</i> or <i>send an STK push of 100 to 0712345678 from Main shop</i>.' : 'Loading'}</div>`;
+  box.innerHTML = `${err}<div class="callout"><b>Money going out always waits for you.</b> B2C, Pochi, B2B and reversals are sent to Safaricom only after you approve here (the app asks for your fingerprint, face or phone lock). A request is sent at most once. If the answer is unclear it is marked <b>unclear</b> and never sent again, so check your M-Pesa statement before trying again. The approval method is only recorded, it is not a Safaricom confirmation.</div>${list}`;
+}
+function bzOpRow(o) {
+  const params = Object.entries(o.params || {}).map(([k, v]) => `<div><span>${esc(nice(k))}</span><b>${esc(v)}</b></div>`).join('');
+  const open = BZ.openOp === o.id;
+  const act = o.needsApproval
+    ? `<div class="row tight"><select data-bz-method aria-label="How you confirmed"><option value="BIOMETRIC" ${BZ.method === 'BIOMETRIC' ? 'selected' : ''}>Fingerprint or face</option><option value="DEVICE_CREDENTIAL" ${BZ.method === 'DEVICE_CREDENTIAL' ? 'selected' : ''}>Phone lock</option></select>
+       <button type="button" class="btn sm primary" data-bz="op-approve" data-id="${o.id}" ${BZ.opBusy === o.id ? 'disabled' : ''}>${BZ.opBusy === o.id ? 'Sending' : 'Approve'}</button><button type="button" class="btn sm danger" data-bz="op-decline" data-id="${o.id}" ${BZ.opBusy === o.id ? 'disabled' : ''}>Decline</button></div>`
+    : `<button type="button" class="btn sm" data-bz="op-open" data-id="${o.id}">${open ? 'Hide' : 'Details'}</button>`;
+  const detail = open || o.needsApproval ? `<tr class="bz-note"><td colspan="5"><div class="kv">${params}
+      ${o.receipt ? `<div><span>M-Pesa code</span><b>${esc(o.receipt)}</b></div>` : ''}${o.resultText ? `<div><span>Result</span><b>${esc(o.resultText)}</b></div>` : ''}${o.failure ? `<div><span>Problem</span><b>${esc(o.failure)}</b></div>` : ''}
+      <div><span>Made</span><b>${esc(bzWhen(o.createdAt))}</b></div>${o.expiresAt ? `<div><span>${o.needsApproval ? 'Approve before' : 'Expires'}</span><b>${esc(bzWhen(o.expiresAt))}</b></div>` : ''}${o.completedAt ? `<div><span>Finished</span><b>${esc(bzWhen(o.completedAt))}</b></div>` : ''}</div></td></tr>` : '';
+  return `<tr><td><b>${esc(o.typeLabel)}</b><br><span class="muted small">${esc(o.summary || '')}</span></td><td>${esc(o.accountLabel || '')}</td>
+    <td>${o.amount > 0 ? 'KES ' + Number(o.amount).toLocaleString('en-KE') : '<span class="muted">none</span>'}</td>
+    <td><span class="tag ${OP_TONE[o.status] || ''}">${esc(OP_LABEL[o.status] || o.status)}</span></td><td>${act}</td></tr>${detail}`;
+}
+async function bzOpAct(id, kind) {
+  if (BZ.opBusy) return;
+  BZ.opBusy = id; BZ.opErr = ''; drawBzOps();
+  const r = kind === 'approve' ? await bz('POST', `/api/business-operations/${id}/approve`, { body: { method: BZ.method }, timeout: 60000 }) : await bz('POST', `/api/business-operations/${id}/decline`);
+  BZ.opBusy = null;
+  if (bzFail(r)) return;
+  if (!r.ok) BZ.opErr = errText(r);
+  await loadBzOps();
+}
+
+/* ---------------------------------------------------------------- events */
+function onBizClick(e) {
+  const b = e.target.closest('[data-bz]'); if (!b) return;
+  const id = b.dataset.id, a = BZ.accounts.find((x) => x.id === id);
+  switch (b.dataset.bz) {
+    case 'refresh': loadBzAccounts(); break;
+    case 'add-head': BZ.form = blankForm('head'); BZ.formErr = ''; drawBzForm(); $('#bzFormPanel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); break;
+    case 'add-branch': BZ.form = blankForm('branch', a); BZ.formErr = ''; drawBzForm(); $('#bzFormPanel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); break;
+    case 'edit': if (a) bzEdit(a); break;
+    case 'form-close': BZ.form = null; BZ.formErr = ''; drawBzForm(); break;
+    case 'form-save': bzSave(); break;
+    case 'verify': bzVerify(id); break;
+    case 'del': bzDelete(id); break;
+    case 'del-cancel': BZ.delConfirm = null; drawBzAccounts(); break;
+    case 'tpl-download': bzTemplate(false); break;
+    case 'tpl-copy': bzTemplate(true); break;
+    case 'csv-check': bzCsv(true); break;
+    case 'csv-save': bzCsv(false); break;
+    case 'ops-refresh': loadBzOps(); break;
+    case 'open-chat': show('chat'); break;
+    case 'op-open': BZ.openOp = BZ.openOp === id ? null : id; drawBzOps(); break;
+    case 'op-approve': bzOpAct(id, 'approve'); break;
+    case 'op-decline': bzOpAct(id, 'decline'); break;
+    default: break;
+  }
+}
+function onBizInput(e) {
+  const t = e.target;
+  if (t.matches && t.matches('[data-bz-method]')) { BZ.method = t.value; return; }
+  if (t.dataset && t.dataset.redraw) { bzReadForm(); drawBzForm(); }
+}
+onShow.biz = () => { renderBiz(); if (signedIn()) { loadBzAccounts(); loadBzOps(); } };
+setInterval(() => { if (!document.hidden && $('#v-biz') && !$('#v-biz').hidden && signedIn() && BZ.opsLoaded) loadBzOps(true); }, 7000);
 
 /* ------------------------------------------------------------------ command palette */
 const CMD = { items: [], shown: [], sel: 0 };

@@ -234,7 +234,7 @@ Switched on with `docker compose --profile business up` and `AGENT_BUSINESS_PAYM
 
 **[`postman/`](postman/README.md)**
 
-A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 93 requests, and a walkthrough you can run with the collection runner.
+A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 106 requests, and a walkthrough you can run with the collection runner.
 
 </td>
 <td width="50%" valign="top">
@@ -251,7 +251,7 @@ The console has:
 
 - a journey view that draws one request as a trace across customer, agent, Daraja Agent-X API, phone and M-Pesa,
 - a real chat against the real agent: sign in with a code, attach menu, file pickers, voice notes, camera and video recording, drag and drop, location, and contact search across Google, Microsoft, a phone picker and vCard or CSV,
-- a phone app simulator and an explorer for every endpoint,
+- a phone app simulator, a Business tab (accounts, tills and branches, CSV upload, check with Safaricom, approve or decline the requests the assistant prepares) and an explorer for every endpoint,
 - a command palette (Ctrl+K), and the same ten themes as the app, with an upload slot for your own logo.
 
 ## Not included

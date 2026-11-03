@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "717433f7-7e8f-4461-ab12-693b85384bf0",
     "name": "M-Pesa chat assistant",
-    "description": "# Chat assistant for your own M-Pesa: every HTTP endpoint\n\nThree services. Import this collection and the environment, then set the values in the environment.\n\n**Ports:** agent 8082, payment 8083 (optional), agentx 8084.\n\n**Quick start (wallet flow, no Daraja needed):** open `2. agentx-api / A. Walkthrough` and run it in order with the collection runner.\nStep 1 asks for a sign-in code (start agentx-api with `CODE_DELIVERY=dev` so the answer carries it, never do that on a shared server), step 2 signs the \"phone\" in,\nstep 3 prepares a request, steps 6 to 8 approve, hand off and report. Then try `C2. Chat`.\n\n**Auth:** internal endpoints send `X-Internal-Key` ({{internalKey}}, the same value in every service `.env`). App endpoints send the device token\n(saved automatically by the sign-in request). Callbacks have no key, the secret token is in the path.\n\n**Notes:** requests that need Daraja or real media ids will only fully work against real credentials. Do not put real secrets in a shared collection.\nThe environment holds addresses, keys and phone numbers. Ids, tokens and codes are filled in by test scripts and live in the collection variables (edit actionId, paymentId, operationId or originatorConversationId there by hand when you want to use a real one). Nothing here was run against the services when it was written.",
+    "description": "# Chat assistant for your own M-Pesa: every HTTP endpoint\n\nThree services. Import this collection and the environment, then set the values in the environment.\n\n**Ports:** agent 8082, payment 8083 (optional), agentx 8084.\n\n**Quick start (wallet flow, no Daraja needed):** open `2. agentx-api / A. Walkthrough` and run it in order with the collection runner.\nStep 1 asks for a sign-in code (start agentx-api with `CODE_DELIVERY=dev` so the answer carries it, never do that on a shared server), step 2 signs the \"phone\" in,\nstep 3 prepares a request, steps 6 to 8 approve, hand off and report. Then try `C2. Chat`, and `C3` and `C4` for business accounts and the requests the assistant prepares for them.\n\n**Auth:** internal endpoints send `X-Internal-Key` ({{internalKey}}, the same value in every service `.env`). App endpoints send the device token\n(saved automatically by the sign-in request). Callbacks have no key, the secret token is in the path.\n\n**Notes:** requests that need Daraja or real media ids will only fully work against real credentials. Do not put real secrets in a shared collection.\nThe environment holds addresses, keys and phone numbers. Ids, tokens and codes are filled in by test scripts and live in the collection variables (edit actionId, paymentId, operationId or originatorConversationId there by hand when you want to use a real one). Nothing here was run against the services when it was written.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -3140,6 +3140,502 @@
           }
         },
         {
+          "name": "C3. Business accounts (Bearer token)",
+          "description": "Settings, Business accounts in the app. Sign in first (folder A), then add an account.",
+          "item": [
+            {
+              "name": "List my business accounts",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-accounts",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-accounts"
+                  ]
+                },
+                "description": "Secrets never come back. Each account only says whether the secret, passkey and initiator password are saved, and the last 4 characters of the consumer key."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j[0] && j[0].id; if (v !== undefined && v !== null) { pm.collectionVariables.set('bizAccountId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Add a business account",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-accounts",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-accounts"
+                  ]
+                },
+                "description": "Needs AGENTX_VAULT_KEY on the API, otherwise the feature is off. environment is sandbox or production. shortcodeType is paybill or buy_goods. The key, secret and passkey here are placeholders: use the ones from your Daraja app.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"label\": \"Main shop\",\n  \"environment\": \"sandbox\",\n  \"shortcodeType\": \"buy_goods\",\n  \"shortcode\": \"174379\",\n  \"consumerKey\": \"sandbox-consumer-key-0001\",\n  \"consumerSecret\": \"sandbox-consumer-secret-0001\",\n  \"passkey\": \"bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919\",\n  \"initiatorName\": \"testapi\",\n  \"initiatorPassword\": \"Safaricom999!*!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 201', function () { pm.expect(pm.response.code).to.be.oneOf([201]); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('bizAccountId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Add a till or branch",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-accounts",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-accounts"
+                  ]
+                },
+                "description": "A branch shares its head account's shortcode, environment and credentials. Buy Goods takes tillNumber, Paybill takes accountReference (up to 12 letters or digits).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"label\": \"Till 1\",\n  \"parentId\": \"{{bizAccountId}}\",\n  \"tillNumber\": \"123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 201', function () { pm.expect(pm.response.code).to.be.oneOf([201]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get a business account",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-accounts/{{bizAccountId}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-accounts",
+                    "{{bizAccountId}}"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Change a business account",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-accounts/{{bizAccountId}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-accounts",
+                    "{{bizAccountId}}"
+                  ]
+                },
+                "description": "An empty secret keeps the saved one. Send only what changes.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"label\": \"Main shop\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Check with Safaricom",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-accounts/{{bizAccountId}}/verify",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-accounts",
+                    "{{bizAccountId}}",
+                    "verify"
+                  ]
+                },
+                "description": "Asks Daraja for an access token with the saved key and secret, and tests that the certificate can lock the initiator password. It does not move money."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Download the CSV template",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-accounts/csv-template",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-accounts",
+                    "csv-template"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Check a CSV file (nothing is saved)",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-accounts/import?dryRun=true",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-accounts",
+                    "import"
+                  ],
+                  "query": [
+                    {
+                      "key": "dryRun",
+                      "value": "true"
+                    }
+                  ]
+                },
+                "description": "Choose a .csv file in the file box. dryRun=true only checks it. If any row has a problem nothing is saved, in either mode. Set dryRun=false to save a clean file.",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete a business account",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-accounts/{{bizAccountId}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-accounts",
+                    "{{bizAccountId}}"
+                  ]
+                },
+                "description": "Deleting a head account also deletes its branches. The answer says how many were removed."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{deviceToken}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "C4. Business requests (Bearer token)",
+          "description": "Requests the assistant prepared from the chat for a business account. Money going out waits for approval here.",
+          "item": [
+            {
+              "name": "List my business requests",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-operations",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-operations"
+                  ]
+                },
+                "description": "The requests the assistant prepared from the chat, for example: what is the balance of Main shop."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j[0] && j[0].id; if (v !== undefined && v !== null) { pm.collectionVariables.set('bizOperationId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Open a business request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-operations/{{bizOperationId}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-operations",
+                    "{{bizOperationId}}"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Approve a business request",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-operations/{{bizOperationId}}/approve",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-operations",
+                    "{{bizOperationId}}",
+                    "approve"
+                  ]
+                },
+                "description": "This is where money going out is sent to Safaricom, once. method is BIOMETRIC or DEVICE_CREDENTIAL and is only recorded.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"method\": \"BIOMETRIC\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Decline a business request",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-operations/{{bizOperationId}}/decline",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-operations",
+                    "{{bizOperationId}}",
+                    "decline"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{deviceToken}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
           "name": "D. Public pages",
           "description": "",
           "item": [
@@ -4538,6 +5034,14 @@
     {
       "key": "smsAtMillis",
       "value": ""
+    },
+    {
+      "key": "bizAccountId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "bizOperationId",
+      "value": "00000000-0000-0000-0000-000000000000"
     }
   ]
 }
