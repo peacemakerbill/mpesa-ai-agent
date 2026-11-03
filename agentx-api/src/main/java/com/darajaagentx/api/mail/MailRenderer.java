@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 /**
  * Turns a template name and some data into the HTML of one email. The files are in
  * {@code src/main/resources/mail/templates}: {@code layout.html} frames every email, and {@code NAME.html} holds the words
- * of one email. Small shared pieces (the woven band, the ledger of details, the note, the button) live in {@code partials}
+ * of one email. Small shared pieces (the ledger of details, the note, the button) live in {@code partials}
  * and are pulled in with {@code {{> name}}}. Emails are sent as HTML only, there are no plain text files.
  *
  * Besides the data a caller gives, every template can read the details of the moment and of the product: date, time,
@@ -37,14 +37,15 @@ final class MailRenderer {
     private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH).withZone(NAIROBI);
     private static final DateTimeFormatter YEAR = DateTimeFormatter.ofPattern("yyyy", Locale.ENGLISH).withZone(NAIROBI);
     private static final DateTimeFormatter REF_DATE = DateTimeFormatter.ofPattern("yyMMdd", Locale.ENGLISH).withZone(NAIROBI);
+    private static final Pattern CID = Pattern.compile("src=\"cid:([A-Za-z0-9_-]+)\"");
     private static final Pattern PARTIAL = Pattern.compile("\\{\\{>\\s*([a-z0-9-]+)\\s*}}");
 
     /** The colour of the status label and of the edge of a note, and the colour of the words on it. */
     enum Tone {
-        OK("ok", "#0F7B4A", "#FFFFFF"),
-        BAD("bad", "#D2232A", "#FFFFFF"),
-        NOTICE("notice", "#F2A900", "#15171F"),
-        INFO("info", "#2B3990", "#FFFFFF");
+        OK("ok", "#1A7F2A", "#FFFFFF"),
+        BAD("bad", "#D6001C", "#FFFFFF"),
+        NOTICE("notice", "#F2A900", "#0C2414"),
+        INFO("info", "#0A4A20", "#FFFFFF");
 
         final String css;
         final String accent;
@@ -198,6 +199,44 @@ final class MailRenderer {
         }
         m.appendTail(out);
         return out.toString();
+    }
+
+    /**
+     * A picture used by the emails, such as images/hero.png, read from the edited folder first and then from the program.
+     * Returns null when there is no such picture. The mail sender attaches it wherever the HTML says cid:NAME.
+     */
+    static byte[] image(String name) {
+        if (name == null || !name.matches("[A-Za-z0-9_-]+")) {
+            return null;
+        }
+        String dir = branding.templatesDir();
+        if (!dir.isEmpty()) {
+            Path p = Path.of(dir).resolve("images").resolve(name + ".png").normalize();
+            if (Files.isRegularFile(p)) {
+                try {
+                    return Files.readAllBytes(p);
+                } catch (IOException e) {
+                    return null;
+                }
+            }
+        }
+        try (InputStream in = MailRenderer.class.getResourceAsStream("/mail/templates/images/" + name + ".png")) {
+            return in == null ? null : in.readAllBytes();
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /** The picture names an HTML email refers to with cid:NAME, in order, each once. */
+    static java.util.List<String> imagesIn(String html) {
+        java.util.LinkedHashSet<String> names = new java.util.LinkedHashSet<>();
+        if (html != null) {
+            Matcher m = CID.matcher(html);
+            while (m.find()) {
+                names.add(m.group(1));
+            }
+        }
+        return new java.util.ArrayList<>(names);
     }
 
     private static String source(String file) {

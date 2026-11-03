@@ -4,7 +4,7 @@ Every automatic email is built from files in one folder, so the look and the wor
 
 ```
 agentx-api/src/main/resources/mail/templates/
-  layout.html          the frame around every email: woven band, logo, date leaf, status label, title, stub, footer
+  layout.html          the frame around every email: header, date leaf, pattern band, status label, title, stub, footer
   welcome.html
   sign-in.html
   payment.html
@@ -12,23 +12,51 @@ agentx-api/src/main/resources/mail/templates/
   report.html
   report-notice.html
   partials/
-    weave.html         the woven chevron band at the top and bottom of the card
     slip.html          the ledger of label and value rows
     callout.html       the note with a coloured edge
     button.html        the button
+  images/
+    hero.png           the pattern band under the header (600 by 72, drawn at double size)
+    edge.png           the thin band at the bottom of the card (600 by 12)
+    hero.svg, edge.svg the same drawings as editable vector files (not used at run time)
 ```
 
-Each `NAME.html` holds only the words and the pieces inside the card. `layout.html` puts the band, the header, the title and the stub with the reference around it.
+Each `NAME.html` holds only the words and the pieces inside the card. `layout.html` puts the header, the pattern band, the title and the stub with the reference around it.
 
 ## The look
 
-- Flat and sharp: square corners, 2 pixel black rules, no gradients, no shadows, no rounded boxes.
-- A woven chevron band in the red, black, ochre and indigo of a Maasai shuka, built from table cells so every mail program shows it (no image to host or block).
-- A calendar leaf in the corner with the month and year, the day, the weekday and the time, filled in when the email is sent.
-- Fonts: Bricolage Grotesque for titles, Hanken Grotesk for text, DM Mono for codes, labels and the reference. They load from Google Fonts in Apple Mail, iOS Mail, Samsung Mail and Thunderbird. Gmail and Outlook do not load web fonts, so they show the fallbacks named in every style (Trebuchet MS or Segoe UI, Helvetica or Arial, and Courier New). The design holds up with the fallbacks. To stop any request to Google Fonts, delete the `<link href="https://fonts.googleapis.com/...">` line in `layout.html`, and every email uses the fallbacks.
-- The status label is a solid block: green for completed, red for failed, ochre for security notices, indigo for codes and reports.
+- A deep green header with a bright green logo square, a white calendar leaf with the date, and under it a flat band of overlapping arcs, like radio waves spreading from a phone mast. The pictures use flat colour only: no gradients, no shadows.
+- Green first, in the family of the Safaricom and M-Pesa greens, with white. Red is kept for failures and amber for security notices, so a problem is never confused with the brand.
+- Square corners, thin green rules and a ledger for the details.
+- Fonts: Bricolage Grotesque for titles, Hanken Grotesk for text, DM Mono for codes, labels and the reference. They load from Google Fonts in Apple Mail, iOS Mail, Samsung Mail and Thunderbird. Gmail and Outlook do not load web fonts, so they show the fallbacks named in every style (Trebuchet MS or Segoe UI, Helvetica or Arial, and Courier New). To stop any request to Google Fonts, delete the `<link href="https://fonts.googleapis.com/...">` line in `layout.html`.
+- The status label is a solid block: green for completed, red for failed, amber for security notices, deep green for codes and reports.
 - The verification code is shown one digit per box.
-- Dark mode switches the page, the card and the rules in clients that support it.
+- Dark mode switches the page, the card, the rules and the stub in clients that support it. The header and pattern stay green.
+
+### The palette
+
+These are my approximation of the brand greens, not official values. If Safaricom's brand guide gives exact ones, find and replace them in `layout.html`, the other template files and `MailRenderer.java` (the `Tone` list), and redraw the two pictures.
+
+| Colour | Hex | Used for |
+|---|---|---|
+| Deep green | `#0A4A20` | header, pattern background, rules, button |
+| Bright green | `#43B02A` | logo square, leaf top, file box, button edge |
+| Lime | `#8FD468` | pattern highlights, dark mode accents |
+| Mint | `#E8F6DF` | the stub at the bottom of the card |
+| Ink | `#0C2414` | titles |
+| Text | `#1B2E21` | body text |
+| Muted | `#4E6355` | labels and footer |
+| Rule | `#CFE0C8` | thin lines |
+| Page | `#EEF3EC` | the background around the card |
+| Success | `#1A7F2A` | "Completed" label |
+| Failure | `#D6001C` | "Failed" label and its note |
+| Notice | `#F2A900` | "Security notice" label |
+
+This is a colour choice only. The emails carry no Safaricom or M-Pesa logo or name, and nothing in them says they come from Safaricom.
+
+### The pattern pictures
+
+The two bands are small PNG files, about 3 KB and 1 KB. The mail sender attaches them inside the email wherever the HTML says `src="cid:hero"` or `src="cid:edge"`, so they show without any web address and without a download. The header and bands sit on a green background, so with images switched off the email still looks green. To change a picture, replace the PNG (keep the name, 1200 by 144 and 1200 by 24 pixels for sharp screens), or add a new one and refer to it as `cid:NAME` in a template. With `MAIL_TEMPLATES_DIR` set, pictures are read from its `images` folder first.
 
 ## What is in each email
 
@@ -36,10 +64,10 @@ Every email, without anyone asking, carries:
 
 | Piece | Where | Example |
 |---|---|---|
-| Calendar leaf with month, day, weekday and time | top right | `Oct 2026`, `29`, `Thu 11:30` |
+| Calendar leaf with month, day, weekday and time | top right of the header | `Oct 2026`, `29`, `Thu 11:30` |
 | Greeting by the hour in Nairobi | first line | Good morning, Amina. |
 | Status label | above the title | Completed, Failed, Security notice |
-| Reference, issue date and time | the black stub at the bottom of the card | `DA-261029-Z0PN`, `29 Oct 2026`, `11:30 EAT` |
+| Reference, issue date and time | the mint stub at the bottom of the card | `DA-261029-Z0PN`, `29 Oct 2026`, `11:30 EAT` |
 | Copyright line with the year | footer | (c) 2026 Daraja Agent-X Ltd. All rights reserved. |
 | Why you got this email | footer | and how to switch it off |
 | Support address, website, company, address, tagline | footer | only the ones you have set |
@@ -102,7 +130,7 @@ Names each email adds are in `MailTemplates.java`, next to the words of the subj
 ## Rules the design follows
 
 - No emojis, no pictographs and no arrow characters, in the files or the data. A test checks every file and every rendered email.
-- No gradients, shadows or rounded corners. A test checks that too.
+- No gradients, shadows or rounded corners in the code. A test checks that too. The pictures are flat colour.
 - Layout is tables with inline styles, which is what mail clients (including Outlook and Gmail) understand.
 - On a phone the card fills the width, lists stack, the stub becomes a column and the code boxes shrink.
 - The first line shown in the inbox list (the preheader) is set on purpose and never contains the verification code.
@@ -110,6 +138,6 @@ Names each email adds are in `MailTemplates.java`, next to the words of the subj
 
 ## Tests
 
-`TemplateEngineTest` covers the language. `MailTemplateFilesTest` renders every email in strict mode (a name with no data is an error) and checks: nothing unreplaced, no emoji, the date, time, year, copyright and reference are present, the fonts are named, the greeting follows the hour, the code expiry time and one box per digit, colours and labels for a failed payment, the footer details appear only when set, and that an edited folder and a broken edited file behave as described above.
+`TemplateEngineTest` covers the language. `MailTemplateFilesTest` renders every email in strict mode (a name with no data is an error) and checks: nothing unreplaced, no emoji, the date, time, year, copyright and reference are present, the fonts are named, the greeting follows the hour, the pattern pictures exist and are attached, the code expiry time and one box per digit, colours and labels for a failed payment, the footer details appear only when set, and that an edited folder and a broken edited file behave as described above.
 
 When you add a name to a template, give it a value in `MailTemplates.java`, and the strict tests tell you if you forgot.

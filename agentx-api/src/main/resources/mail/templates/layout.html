@@ -1,0 +1,146 @@
+{{! The frame around every email. The words of each email live in its own file next to this one and arrive here as content.
+    The two pattern bands are pictures in the images folder. They are attached to the email by the mail sender, wherever the HTML says cid:NAME. }}
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+<title>{{subject}}</title>
+{{! Web fonts load in Apple Mail, iOS Mail, Samsung Mail and Thunderbird. Gmail and Outlook ignore them and use the fallback fonts named in each style. To stop any request to Google Fonts, delete the next line. }}
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=DM+Mono:wght@400;500&family=Hanken+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+<style type="text/css">
+  body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+  img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+  a { color: inherit; }
+  @media only screen and (max-width: 620px) {
+    .container { width: 100% !important; }
+    .gutter { padding-left: 20px !important; padding-right: 20px !important; }
+    .page-pad { padding: 0 !important; }
+    .title { font-size: 29px !important; line-height: 33px !important; }
+    .stack { display: block !important; width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; }
+    .stack-gap { padding-bottom: 12px !important; }
+    .slip-l { display: block !important; width: 100% !important; box-sizing: border-box; padding: 12px 0 0 0 !important; border-bottom: 0 !important; }
+    .slip-v { display: block !important; width: 100% !important; box-sizing: border-box; padding: 2px 0 12px 0 !important; }
+    .digit { width: 40px !important; height: 52px !important; font-size: 28px !important; }
+    .gap { width: 5px !important; }
+  }
+  @media (prefers-color-scheme: dark) {
+    body, .page { background-color: #0B130E !important; }
+    .card { background-color: #131E16 !important; }
+    .tx { color: #E8F2E6 !important; }
+    .tx-muted { color: #9DB5A2 !important; }
+    .title { color: #F3FAF1 !important; }
+    .bd { border-color: #8FD468 !important; }
+    .hair { border-color: #2B3F30 !important; }
+    .stub { background-color: #0E1811 !important; }
+    .stub-label { color: #9DB5A2 !important; }
+    .stub-value { color: #E8F2E6 !important; }
+    .pk { background-color: #43B02A !important; }
+    .btn { background-color: #43B02A !important; border-bottom-color: #8FD468 !important; }
+    .btn a { color: #0C2414 !important; }
+    .leaf { background-color: #131E16 !important; border-color: #8FD468 !important; }
+    .leaf-day { color: #F3FAF1 !important; }
+    .filebox { background-color: #43B02A !important; }
+    .filebox span { color: #0C2414 !important; }
+    .digit { border-color: #8FD468 !important; }
+    .link { color: #8FD468 !important; }
+  }
+  [data-ogsc] .card { background-color: #131E16 !important; }
+  [data-ogsc] .tx { color: #E8F2E6 !important; }
+</style>
+</head>
+<body class="page" style="margin:0;padding:0;background-color:#EEF3EC;">
+<div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">{{preheader}}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
+<table role="presentation" class="page" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#EEF3EC;">
+<tr><td align="center" class="page-pad" style="padding:32px 16px;">
+<!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td><![endif]-->
+<table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
+
+<tr><td class="card" bgcolor="#FFFFFF" style="background-color:#FFFFFF;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+
+<tr><td class="gutter" bgcolor="#0A4A20" style="background-color:#0A4A20;padding:26px 36px 24px 36px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td align="left" valign="middle">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+<td width="46" height="46" align="center" valign="middle" bgcolor="#43B02A" style="width:46px;height:46px;background-color:#43B02A;font-family:'DM Mono','Courier New',Courier,monospace;font-size:17px;font-weight:bold;color:#0C2414;letter-spacing:1px;"><span style="color:#0C2414;">{{brandMark}}</span></td>
+<td valign="middle" style="padding-left:13px;font-family:'Bricolage Grotesque','Trebuchet MS','Segoe UI',Helvetica,Arial,sans-serif;font-size:22px;line-height:25px;font-weight:800;letter-spacing:-0.5px;color:#FFFFFF;"><span style="color:#FFFFFF;">{{brand}}</span></td>
+</tr></table>
+</td>
+<td align="right" valign="middle" width="86">
+<table role="presentation" class="leaf" align="right" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="width:76px;background-color:#FFFFFF;">
+<tr><td align="center" bgcolor="#43B02A" style="background-color:#43B02A;padding:3px 0;font-family:'DM Mono','Courier New',Courier,monospace;font-size:11px;line-height:14px;font-weight:bold;color:#0C2414;"><span style="color:#0C2414;">{{monthYear}}</span></td></tr>
+<tr><td align="center" class="leaf-day" style="padding:4px 0 0 0;font-family:'Bricolage Grotesque','Trebuchet MS','Segoe UI',Helvetica,Arial,sans-serif;font-size:34px;line-height:38px;font-weight:800;color:#0C2414;">{{day}}</td></tr>
+<tr><td align="center" style="padding:0 0 5px 0;font-family:'DM Mono','Courier New',Courier,monospace;font-size:11px;line-height:14px;color:#4E6355;"><span class="tx-muted" style="color:#4E6355;">{{weekdayShort}} {{time}}</span></td></tr>
+</table>
+</td>
+</tr></table>
+</td></tr>
+
+<tr><td bgcolor="#0A4A20" style="background-color:#0A4A20;padding:0;font-size:0;line-height:0;height:72px;"><img src="cid:hero" width="600" height="72" alt="" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>
+
+<tr><td class="gutter" style="padding:32px 36px 0 36px;">
+{{#if status}}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;"><tr>
+<td bgcolor="{{accent}}" style="background-color:{{accent}};font-family:'DM Mono','Courier New',Courier,monospace;font-size:13px;line-height:18px;font-weight:bold;padding:5px 11px;"><span style="color:{{onAccent}};">{{status}}</span></td>
+</tr></table>
+{{/if}}
+<h1 class="title tx" style="margin:0;font-family:'Bricolage Grotesque','Trebuchet MS','Segoe UI',Helvetica,Arial,sans-serif;font-size:37px;line-height:41px;font-weight:800;letter-spacing:-1.1px;color:#0C2414;">{{heading}}</h1>
+</td></tr>
+
+<tr><td class="gutter tx" style="padding:20px 36px 36px 36px;font-family:'Hanken Grotesk','Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:26px;color:#1B2E21;">
+{{{content}}}
+</td></tr>
+
+<tr><td class="stub gutter" bgcolor="#E8F6DF" style="background-color:#E8F6DF;padding:18px 36px 20px 36px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td class="stack stack-gap" valign="top" width="42%" style="font-family:'Hanken Grotesk','Segoe UI',Helvetica,Arial,sans-serif;">
+<div class="stub-label" style="font-size:12px;line-height:16px;color:#4E6355;">Reference</div>
+<div class="stub-value" style="font-family:'DM Mono','Courier New',Courier,monospace;font-size:13px;line-height:21px;font-weight:bold;color:#0C2414;">{{ref}}</div>
+</td>
+<td class="stack stack-gap" valign="top" width="29%" style="font-family:'Hanken Grotesk','Segoe UI',Helvetica,Arial,sans-serif;">
+<div class="stub-label" style="font-size:12px;line-height:16px;color:#4E6355;">Issued</div>
+<div class="stub-value" style="font-family:'DM Mono','Courier New',Courier,monospace;font-size:13px;line-height:21px;color:#0C2414;">{{dateShort}}</div>
+</td>
+<td class="stack" valign="top" width="29%" style="font-family:'Hanken Grotesk','Segoe UI',Helvetica,Arial,sans-serif;">
+<div class="stub-label" style="font-size:12px;line-height:16px;color:#4E6355;">Time</div>
+<div class="stub-value" style="font-family:'DM Mono','Courier New',Courier,monospace;font-size:13px;line-height:21px;color:#0C2414;">{{time}} {{zone}}</div>
+</td>
+</tr></table>
+</td></tr>
+
+<tr><td bgcolor="#0A4A20" style="background-color:#0A4A20;padding:0;font-size:0;line-height:0;height:12px;"><img src="cid:edge" width="600" height="12" alt="" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>
+
+</table>
+</td></tr>
+
+<tr><td class="gutter" style="padding:24px 36px 8px 36px;font-family:'Hanken Grotesk','Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;line-height:20px;color:#4E6355;">
+<p class="tx-muted" style="margin:0 0 10px 0;color:#4E6355;">{{reason}}</p>
+{{#if supportEmail}}
+<p class="tx-muted" style="margin:0 0 10px 0;color:#4E6355;">Questions? Write to <a class="link" href="mailto:{{supportEmail}}" style="color:#0A4A20;font-weight:bold;text-decoration:underline;">{{supportEmail}}</a>{{#if website}} or visit <a class="link" href="{{website}}" style="color:#0A4A20;font-weight:bold;text-decoration:underline;">{{websiteLabel}}</a>{{/if}}.</p>
+{{/if}}
+{{#unless supportEmail}}
+{{#if website}}
+<p class="tx-muted" style="margin:0 0 10px 0;color:#4E6355;">Visit <a class="link" href="{{website}}" style="color:#0A4A20;font-weight:bold;text-decoration:underline;">{{websiteLabel}}</a>.</p>
+{{/if}}
+{{/unless}}
+<p class="tx-muted" style="margin:0 0 2px 0;color:#4E6355;">{{copyright}}</p>
+{{#if company}}
+<p class="tx-muted" style="margin:0 0 2px 0;color:#4E6355;">{{company}}{{#if address}}, {{address}}{{/if}}</p>
+{{/if}}
+<p class="tx-muted" style="margin:10px 0 0 0;color:#7B8F7F;">{{tagline}}</p>
+</td></tr>
+
+</table>
+<!--[if mso]></td></tr></table><![endif]-->
+</td></tr>
+</table>
+</body>
+</html>

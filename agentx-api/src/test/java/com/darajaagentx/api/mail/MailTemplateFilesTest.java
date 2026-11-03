@@ -19,7 +19,7 @@ class MailTemplateFilesTest {
 
     static final Instant AT = Instant.parse("2026-10-29T08:30:00Z");
     static final List<String> FILES = List.of("layout.html", "welcome.html", "sign-in.html", "payment.html", "email-code.html", "report.html",
-            "report-notice.html", "partials/slip.html", "partials/callout.html", "partials/button.html", "partials/weave.html");
+            "report-notice.html", "partials/slip.html", "partials/callout.html", "partials/button.html");
 
     @BeforeEach
     void strictAndPlain() {
@@ -78,6 +78,21 @@ class MailTemplateFilesTest {
     }
 
     @Test
+    void thePatternBandsAreSentInsideTheEmail() {
+        for (MailTemplates.Message m : all()) {
+            assertThat(MailRenderer.imagesIn(m.html())).containsExactly("hero", "edge");
+            assertThat(m.html()).doesNotContain("src=\"http://", "src=\"https://");
+        }
+        for (String name : List.of("hero", "edge")) {
+            byte[] png = MailRenderer.image(name);
+            assertThat(png).isNotNull();
+            assertThat(png.length > 8 && png[0] == (byte) 0x89 && png[1] == 'P' && png[2] == 'N' && png[3] == 'G').isTrue();
+        }
+        assertThat(MailRenderer.image("nothing-here")).isNull();
+        assertThat(MailRenderer.image("../layout")).isNull();
+    }
+
+    @Test
     void theGreetingFollowsTheHourInNairobi() {
         assertThat(MailTemplates.welcome("B", "Amina", Instant.parse("2026-10-29T04:00:00Z")).text()).contains("Good morning, Amina.");
         assertThat(MailTemplates.welcome("B", "Amina", Instant.parse("2026-10-29T10:00:00Z")).text()).contains("Good afternoon, Amina.");
@@ -100,9 +115,9 @@ class MailTemplateFilesTest {
     void aPaymentShowsItsOutcomeInTheStatusAndTheColour() {
         MailTemplates.Message ok = MailTemplates.payment("B", "A", true, "STK Push", "KES 10", "Accepted", "QK1", AT);
         MailTemplates.Message bad = MailTemplates.payment("B", "A", false, "STK Push", "KES 10", "Insufficient funds", null, AT);
-        assertThat(ok.html()).contains("Completed", "#0F7B4A", "QK1");
+        assertThat(ok.html()).contains("Completed", "#1A7F2A", "QK1");
         assertThat(ok.html()).doesNotContain("What to do next");
-        assertThat(bad.html()).contains("Failed", "#D2232A", "What to do next", "Insufficient funds");
+        assertThat(bad.html()).contains("Failed", "#D6001C", "What to do next", "Insufficient funds");
         assertThat(bad.html()).doesNotContain("M-Pesa code");
         assertThat(bad.html()).contains("check the request and try again");
     }
