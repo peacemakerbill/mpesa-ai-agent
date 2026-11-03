@@ -1,6 +1,8 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.13)
 project(runner LANGUAGES CXX)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-literal-operator")
+set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/bundle" CACHE PATH "Install into the bundle folder" FORCE)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
