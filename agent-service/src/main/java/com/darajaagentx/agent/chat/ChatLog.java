@@ -97,4 +97,28 @@ public class ChatLog {
         store.delete("chat:log:" + phone);
         store.delete("chat:typing:" + phone);
     }
+
+    /** Every message still stored, oldest first. */
+    public List<ChatMessage> all(String phone) {
+        return after(phone, 0, KEEP);
+    }
+
+    /**
+     * Swaps the whole chat for the given messages. They get fresh numbers above the current counter, so an app that
+     * is already open sees the change, and each keeps the time it was originally sent.
+     */
+    public void replace(String phone, List<ChatMessage> messages) {
+        synchronized (locks.computeIfAbsent(phone, p -> new Object())) {
+            store.delete("chat:log:" + phone);
+            store.delete("chat:typing:" + phone);
+            for (ChatMessage message : messages) {
+                message.id = store.increment("chat:seq:" + phone, RETENTION);
+                try {
+                    store.appendToList("chat:log:" + phone, mapper.writeValueAsString(message), KEEP, RETENTION);
+                } catch (JacksonException e) {
+                    throw new IllegalStateException("Could not store a chat message", e);
+                }
+            }
+        }
+    }
 }

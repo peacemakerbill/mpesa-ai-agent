@@ -1,162 +1,84 @@
 package com.darajaagentx.agent.controller;
 
-import com.darajaagentx.agent.chat.ChatChannel;
-import com.darajaagentx.agent.dto.InboundMessage;
-import com.darajaagentx.agent.service.MessageProcessor;
+import com.darajaagentx.agent.TestSupport;
+import com.darajaagentx.agent.chat.ChatLog;
+import com.darajaagentx.agent.chat.ChatMessage;
+import com.darajaagentx.agent.chat.ChatSessions;
+import com.darajaagentx.agent.store.InMemoryStateStore;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.http.ResponseEntity;
 
-import java.util.UUID;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-class ChatControllerTest {
+class ChatSessionsControllerTest {
 
-    private static final String KEY = "test-internal-key";
+    private static final String PHONE = "254700000001";
 
-    @Autowired MockMvc mvc;
-    @Autowired ChatChannel channel;
-    @MockitoBean MessageProcessor processor;
+    private final InMemoryStateStore state = new InMemoryStateStore();
+    private final ChatLog log = new ChatLog(state, TestSupport.mapper());
+    private final ChatSessionsController controller = new ChatSessionsController(new ChatSessions(state, TestSupport.mapper(), log));
 
-    private static String phone() {
-        return "2547" + String.format("%08d", Math.abs(UUID.randomUUID().getMostSignificantBits() % 100_000_000L));
+    private void customerSays(String text) {
+        ChatMessage m = new ChatMessage();
+        m.dir = "in";
+        m.kind = "TEXT";
+        m.text = text;
+        log.append(PHONE, m);
+    }
+
+    private static ChatSessions.Listing listing(ResponseEntity<?> response) {
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        return (ChatSessions.Listing) response.getBody();
     }
 
     @Test
-    void theChatEndpointsNeedTheInternalKey() throws Exception {
-        mvc.perform(get("/internal/chat/254700000001/messages")).andExpect(status().isUnauthorized());
-        mvc.perform(post("/internal/chat/254700000001/send").contentType(MediaType.APPLICATION_JSON).content("{\"kind\":\"TEXT\",\"text\":\"hi\"}"))
-                .andExpect(status().isUnauthorized());
+    void everyCallAnswersWithTheUpdatedList() {
+        customerSays("Topic one");
+
+        ChatSessions.Listing created = listing(controller.create(PHONE));
+        assertThat(created.chats()).hasSize(2);
+
+        String one = created.chats().stream().filter(c -> c.title().equals("Topic one")).findFirst().orElseThrow().id();
+        assertThat(listing(controller.rename(PHONE, one, new ChatSessionsController.TitleRequest("Rent"))).chats().size()).isEqualTo(2);
+        assertThat(listing(controller.pin(PHONE, one, new ChatSessionsController.PinRequest(true))).chats().get(0).pinned()).isTrue();
+        assertThat(listing(controller.open(PHONE, one)).activeId()).isEqualTo(one);
+        assertThat(listing(controller.list(PHONE)).chats()).hasSize(1);
+        assertThat(listing(controller.delete(PHONE, one)).chats()).hasSize(1);
+        assertThat(listing(controller.deleteAll(PHONE)).chats()).hasSize(1);
     }
 
     @Test
-    void aSentMessageIsStoredAndHandedToTheAssistant() throws Exception {
-        String who = phone();
+    void refusalsBecomeAProblemWithTheStatusAndAMessage() {
+        ResponseEntity<?> missing = controller.open(PHONE, "nope");
 
-        mvc.perform(post("/internal/chat/" + who + "/send").header("X-Internal-Key", KEY)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"clientMessageId\":\"c1\",\"kind\":\"TEXT\",\"text\":\"send 500 to Mama\"}"))
-                .andExpect(status().isAccepted());
-
-        verify(processor, timeout(3000)).process(any(InboundMessage.class));
-        mvc.perform(get("/internal/chat/" + who + "/messages").header("X-Internal-Key", KEY))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.messages[0].dir").value("in"))
-                .andExpect(jsonPath("$.messages[0].text").value("send 500 to Mama"))
-                .andExpect(jsonPath("$.lastId").value(1));
+        assertThat(missing.getStatusCode().value()).isEqualTo(404);
+        Map<?, ?> body = (Map<?, ?>) missing.getBody();
+        assertThat(body.get("status")).isEqualTo(404);
+        assertThat(body.get("message")).isEqualTo("That chat no longer exists.");
     }
 
     @Test
-    void sendingTheSameClientIdTwiceIsHandledOnce() throws Exception {
-        String who = phone();
-        for (int i = 0; i < 2; i++) {
-            mvc.perform(post("/internal/chat/" + who + "/send").header("X-Internal-Key", KEY)
-                            .contentType(MediaType.APPLICATION_JSON).content("{\"clientMessageId\":\"same\",\"kind\":\"TEXT\",\"text\":\"hello\"}"))
-                    .andExpect(status().isAccepted());
-        }
+    void aBusyAssistantAnswersWithConflict() {
+        customerSays("Topic one");
+        log.typing(PHONE, true);
 
-        verify(processor, timeout(3000).times(1)).process(any(InboundMessage.class));
-        mvc.perform(get("/internal/chat/" + who + "/messages").header("X-Internal-Key", KEY))
-                .andExpect(jsonPath("$.messages.length()").value(1));
+        assertThat(controller.create(PHONE).getStatusCode().value()).isEqualTo(409);
     }
 
     @Test
-    void repliesFromTheAssistantAppearAfterTheNumberTheAppAlreadyHas() throws Exception {
-        String who = phone();
-        channel.sendText(who, "first");
-        channel.sendText(who, "second");
+    void pinningNeedsAnAnswerAndNamesAreChecked() {
+        String id = listing(controller.list(PHONE)).activeId();
 
-        mvc.perform(get("/internal/chat/" + who + "/messages?after=1").header("X-Internal-Key", KEY))
-                .andExpect(jsonPath("$.messages.length()").value(1))
-                .andExpect(jsonPath("$.messages[0].text").value("second"))
-                .andExpect(jsonPath("$.typing").value(false));
+        assertThat(controller.pin(PHONE, id, new ChatSessionsController.PinRequest(null)).getStatusCode().value()).isEqualTo(400);
+        assertThat(controller.pin(PHONE, id, null).getStatusCode().value()).isEqualTo(400);
+        assertThat(controller.rename(PHONE, id, new ChatSessionsController.TitleRequest("x".repeat(90))).getStatusCode().value())
+                .isEqualTo(400);
     }
 
     @Test
-    void badMessagesAreRefusedWithAReason() throws Exception {
-        String who = phone();
-        for (String body : new String[]{
-                "{\"kind\":\"TEXT\",\"text\":\"  \"}",
-                "{\"kind\":\"REACTION\",\"text\":\"x\"}",
-                "{\"kind\":\"IMAGE\",\"mediaId\":\"nope\"}",
-                "{\"kind\":\"LOCATION\"}",
-                "{\"kind\":\"CONTACTS\"}",
-                "{\"kind\":\"LIST_REPLY\"}"}) {
-            mvc.perform(post("/internal/chat/" + who + "/send").header("X-Internal-Key", KEY)
-                            .contentType(MediaType.APPLICATION_JSON).content(body))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.message").isNotEmpty());
-        }
-        verify(processor, never()).process(any());
-    }
-
-    @Test
-    void aFileIsUploadedFirstThenReferredToByItsId() throws Exception {
-        String who = phone();
-        MvcResult up = mvc.perform(post("/internal/chat/" + who + "/media").header("X-Internal-Key", KEY)
-                        .contentType("image/png").header("X-File-Name", "pic.png").content(new byte[]{1, 2, 3, 4}))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.mimeType").value("image/png"))
-                .andExpect(jsonPath("$.size").value(4))
-                .andReturn();
-        String id = com.jayway.jsonpath.JsonPath.read(up.getResponse().getContentAsString(), "$.mediaId");
-
-        mvc.perform(post("/internal/chat/" + who + "/send").header("X-Internal-Key", KEY)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"kind\":\"IMAGE\",\"mediaId\":\"" + id + "\",\"caption\":\"my statement\"}"))
-                .andExpect(status().isAccepted());
-
-        verify(processor, timeout(3000)).process(any(InboundMessage.class));
-        MvcResult down = mvc.perform(get("/internal/chat/" + who + "/media/" + id).header("X-Internal-Key", KEY))
-                .andExpect(status().isOk()).andExpect(content().contentType("image/png")).andReturn();
-        assertThat(down.getResponse().getContentAsByteArray()).containsExactly(1, 2, 3, 4);
-    }
-
-    @Test
-    void anotherCustomerCannotUseOrFetchAFile() throws Exception {
-        String owner = phone();
-        String other = phone();
-        MvcResult up = mvc.perform(post("/internal/chat/" + owner + "/media").header("X-Internal-Key", KEY)
-                .contentType("application/pdf").content(new byte[]{9})).andReturn();
-        String id = com.jayway.jsonpath.JsonPath.read(up.getResponse().getContentAsString(), "$.mediaId");
-
-        mvc.perform(get("/internal/chat/" + other + "/media/" + id).header("X-Internal-Key", KEY)).andExpect(status().isNotFound());
-        mvc.perform(post("/internal/chat/" + other + "/send").header("X-Internal-Key", KEY)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"kind\":\"DOCUMENT\",\"mediaId\":\"" + id + "\"}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void anEmptyUploadIsRefused() throws Exception {
-        mvc.perform(post("/internal/chat/" + phone() + "/media").header("X-Internal-Key", KEY)
-                        .contentType("image/png").content(new byte[0]))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void startingOverClearsTheChat() throws Exception {
-        String who = phone();
-        channel.sendText(who, "old");
-
-        mvc.perform(delete("/internal/chat/" + who + "/messages").header("X-Internal-Key", KEY)).andExpect(status().isNoContent());
-
-        mvc.perform(get("/internal/chat/" + who + "/messages").header("X-Internal-Key", KEY))
-                .andExpect(jsonPath("$.messages.length()").value(0));
+    void anInvalidNumberIsRefused() {
+        assertThat(controller.list("abc").getStatusCode().value()).isEqualTo(400);
     }
 }

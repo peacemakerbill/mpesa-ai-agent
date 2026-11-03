@@ -397,6 +397,7 @@ upload a list. Mail is written to the log until you set `agentx.mail.transport: 
 | [`docs/DATABASES.md`](docs/DATABASES.md) | PostgreSQL, MySQL and MongoDB: setup, trade-offs, what was tested |
 | [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md) | Business accounts, tills, CSV upload, chat transactions |
 | [`docs/PROFILE_AND_EMAIL.md`](docs/PROFILE_AND_EMAIL.md) | Sign up, profiles, email verification, reports by email, mail and picture storage settings |
+| [`docs/CHATS.md`](docs/CHATS.md) | Many chats per customer: new chat, open an old one, rename, pin, delete |
 | [`agent-service/STORAGE.md`](agent-service/STORAGE.md) | Where chat files are kept: Redis, a folder or S3 |
 | [`agentx-app/docs/FILES_AND_MY_ONEAPP.md`](agentx-app/docs/FILES_AND_MY_ONEAPP.md) | Phone file cache and My OneApp |
 | [`agentx-app/docs/CONTACTS.md`](agentx-app/docs/CONTACTS.md) | Contact search and the Google and Microsoft sign-ins |

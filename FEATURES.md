@@ -223,6 +223,7 @@ The 503 handler is in payment-service today. agent-service and agentx-api still 
 - **Automatic emails:** a welcome, a notice when the account signs in on a device, and a notice when a payment or business request finishes. Customers can switch the sign in and payment notices off.
 - **Reports by email:** say "send this report to my email as a PDF", "email this as Excel to a@x.com" or "send it to everyone on my list as CSV". PDF, CSV and Excel, from the table in the chat or from business requests, business accounts and payments. With no address named it goes to the verified profile email. The owner is told when a report goes to someone else.
 - **Saved addresses:** add, paste or upload (CSV or text) a list of addresses to send reports to, and name them ("my accountant").
+- **Many chats:** a customer can start a new chat, go back to an old one (its messages and the assistant's memory come back), rename it, pin it and delete it. In the app under the Chats button and in the console's Chats panel. See [`docs/CHATS.md`](docs/CHATS.md).
 - **Mail settings** in `application.yml` under `agentx.mail`: `log` (writes emails to the log, the default) or `smtp`, sender, limits, allowed domains. See [`docs/PROFILE_AND_EMAIL.md`](docs/PROFILE_AND_EMAIL.md).
 
 ## Optional business payments (Daraja)

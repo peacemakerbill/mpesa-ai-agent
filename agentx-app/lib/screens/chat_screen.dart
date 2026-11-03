@@ -21,6 +21,7 @@ import '../widgets/mention_panel.dart';
 import '../widgets/ui.dart';
 import 'action_screen.dart';
 import 'business_operation_screen.dart';
+import 'chats_screen.dart';
 import 'contact_finder_screen.dart';
 
 /// Something the customer attached and has not sent yet.
@@ -423,6 +424,19 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // ------------------------------------------------------------ menu
 
+  void _openChats() {
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => ChatsScreen(chat: _chat)));
+  }
+
+  Future<void> _newChat() async {
+    final err = await _chat.newChat();
+    if (err != null) {
+      _toast(err);
+      return;
+    }
+    if (mounted) _focus.requestFocus();
+  }
+
   Future<void> _clear() async {
     final ok = await showDialog<bool>(
       context: context,
@@ -514,7 +528,7 @@ class _ChatScreenState extends State<ChatScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-            const Text('Daraja Agent-X', maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(_chat.activeSession?.title ?? 'Daraja Agent-X', maxLines: 1, overflow: TextOverflow.ellipsis),
             Text(
               _chat.typing ? 'typing' : 'Your M-Pesa assistant',
               maxLines: 1,
@@ -525,13 +539,23 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ]),
       actions: [
+        if (_chat.sessionsSupported) IconButton(onPressed: _openChats, icon: const Icon(Icons.forum_outlined), tooltip: 'Chats'),
         IconButton(onPressed: () => showThemeSheet(context, widget.state), icon: const Icon(Icons.palette_outlined), tooltip: 'Appearance'),
         PopupMenuButton<String>(
           tooltip: 'More',
-          onSelected: (v) => v == 'clear' ? _clear() : _signOut(),
-          itemBuilder: (_) => const [
-            PopupMenuItem(value: 'clear', child: Text('Clear chat')),
-            PopupMenuItem(value: 'out', child: Text('Sign out')),
+          onSelected: (v) {
+            if (v == 'new') {
+              _newChat();
+            } else if (v == 'clear') {
+              _clear();
+            } else {
+              _signOut();
+            }
+          },
+          itemBuilder: (_) => [
+            if (_chat.sessionsSupported) const PopupMenuItem(value: 'new', child: Text('New chat')),
+            const PopupMenuItem(value: 'clear', child: Text('Clear chat')),
+            const PopupMenuItem(value: 'out', child: Text('Sign out')),
           ],
         ),
       ],

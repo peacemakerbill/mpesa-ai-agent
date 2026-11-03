@@ -379,6 +379,25 @@ th { font-weight: 600; color: var(--ink-2); font-size: .78rem; }
 .chip:hover { border-color: var(--accent); }
 .chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 [data-theme="mono"] .chip { border-radius: 0; border-color: #000; }
+/* the list of chats */
+#chList { display: grid; gap: 2px; max-height: 360px; overflow: auto; margin: -6px; padding: 6px; }
+.chat-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px; padding: 1px 2px; border-radius: var(--radius-sm); border: var(--bw) solid transparent; }
+.chat-item:hover { background: var(--surface-2); }
+.chat-item[aria-current="true"] { background: var(--accent-soft); border-color: var(--accent-line); }
+.chat-open { display: grid; gap: 1px; min-width: 0; text-align: left; background: transparent; border: 0; color: inherit; font: inherit; padding: 7px 8px; cursor: pointer; border-radius: var(--radius-sm); }
+.chat-open b { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: .88rem; font-weight: 600; }
+.chat-open .ct { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-open .when { margin-left: auto; flex: none; font-weight: 400; color: var(--ink-3); font-size: .72rem; }
+.chat-open > small { color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .78rem; }
+.pinmark { display: inline-grid; flex: none; color: var(--accent); }
+.pinmark svg { width: 12px; height: 12px; }
+.chat-acts { display: flex; gap: 2px; opacity: 0; transition: opacity .12s; }
+.chat-item:hover .chat-acts, .chat-item:focus-within .chat-acts, .chat-item[aria-current="true"] .chat-acts { opacity: 1; }
+@media (hover: none) { .chat-acts { opacity: 1; } }
+.chat-edit { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 6px; margin: 0; }
+.chat-edit input { flex: 1; min-width: 120px; }
+.chat-find { margin-bottom: 8px; }
+.chat-find input { width: 100%; }
 /* composer: attach menu, tray, recorder, media bubbles */
 .chat { position: relative; }
 .composer { gap: 8px; position: relative; }
@@ -774,6 +793,9 @@ const ICON = {
   sliders: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
   biz: '<path d="M4 21V8l8-4 8 4v13"/><path d="M9 21v-6h6v6M8 11h2M14 11h2"/>',
   prof: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
+  pushpin: '<path d="M9 3h6l-1 6 3 3H7l3-3z"/><path d="M12 12v9"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
   more: '<circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/>',
 };
 const icon = (name, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${ICON[name]}</svg>`;
@@ -804,7 +826,7 @@ const DEFAULTS = {
   googleClientId: '', microsoftClientId: '',
 };
 const VAR_DEFAULTS = {
-  actionId: '00000000-0000-0000-0000-000000000000', paymentId: '00000000-0000-0000-0000-000000000000', operationId: '00000000-0000-0000-0000-000000000000', bizAccountId: '00000000-0000-0000-0000-000000000000', bizOperationId: '00000000-0000-0000-0000-000000000000',
+  chatId: 'abc123abc123', actionId: '00000000-0000-0000-0000-000000000000', paymentId: '00000000-0000-0000-0000-000000000000', operationId: '00000000-0000-0000-0000-000000000000', bizAccountId: '00000000-0000-0000-0000-000000000000', bizOperationId: '00000000-0000-0000-0000-000000000000',
   checkoutRequestId: 'ws_CO_000000000000000000', originatorConversationId: '00000000-0000-0000-0000-000000000000', linkCode: '', deviceToken: '', mediaId: '',
 };
 const cfg = Object.assign({}, DEFAULTS, store.get('cfg') || {});
@@ -954,6 +976,13 @@ E('ag.ch.send', 'agent', 'Customer chat (the apps use these through the Daraja A
 E('ag.ch.media', 'agent', 'Customer chat (the apps use these through the Daraja Agent-X API)', 'Upload a file', 'POST', CHAT + '/media', { auth: 'internal', headers: { 'Content-Type': 'text/plain', 'X-File-Name': 'hello.txt' }, body: 'Hello from the console', save: { mediaId: 'mediaId' }, note: 'The body is the raw file. The answer has the media id to use in a later message of kind DOCUMENT, IMAGE, AUDIO or VIDEO.' });
 E('ag.ch.media.get', 'agent', 'Customer chat (the apps use these through the Daraja Agent-X API)', 'Download a chat file', 'GET', CHAT + '/media/{{mediaId}}', { auth: 'internal', note: 'Works for files from either side. Another customer\'s file answers 404.' });
 E('ag.ch.clear', 'agent', 'Customer chat (the apps use these through the Daraja Agent-X API)', 'Clear the chat', 'DELETE', CHAT + '/messages', { auth: 'internal' });
+E('ag.cs.list', 'agent', 'Customer chat (the apps use these through the Daraja Agent-X API)', 'List the chats', 'GET', CHAT + '/sessions', { auth: 'internal', save: { chatId: 'chats.0.id' }, note: 'The customer\'s chats, pinned first. The one with active true is the live chat.' });
+E('ag.cs.new', 'agent', 'Customer chat (the apps use these through the Daraja Agent-X API)', 'Start a new chat', 'POST', CHAT + '/sessions', { auth: 'internal', save: { chatId: 'activeId' }, note: 'Sets the live chat aside and starts an empty one. Nothing changes when the live chat is empty.' });
+E('ag.cs.open', 'agent', 'Customer chat (the apps use these through the Daraja Agent-X API)', 'Open an old chat', 'POST', CHAT + '/sessions/{{chatId}}/open', { auth: 'internal', note: 'Swaps the saved chat in and the live one out. 409 while the assistant is replying.' });
+E('ag.cs.rename', 'agent', 'Customer chat (the apps use these through the Daraja Agent-X API)', 'Rename a chat', 'PUT', CHAT + '/sessions/{{chatId}}/title', { auth: 'internal', body: { title: 'Rent and bills' } });
+E('ag.cs.pin', 'agent', 'Customer chat (the apps use these through the Daraja Agent-X API)', 'Pin or unpin a chat', 'PUT', CHAT + '/sessions/{{chatId}}/pin', { auth: 'internal', body: { pinned: true } });
+E('ag.cs.delete', 'agent', 'Customer chat (the apps use these through the Daraja Agent-X API)', 'Delete a chat', 'DELETE', CHAT + '/sessions/{{chatId}}', { auth: 'internal' });
+E('ag.cs.deleteall', 'agent', 'Customer chat (the apps use these through the Daraja Agent-X API)', 'Delete all chats', 'DELETE', CHAT + '/sessions', { auth: 'internal' });
 
 // 2 Daraja Agent-X API
 const mk = (id, name, type, amount, details, extra, note) => E(id, 'agentx', 'Agent side: prepare requests', name, 'POST', '/internal/actions', { auth: 'internal', body: action(type, amount, details, extra), save: { actionId: 'id' }, note });
@@ -990,6 +1019,14 @@ E('co.ch.contact', 'agentx', CC, 'Share a contact', 'POST', '/api/chat/messages'
 E('co.ch.media', 'agentx', CC, 'Upload a file', 'POST', '/api/chat/media', { auth: 'bearer', headers: { 'Content-Type': 'text/plain', 'X-File-Name': 'hello.txt' }, body: 'Hello from the console', save: { mediaId: 'mediaId' }, note: 'The body is the raw file, up to 20 MB. Send a message that names the returned media id next.' });
 E('co.ch.media.get', 'agentx', CC, 'Download a chat file', 'GET', '/api/chat/media/{{mediaId}}', { auth: 'bearer' });
 E('co.ch.clear', 'agentx', CC, 'Clear the chat', 'DELETE', '/api/chat/messages', { auth: 'bearer' });
+const CS = 'Chats (app side)';
+E('co.cs.list', 'agentx', CS, 'List my chats', 'GET', '/api/chat/sessions', { auth: 'bearer', save: { chatId: 'chats.0.id' }, note: 'Pinned chats first, then the most recently used. The one with active true is the chat the assistant is in, and the one the message calls above read and write.' });
+E('co.cs.new', 'agentx', CS, 'Start a new chat', 'POST', '/api/chat/sessions', { auth: 'bearer', save: { chatId: 'activeId' }, note: 'The current chat stays in the list. When the current chat is still empty nothing changes. Answers with the updated list. 409 while the assistant is replying, or when there are 100 chats.' });
+E('co.cs.open', 'agentx', CS, 'Open an old chat', 'POST', '/api/chat/sessions/{{chatId}}/open', { auth: 'bearer', note: 'Makes this chat the current one and brings back its messages and what the assistant remembers. Read the messages again from after=0. 409 while the assistant is replying.' });
+E('co.cs.rename', 'agentx', CS, 'Rename a chat', 'PUT', '/api/chat/sessions/{{chatId}}/title', { auth: 'bearer', body: { title: 'Rent and bills' }, note: 'Up to 80 characters. An empty title goes back to the automatic name, taken from the first thing the customer said.' });
+E('co.cs.pin', 'agentx', CS, 'Pin or unpin a chat', 'PUT', '/api/chat/sessions/{{chatId}}/pin', { auth: 'bearer', body: { pinned: true }, note: 'Pinned chats stay at the top of the list.' });
+E('co.cs.delete', 'agentx', CS, 'Delete a chat', 'DELETE', '/api/chat/sessions/{{chatId}}', { auth: 'bearer', note: 'Gone for good. Deleting the current chat leaves a new empty chat in its place.' });
+E('co.cs.deleteall', 'agentx', CS, 'Delete all chats', 'DELETE', '/api/chat/sessions', { auth: 'bearer', note: 'Every chat, pinned ones included. Leaves one empty chat.' });
 const BA = 'Business accounts (app side)';
 E('co.b.list', 'agentx', BA, 'List my business accounts', 'GET', '/api/business-accounts', { auth: 'bearer', save: { bizAccountId: '0.id' }, note: 'Secrets never come back. Each account only says whether the secret, passkey and initiator password are saved, and the last 4 characters of the consumer key.' });
 E('co.b.create', 'agentx', BA, 'Add a business account', 'POST', '/api/business-accounts', { auth: 'bearer', body: { label: 'Main shop', environment: 'sandbox', shortcodeType: 'buy_goods', shortcode: '174379', consumerKey: 'sandbox-consumer-key-0001', consumerSecret: 'sandbox-consumer-secret-0001', passkey: 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919', initiatorName: 'testapi', initiatorPassword: 'Safaricom999!*!' }, save: { bizAccountId: 'id' }, note: 'Needs AGENTX_VAULT_KEY on the Daraja Agent-X API, otherwise the feature is off. environment is sandbox or production. shortcodeType is paybill or buy_goods. The consumer key, secret and passkey above are placeholders: use the ones from your Daraja app. A head office whose stores went live on their own can be saved without credentials.' });
@@ -1616,7 +1653,8 @@ function dropSession(msg) {
   vars.deviceToken = ''; saveVars();
   AU.err = msg || ''; AU.info = '';
   P.screen = 'link'; P.a = null;
-  CH.after = 0; CH.reqKeys = null; const m = $('#chMsgs'); if (m) m.innerHTML = '';
+  CH.after = 0; CH.reqKeys = null; CH.epoch++; CH.polling = false; CH.chats = []; CH.activeId = null; CH.renaming = CH.confirmDel = null;
+  const m = $('#chMsgs'); if (m) m.innerHTML = '';
   redrawAuth();
 }
 async function signOut() {
@@ -1921,7 +1959,7 @@ function wireFinder() {
   });
 }
 /* ------------------------------------------------------------------ chat (the in-app conversation with the assistant) */
-const CH = { after: 0, polling: false, errShown: false, reqs: [], reqKeys: null, typing: false, lookupSeen: new Set() };
+const CH = { chats: [], activeId: null, epoch: 0, renaming: null, confirmDel: null, listAt: 0, filter: '', after: 0, polling: false, errShown: false, reqs: [], reqKeys: null, typing: false, lookupSeen: new Set() };
 const CHIPS = ['hi', 'send 500 to 0712345678', 'send 200 to Mama', 'pay 1200 to paybill 888880 account 123456', 'pay 300 to till 123456', 'buy 50 airtime', 'nataka kutuma 1000 kwa 0722000111', 'show my requests'];
 const ATT = [];            // files waiting to be sent, shown in the tray above the composer
 const REC = { rec: null, chunks: [], stream: null, t0: 0, timer: 0, raf: 0, ctx: null, send: false };
@@ -1938,11 +1976,12 @@ function drawChat() {
     <section class="panel signin-panel" id="chSign" hidden aria-label="Sign in"><div class="ph"><h2>Sign in to chat</h2></div><div class="pb" id="chSignBody"></div></section>
     <div class="two" id="chMain">
       <section class="panel chat" id="chPanel" aria-label="Chat with the assistant">
-        <div class="chat-head"><div class="avatar" id="chAvatar" aria-hidden="true">M</div><div class="grow"><b>Daraja Agent-X</b><div class="muted small" id="chWho"></div></div>
+        <div class="chat-head"><div class="avatar" id="chAvatar" aria-hidden="true">M</div><div class="grow"><b id="chTitle">Daraja Agent-X</b><div class="muted small" id="chWho"></div></div>
           <div class="more-wrap"><button type="button" class="round" id="chMenuBtn" aria-label="Chat options" aria-haspopup="menu">${icon('more')}</button>
             <div class="attach-pop more-pop" id="chMore" role="menu" hidden>
               <button type="button" role="menuitem" data-more="find"><i class="ic c6">${icon('user')}</i><span>Find a contact<small>Google, Microsoft, a file</small></span></button>
-              <button type="button" role="menuitem" data-more="clear"><i class="ic c0">${icon('trash')}</i><span>Clear the chat<small>Start over</small></span></button>
+              <button type="button" role="menuitem" data-more="clear"><i class="ic c0">${icon('trash')}</i><span>Clear this chat<small>Remove its messages, keep the chat</small></span></button>
+              <button type="button" role="menuitem" data-more="deleteall"><i class="ic c2">${icon('trash')}</i><span>Delete all chats<small>Including pinned ones</small></span></button>
               <button type="button" role="menuitem" data-more="signout"><i class="ic c0">${icon('back')}</i><span>Sign out<small>Forget this phone</small></span></button>
             </div></div></div>
         <div class="msgs" id="chMsgs" aria-live="polite"></div>
@@ -1983,7 +2022,10 @@ function drawChat() {
         </div>
       </section>
       <aside class="stack">
+        <section class="panel" id="chChats" aria-label="Chats"><div class="ph"><h3>Chats</h3><button type="button" class="btn sm primary" id="chNew">${icon('plus')} New chat</button></div>
+          <div class="pb"><div class="chat-find" id="chFindWrap" hidden><label class="sr" for="chFind">Search chats</label><input type="search" id="chFind" placeholder="Search chats" autocomplete="off"></div><div id="chList" role="list"></div></div></section>
         <section class="panel"><div class="ph"><h3>This customer's requests</h3><button type="button" class="btn sm" id="chRefresh">Refresh</button></div><div class="pb" id="chReqs"></div></section>
+        <div class="callout">Each chat keeps its own messages and what the assistant remembers. Opening an old chat brings both back. You cannot switch chats while the assistant is replying.</div>
         <div class="callout">Files and voice notes go to the agent over the Daraja Agent-X API, up to 20 MB each. A voice note is recorded as WebM or MP4, so the agent's speech to text service must accept that format.</div>
         <div class="callout">When the assistant needs a phone number it asks for a contact. Press <b>Find in contacts</b> on that message to search Google, Outlook or a file. Only the person you pick is sent.</div>
       </aside>
@@ -1995,7 +2037,7 @@ function drawChat() {
   if (!on) { $('#chSignBody').innerHTML = `<p class="muted">Chat is private to a phone number. Ask for a code, then enter it. This is the same sign-in the phone app uses, so signing in here also signs in the Phone tab.</p><div class="signin-box">${signInHtml('chat', false)}</div>`; return; }
   $('#chWho').textContent = 'Signed in as ' + cfg.customerPhone;
   applyLogo();
-  pollChat(true); pollReqs();
+  pollChat(true); pollReqs(); refreshChats();
 }
 
 /* ---------------------------------------------------------------- composer */
@@ -2016,11 +2058,13 @@ function wireComposer() {
   document.addEventListener('click', (e) => { if (!e.target.closest('.more-wrap')) $('#chMore').hidden = true; });
   $('#chMore').addEventListener('click', async (e) => {
     const b = e.target.closest('[data-more]'); if (!b) return; $('#chMore').hidden = true;
-    if (b.dataset.more === 'clear') { const r = await send('co.ch.clear'); if (r.ok) { CH.after = 0; $('#chMsgs').innerHTML = ''; sys('Chat cleared.'); } else toast(errText(r)); }
+    if (b.dataset.more === 'clear') { const r = await send('co.ch.clear'); if (r.ok) { CH.after = 0; $('#chMsgs').innerHTML = ''; sys('Chat cleared.'); refreshChats(); } else toast(errText(r)); }
+    if (b.dataset.more === 'deleteall' && confirm('Delete all chats, including pinned ones? This cannot be undone.')) await chatCall('co.cs.deleteall');
     if (b.dataset.more === 'signout') signOut();
     if (b.dataset.more === 'find') openFinder({ title: 'Find a contact' });
   });
   $('#chMsgs').addEventListener('click', onBubbleClick); $('#chReqs').addEventListener('click', onBubbleClick);
+  wireChatList();
   wireFinder();
   // attach menu
   const menu = $('#chMenu'), btn = $('#chAttach');
@@ -2346,10 +2390,11 @@ function showTyping(on) {
 }
 async function pollChat(force) {
   if (CH.polling || !signedIn() || (!force && ($('#v-chat').hidden || document.hidden))) return;
-  CH.polling = true;
+  CH.polling = true; const epoch = CH.epoch;
   try {
     for (let round = 0; round < 5; round++) {
       const r = await http({ svc: 'agentx', method: 'GET', path: '/api/chat/messages', query: { after: String(CH.after), limit: '200' }, auth: 'bearer', silent: true, timeout: 6000 });
+      if (epoch !== CH.epoch) return; // another chat was opened while this was loading
       if (r.status === 401 || r.status === 403) { dropSession('Your sign-in ended. Sign in again.'); return; }
       if (r.error) { if (!CH.errShown) { CH.errShown = true; sys('Cannot read the chat. ' + r.error); } return; }
       if (!r.ok || !r.json) { if (!CH.errShown) { CH.errShown = true; sys(`The Daraja Agent-X API answered ${r.status}: ${errText(r)}`); } return; }
@@ -2358,10 +2403,11 @@ async function pollChat(force) {
       msgs.forEach((m) => { if (!$(`#chMsgs [data-mid="${m.id}"]`)) addMessage(m); CH.after = Math.max(CH.after, m.id); });
       showTyping(!!r.json.typing);
       if (msgs.some((m) => m.dir === 'out')) pollReqs();
+      if (msgs.length) refreshChatsSoon();
       if (first && !msgs.length && !$('#chMsgs .bubble')) sys('No messages yet. Say hi, or ask for a payment.');
       if (msgs.length < 200) break;
     }
-  } finally { CH.polling = false; }
+  } finally { if (epoch === CH.epoch) CH.polling = false; }
 }
 async function pollReqs() {
   if (!signedIn()) return;
@@ -2374,6 +2420,105 @@ async function pollReqs() {
   CH.reqKeys = keys;
   box.innerHTML = r.json.length ? r.json.slice(0, 10).map((a) => `<div class="req-item"><b>${esc(a.summary)}</b><div class="row tight"><span class="tag ${STATUS_TONE[a.status] || 'info'}">${esc(STATUS_LABEL[a.status] || a.status)}</span>${a.verification !== 'NONE' ? `<span class="tag good">${esc(VERIFY_LABEL[a.verification])}</span>` : ''}</div>${cardActions(a)}</div>`).join('') : '<div class="empty">No requests yet. Ask for a payment in the chat.</div>';
 }
+/* ---------------------------------------------------------------- the list of chats */
+const chatPath = (id, tail = '') => `/api/chat/sessions/${encodeURIComponent(id)}${tail}`;
+const chatWhen = (ms) => {
+  const d = new Date(ms), n = new Date();
+  return d.toDateString() === n.toDateString() ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString([], { day: 'numeric', month: 'short' });
+};
+/** Clears the screen and loads the current chat from the start. Used whenever the current chat is a different one. */
+function reloadChat() {
+  CH.epoch++; CH.after = 0; CH.polling = false; CH.reqKeys = null;
+  const box = $('#chMsgs'); if (box) box.innerHTML = '';
+  pollChat(true);
+}
+function applyChats(list) {
+  const changed = !!CH.activeId && list.activeId !== CH.activeId;
+  CH.chats = list.chats || []; CH.activeId = list.activeId;
+  if (CH.renaming && !CH.chats.some((c) => c.id === CH.renaming)) CH.renaming = null;
+  if (CH.confirmDel && !CH.chats.some((c) => c.id === CH.confirmDel)) CH.confirmDel = null;
+  drawChatList();
+  if (changed) reloadChat();
+}
+async function refreshChats() {
+  if (!signedIn() || CH.listBusy) return;
+  CH.listBusy = true; CH.listAt = Date.now();
+  try {
+    const r = await http({ svc: 'agentx', method: 'GET', path: '/api/chat/sessions', auth: 'bearer', silent: true, timeout: 6000 });
+    if (r.status === 401 || r.status === 403) { dropSession('Your sign-in ended. Sign in again.'); return; }
+    const panel = $('#chChats'); if (panel) panel.hidden = r.status === 404; // an older API without chat lists
+    if (r.ok && r.json && Array.isArray(r.json.chats)) applyChats(r.json);
+  } finally { CH.listBusy = false; }
+}
+/** Refreshes the list shortly after new messages, once, so its titles and previews keep up without a request per message. */
+function refreshChatsSoon() {
+  if (CH.soon) return;
+  CH.soon = setTimeout(() => { CH.soon = 0; refreshChats(); }, Math.max(300, 2000 - (Date.now() - CH.listAt)));
+}
+function drawChatList() {
+  const box = $('#chList'); if (!box) return;
+  const act = CH.chats.find((c) => c.id === CH.activeId);
+  $('#chTitle').textContent = act ? act.title : 'Daraja Agent-X';
+  $('#chFindWrap').hidden = CH.chats.length < 7;
+  if (CH.renaming || CH.confirmDel) return; // do not redraw under the person's hands
+  const q = CH.filter.trim().toLowerCase();
+  const rows = CH.chats.filter((c) => !q || (c.title + ' ' + (c.preview || '')).toLowerCase().includes(q));
+  if (!rows.length) { box.innerHTML = `<div class="empty">${q ? 'No chat matches that.' : 'No chats yet.'}</div>`; return; }
+  box.innerHTML = rows.map((c) => {
+    const id = esc(c.id), name = esc(c.title);
+    return `<div class="chat-item" role="listitem" data-id="${id}"${c.active ? ' aria-current="true"' : ''}>
+      <button type="button" class="chat-open" data-open-chat="${id}"${c.active ? ' aria-current="true"' : ''}>
+        <b>${c.pinned ? `<i class="pinmark" title="Pinned">${icon('pushpin')}</i>` : ''}<span class="ct">${name}</span><small class="when">${esc(chatWhen(c.updatedAt))}</small></b>
+        <small>${esc(c.preview || 'No messages yet')}</small></button>
+      <div class="chat-acts">
+        <button type="button" class="round sm" data-rename-chat="${id}" title="Rename" aria-label="Rename ${name}">${icon('edit')}</button>
+        <button type="button" class="round sm${c.pinned ? ' on' : ''}" data-pin-chat="${id}" aria-pressed="${c.pinned}" title="${c.pinned ? 'Unpin' : 'Pin'}" aria-label="${c.pinned ? 'Unpin' : 'Pin'} ${name}">${icon('pushpin')}</button>
+        <button type="button" class="round sm" data-delete-chat="${id}" title="Delete" aria-label="Delete ${name}">${icon('trash')}</button>
+      </div></div>`;
+  }).join('');
+}
+function drawChatEdit() {
+  const box = $('#chList'), c = CH.chats.find((x) => x.id === (CH.renaming || CH.confirmDel));
+  if (!c) return;
+  const id = esc(c.id);
+  const item = $(`.chat-item[data-id="${id}"]`, box);
+  const html = CH.renaming
+    ? `<form class="chat-edit" data-rename="${id}"><label class="sr" for="chRn">Chat name</label><input type="text" id="chRn" maxlength="80" value="${esc(c.title)}" placeholder="Chat name" autocomplete="off"><button class="btn sm primary" type="submit">Save</button><button class="btn sm" type="button" data-cancel-edit>Cancel</button></form>`
+    : `<div class="chat-edit"><span class="grow small">Delete "${esc(c.title)}"? This cannot be undone.</span><button class="btn sm danger" type="button" data-do-delete="${id}">Delete</button><button class="btn sm" type="button" data-cancel-edit>Keep</button></div>`;
+  if (item) { item.innerHTML = html; item.removeAttribute('aria-current'); }
+}
+function endChatEdit() { CH.renaming = CH.confirmDel = null; drawChatList(); }
+/** Runs one chat call. The answer is the updated list, so the screen is redrawn from it. Returns it, or null when refused. */
+async function chatCall(key, extra) {
+  const r = await send(key, extra);
+  if (r.status === 401 || r.status === 403) { dropSession('Your sign-in ended. Sign in again.'); return null; }
+  if (!r.ok || !r.json || !Array.isArray(r.json.chats)) { toast(errText(r)); if (r.status === 404) refreshChats(); return null; }
+  applyChats(r.json);
+  return r.json;
+}
+async function newChat() { if (await chatCall('co.cs.new')) $('#chText').focus(); }
+const openChat = (id) => (id === CH.activeId ? null : chatCall('co.cs.open', { path: chatPath(id, '/open') }));
+const pinChat = (id) => { const c = CH.chats.find((x) => x.id === id); return chatCall('co.cs.pin', { path: chatPath(id, '/pin'), body: { pinned: !(c && c.pinned) } }); };
+async function renameChat(id, title) { if (await chatCall('co.cs.rename', { path: chatPath(id, '/title'), body: { title } })) endChatEdit(); }
+async function deleteChat(id) { CH.confirmDel = null; await chatCall('co.cs.delete', { path: chatPath(id) }); drawChatList(); }
+function wireChatList() {
+  const list = $('#chList');
+  $('#chNew').addEventListener('click', newChat);
+  $('#chFind').addEventListener('input', (e) => { CH.filter = e.target.value; drawChatList(); });
+  list.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    const d = b.dataset;
+    if (d.openChat) openChat(d.openChat);
+    else if (d.renameChat) { endChatEdit(); CH.renaming = d.renameChat; drawChatEdit(); const i = $('#chRn'); if (i) { i.focus(); i.select(); } }
+    else if (d.pinChat) pinChat(d.pinChat);
+    else if (d.deleteChat) { endChatEdit(); CH.confirmDel = d.deleteChat; drawChatEdit(); const k = $('[data-do-delete]', list); if (k) k.focus(); }
+    else if (d.doDelete) deleteChat(d.doDelete);
+    else if ('cancelEdit' in d) endChatEdit();
+  });
+  list.addEventListener('submit', (e) => { const f = e.target.closest('[data-rename]'); if (!f) return; e.preventDefault(); renameChat(f.dataset.rename, $('input', f).value); });
+  list.addEventListener('keydown', (e) => { if (e.key === 'Escape' && (CH.renaming || CH.confirmDel)) endChatEdit(); });
+}
+setInterval(() => { if (!$('#v-chat').hidden && !document.hidden) refreshChats(); }, 12000);
 async function onBubbleClick(e) {
   const o = e.target.closest('[data-open]'), c = e.target.closest('[data-cancel]'), btn = e.target.closest('[data-btn]'), row = e.target.closest('[data-row]'), f = e.target.closest('[data-find]');
   if (o) openOnPhone(o.dataset.open);

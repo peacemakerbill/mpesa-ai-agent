@@ -875,6 +875,260 @@
                   }
                 }
               ]
+            },
+            {
+              "name": "List my chats",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentUrl}}/internal/chat/{{customerPhone}}/sessions",
+                  "host": [
+                    "{{agentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "chat",
+                    "{{customerPhone}}",
+                    "sessions"
+                  ]
+                },
+                "description": "Pinned chats first, then the most recently used. The one with active true is the chat the assistant is in, and the one the chat calls above read and write."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.chats && j.chats[0] && j.chats[0].id; if (v !== undefined && v !== null) { pm.collectionVariables.set('chatId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Start a new chat",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{agentUrl}}/internal/chat/{{customerPhone}}/sessions",
+                  "host": [
+                    "{{agentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "chat",
+                    "{{customerPhone}}",
+                    "sessions"
+                  ]
+                },
+                "description": "The current chat stays in the list. When the current chat is still empty nothing changes. Answers with the updated list. 409 while the assistant is replying, or when there are 100 chats."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.activeId; if (v !== undefined && v !== null) { pm.collectionVariables.set('chatId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Open an old chat",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{agentUrl}}/internal/chat/{{customerPhone}}/sessions/{{chatId}}/open",
+                  "host": [
+                    "{{agentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "chat",
+                    "{{customerPhone}}",
+                    "sessions",
+                    "{{chatId}}",
+                    "open"
+                  ]
+                },
+                "description": "Makes this chat the current one and brings back its messages and what the assistant remembers. Read the messages again from after=0."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Rename a chat",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentUrl}}/internal/chat/{{customerPhone}}/sessions/{{chatId}}/title",
+                  "host": [
+                    "{{agentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "chat",
+                    "{{customerPhone}}",
+                    "sessions",
+                    "{{chatId}}",
+                    "title"
+                  ]
+                },
+                "description": "Up to 80 characters. An empty title goes back to the automatic name, taken from the first thing the customer said.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Rent and bills\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Pin or unpin a chat",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentUrl}}/internal/chat/{{customerPhone}}/sessions/{{chatId}}/pin",
+                  "host": [
+                    "{{agentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "chat",
+                    "{{customerPhone}}",
+                    "sessions",
+                    "{{chatId}}",
+                    "pin"
+                  ]
+                },
+                "description": "Pinned chats stay at the top of the list.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"pinned\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete a chat",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{agentUrl}}/internal/chat/{{customerPhone}}/sessions/{{chatId}}",
+                  "host": [
+                    "{{agentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "chat",
+                    "{{customerPhone}}",
+                    "sessions",
+                    "{{chatId}}"
+                  ]
+                },
+                "description": "Gone for good. Deleting the current chat leaves a new empty chat in its place."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete all chats",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{agentUrl}}/internal/chat/{{customerPhone}}/sessions",
+                  "host": [
+                    "{{agentUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "chat",
+                    "{{customerPhone}}",
+                    "sessions"
+                  ]
+                },
+                "description": "Every chat, pinned ones included. Leaves one empty chat."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
             }
           ]
         }
@@ -3607,6 +3861,253 @@
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('Status is 200 or 204', function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List my chats",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/chat/sessions",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "sessions"
+                  ]
+                },
+                "description": "Pinned chats first, then the most recently used. The one with active true is the chat the assistant is in, and the one the chat calls above read and write."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.chats && j.chats[0] && j.chats[0].id; if (v !== undefined && v !== null) { pm.collectionVariables.set('chatId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Start a new chat",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/chat/sessions",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "sessions"
+                  ]
+                },
+                "description": "The current chat stays in the list. When the current chat is still empty nothing changes. Answers with the updated list. 409 while the assistant is replying, or when there are 100 chats."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.activeId; if (v !== undefined && v !== null) { pm.collectionVariables.set('chatId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Open an old chat",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/chat/sessions/{{chatId}}/open",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "sessions",
+                    "{{chatId}}",
+                    "open"
+                  ]
+                },
+                "description": "Makes this chat the current one and brings back its messages and what the assistant remembers. Read the messages again from after=0."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Rename a chat",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/chat/sessions/{{chatId}}/title",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "sessions",
+                    "{{chatId}}",
+                    "title"
+                  ]
+                },
+                "description": "Up to 80 characters. An empty title goes back to the automatic name, taken from the first thing the customer said.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Rent and bills\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Pin or unpin a chat",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/chat/sessions/{{chatId}}/pin",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "sessions",
+                    "{{chatId}}",
+                    "pin"
+                  ]
+                },
+                "description": "Pinned chats stay at the top of the list.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"pinned\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete a chat",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/chat/sessions/{{chatId}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "sessions",
+                    "{{chatId}}"
+                  ]
+                },
+                "description": "Gone for good. Deleting the current chat leaves a new empty chat in its place."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete all chats",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/chat/sessions",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "chat",
+                    "sessions"
+                  ]
+                },
+                "description": "Every chat, pinned ones included. Leaves one empty chat."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
                     ]
                   }
                 }
@@ -6426,6 +6927,10 @@
     {
       "key": "recipientId",
       "value": ""
+    },
+    {
+      "key": "chatId",
+      "value": "abc123abc123"
     }
   ]
 }

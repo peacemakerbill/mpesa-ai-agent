@@ -142,6 +142,8 @@ See `docs/BUSINESS_ACCOUNTS.md`, `docs/FILES_AND_MY_ONEAPP.md` and `docs/ANDROID
 
 ## Sign up and profile
 
+**Chats.** The Chats button in the chat's top bar lists every chat, pinned first. Start a new one, open an old one, rename, pin or delete it (the three dots, or swipe a row to the left), and search once there are more than six. Opening an old chat brings back its messages and what the assistant remembers. See [`../docs/CHATS.md`](../docs/CHATS.md).
+
 The sign in screen has **Create an account**, in the same look as sign in. Three steps with a progress bar: your name (shown live as you type), your phone and an optional email, then the SMS code in six boxes that send themselves when the sixth digit is in, with a countdown before a new code can be asked for. **Settings, Profile** edits names, email (verified with its own code), address, location and the profile picture, and switches the sign in and payment emails on or off. **Email addresses** keeps the list reports can be sent to (add, paste or upload a CSV or text file). The picture and the location use the camera, gallery and location permissions the chat already asks for. See [`../docs/PROFILE_AND_EMAIL.md`](../docs/PROFILE_AND_EMAIL.md).
 
 ## More reading

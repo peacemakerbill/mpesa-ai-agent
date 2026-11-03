@@ -88,6 +88,7 @@ Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS accoun
 | `POST /api/actions/{id}/sms-evidence` | Send the parsed message fields for matching |
 | `POST /api/actions/{id}/decline` | Decline |
 | `GET`, `POST`, `DELETE /api/chat/messages` | Read, send and clear the chat |
+| `GET`, `POST`, `DELETE /api/chat/sessions`, `POST /api/chat/sessions/{id}/open`, `PUT .../title`, `PUT .../pin`, `DELETE /api/chat/sessions/{id}` | The list of chats: start a new one, open an old one, rename, pin, delete. See [`docs/CHATS.md`](../docs/CHATS.md) |
 | `POST /api/chat/media`, `GET /api/chat/media/{id}` | Upload and download chat files |
 | `GET /a/{id}` | Landing page that opens the app |
 | `GET /.well-known/assetlinks.json` and `apple-app-site-association` | App link files |

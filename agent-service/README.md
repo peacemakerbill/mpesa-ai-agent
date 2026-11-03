@@ -93,6 +93,7 @@ All are internal and need `X-Internal-Key`.
 | `POST /internal/chat/{phone}/send` | Add an assistant message to a customer's chat |
 | `GET /internal/chat/{phone}/messages` | Read a customer's chat |
 | `DELETE /internal/chat/{phone}/messages` | Clear a customer's chat |
+| `GET`, `POST`, `DELETE /internal/chat/{phone}/sessions`, `POST .../sessions/{id}/open`, `PUT .../title`, `PUT .../pin`, `DELETE .../sessions/{id}` | The customer's chats: new, open, rename, pin, delete. See [`docs/CHATS.md`](../docs/CHATS.md) |
 | `POST /internal/chat/{phone}/media` | Store a file in a customer's chat |
 | `GET /internal/chat/{phone}/media/{id}` | Download a stored file |
 

@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../models/business_account.dart';
 import '../models/business_operation.dart';
 import '../models/chat.dart';
+import '../models/chat_session.dart';
 import '../models/mpesa_sms.dart';
 import '../models/profile.dart';
 import '../models/wallet_action.dart';
@@ -126,6 +127,31 @@ class ApiClient {
   Future<void> clearChat() async {
     await _send('DELETE', '/api/chat/messages');
   }
+
+  // ------------------------------------------------------------ the list of chats
+
+  /// All of this customer's chats, pinned first and then the most recently used.
+  Future<ChatList> chatSessions() async => ChatList.fromJson(await _send('GET', '/api/chat/sessions'));
+
+  /// Starts a new chat. The current one stays in the list. Every call below answers with the updated list.
+  Future<ChatList> newChatSession() async => ChatList.fromJson(await _send('POST', '/api/chat/sessions'));
+
+  /// Makes this chat the current one. Read the messages again from the start afterwards.
+  Future<ChatList> openChatSession(String id) async =>
+      ChatList.fromJson(await _send('POST', '/api/chat/sessions/${Uri.encodeComponent(id)}/open'));
+
+  /// An empty [title] goes back to the automatic name.
+  Future<ChatList> renameChatSession(String id, String title) async =>
+      ChatList.fromJson(await _send('PUT', '/api/chat/sessions/${Uri.encodeComponent(id)}/title', body: {'title': title}));
+
+  Future<ChatList> pinChatSession(String id, bool pinned) async =>
+      ChatList.fromJson(await _send('PUT', '/api/chat/sessions/${Uri.encodeComponent(id)}/pin', body: {'pinned': pinned}));
+
+  Future<ChatList> deleteChatSession(String id) async =>
+      ChatList.fromJson(await _send('DELETE', '/api/chat/sessions/${Uri.encodeComponent(id)}'));
+
+  /// Deletes every chat, pinned ones included, and leaves one empty chat.
+  Future<ChatList> deleteAllChatSessions() async => ChatList.fromJson(await _send('DELETE', '/api/chat/sessions'));
 
   // ------------------------------------------------------------ business accounts
 
@@ -373,14 +399,14 @@ class ApiClient {
 
   /// Sends one request. Returns the response for a 2xx answer and throws [ApiException] for anything else.
   Future<http.Response> _exec(
-    String method,
-    String path, {
-    Map<String, dynamic>? jsonBody,
-    List<int>? bytes,
-    String? contentType,
-    Map<String, String>? headers,
-    bool auth = true,
-  }) async {
+      String method,
+      String path, {
+        Map<String, dynamic>? jsonBody,
+        List<int>? bytes,
+        String? contentType,
+        Map<String, String>? headers,
+        bool auth = true,
+      }) async {
     final all = <String, String>{'Accept': '*/*'};
     if (jsonBody != null) all['Content-Type'] = 'application/json';
     if (bytes != null) all['Content-Type'] = contentType ?? 'application/octet-stream';
@@ -415,12 +441,12 @@ class ApiClient {
       message = response.statusCode == 401
           ? 'Please sign in again.'
           : response.statusCode == 429
-              ? 'Too many tries. Please wait a moment.'
-              : response.statusCode == 413
-                  ? 'That file is too large.'
-                  : response.statusCode >= 500
-                      ? 'The service had a problem. Please try again.'
-                      : 'The request was not accepted.';
+          ? 'Too many tries. Please wait a moment.'
+          : response.statusCode == 413
+          ? 'That file is too large.'
+          : response.statusCode >= 500
+          ? 'The service had a problem. Please try again.'
+          : 'The request was not accepted.';
     }
     throw ApiException(response.statusCode, message);
   }
