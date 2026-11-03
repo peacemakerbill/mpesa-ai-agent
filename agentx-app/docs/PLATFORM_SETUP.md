@@ -42,7 +42,7 @@ flutter pub get && flutter analyze && flutter test
 
 ## 1. Android
 
-### `android/app/src/main/kotlin/ke/co/darajaagentx/agentx-app/MainActivity.kt`
+### `android/app/src/main/kotlin/ke/co/darajaagentx/agentx_app/MainActivity.kt`
 `local_auth` needs a fragment activity:
 
 ```kotlin
