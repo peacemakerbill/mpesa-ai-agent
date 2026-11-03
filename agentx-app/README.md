@@ -111,7 +111,7 @@ No screen hard-codes a colour. Everything reads the palette through `context.tk`
 | `lib/chat/mentions.dart`, `media_cache.dart`, `one_app.dart` | `@` mentions, the phone file cache with its size limit, and My OneApp |
 | `lib/models/business_account.dart`, `business_operation.dart` | Business accounts, CSV import result, and operations prepared from the chat |
 | `lib/models/profile.dart`, `lib/profile/` | The profile, saved email addresses, sign up steps, and the profile picture widget |
-| `lib/widgets/` | Chat bubbles and shared pieces: panel, status tag, callout, amount, progress timeline, appearance sheet |
+| `lib/widgets/` | Chat bubbles and shared pieces: panel, status tag, callout, amount, progress timeline, appearance sheet, and `auth_shell.dart`, the frame shared by the pages before sign in |
 | `lib/theme/app_theme.dart` | The ten looks and the `ThemeData` built from them |
 | `test/` | Hand-off, link parsing, models, API client, chat, contact parsers, sources and finder. Tests import `package:agentx_app/...`, so the project name must stay `agentx_app` |
 
@@ -142,7 +142,7 @@ See `docs/BUSINESS_ACCOUNTS.md`, `docs/FILES_AND_MY_ONEAPP.md` and `docs/ANDROID
 
 ## Sign up and profile
 
-The sign in screen has **Create an account**: phone, names, then the SMS code. **Settings, Profile** edits names, email (verified with its own code), address, location and the profile picture, and switches the sign in and payment emails on or off. **Email addresses** keeps the list reports can be sent to (add, paste or upload a CSV or text file). The picture and the location use the camera, gallery and location permissions the chat already asks for. See [`../docs/PROFILE_AND_EMAIL.md`](../docs/PROFILE_AND_EMAIL.md).
+The sign in screen has **Create an account**, in the same look as sign in. Three steps with a progress bar: your name (shown live as you type), your phone and an optional email, then the SMS code in six boxes that send themselves when the sixth digit is in, with a countdown before a new code can be asked for. **Settings, Profile** edits names, email (verified with its own code), address, location and the profile picture, and switches the sign in and payment emails on or off. **Email addresses** keeps the list reports can be sent to (add, paste or upload a CSV or text file). The picture and the location use the camera, gallery and location permissions the chat already asks for. See [`../docs/PROFILE_AND_EMAIL.md`](../docs/PROFILE_AND_EMAIL.md).
 
 ## More reading
 

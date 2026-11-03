@@ -175,26 +175,42 @@ void main() {
   });
 
   group('sign up', () {
-    testWidgets('missing details are explained before anything is sent', (tester) async {
+    testWidgets('the first step asks for the names and shows them as they are typed', (tester) async {
       final seen = <http.Request>[];
       final state = _state((r) async => _json({'expiresAt': '2026-11-03T10:00:00Z'}), seen: seen);
       await _show(tester, SignupScreen(state: state));
-      await tester.tap(find.text('Send me a code'));
+      expect(find.text('Create your account'), findsOneWidget);
+      await tester.tap(find.text('Continue'));
       await tester.pump();
       expect(find.text('Enter your first name.'), findsOneWidget);
       await tester.enterText(_field('First name'), 'Bill');
-      await tester.tap(find.text('Send me a code'));
+      await tester.tap(find.text('Continue'));
       await tester.pump();
       expect(find.text('Enter your last name.'), findsOneWidget);
+      await tester.enterText(_field('Last name'), 'Graham');
+      await tester.pump();
+      expect(find.text('Bill Graham'), findsOneWidget);
+      expect(find.text('BG'), findsOneWidget);
       expect(seen, isEmpty);
     });
 
-    testWidgets('a bad email is caught, and a good set of details asks for the SMS code', (tester) async {
+    Future<void> toContactStep(WidgetTester tester) async {
+      await tester.enterText(_field('First name'), 'Bill');
+      await tester.enterText(_field('Last name'), 'Graham');
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('contact details are checked, then the SMS code is asked for', (tester) async {
       final seen = <http.Request>[];
       final state = _state((r) async => _json({'expiresAt': '2026-11-03T10:00:00Z', 'devCode': '123456'}), seen: seen);
       await _show(tester, SignupScreen(state: state));
-      await tester.enterText(_field('First name'), 'Bill');
-      await tester.enterText(_field('Last name'), 'Graham');
+      await toContactStep(tester);
+      expect(find.text('How can we reach you?'), findsOneWidget);
+      await tester.tap(find.text('Send me a code'));
+      await tester.pump();
+      expect(find.textContaining('Enter your phone number'), findsOneWidget);
+
       await tester.enterText(_field('Your phone number'), '0700 000 001');
       await tester.enterText(_field('Email (optional)'), 'not-an-email');
       await tester.tap(find.text('Send me a code'));
@@ -205,9 +221,46 @@ void main() {
       await tester.enterText(_field('Email (optional)'), 'bill@example.com');
       await tester.tap(find.text('Send me a code'));
       await tester.pumpAndSettle();
+      expect(find.text('Enter the code'), findsOneWidget);
       expect(find.text('Create account'), findsOneWidget);
       expect(find.textContaining('shows the code'), findsOneWidget);
       expect(jsonDecode(seen.single.body), containsPair('email', 'bill@example.com'));
+    });
+
+    testWidgets('going back keeps what was typed', (tester) async {
+      final state = _state((r) async => _json({'expiresAt': '2026-11-03T10:00:00Z'}));
+      await _show(tester, SignupScreen(state: state));
+      await toContactStep(tester);
+      await tester.enterText(_field('Your phone number'), '0700 000 001');
+      await tester.tap(find.text('Back'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(_field('First name')).controller!.text, 'Bill');
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(_field('Your phone number')).controller!.text, '0700 000 001');
+    });
+
+    testWidgets('a new code cannot be asked for straight away, and the sixth digit sends the code', (tester) async {
+      final seen = <http.Request>[];
+      final state = _state((r) async {
+        if (r.url.path == '/api/auth/signup/request') return _json({'expiresAt': '2026-11-03T10:00:00Z'});
+        if (r.url.path == '/api/auth/signup/verify') {
+          return _json({'token': 'new-token', 'phone': '254700000001', 'expiresAt': '2026-12-03T10:00:00Z'});
+        }
+        return _json({'message': 'not needed'}, 500);
+      }, seen: seen);
+      await _show(tester, SignupScreen(state: state));
+      await toContactStep(tester);
+      await tester.enterText(_field('Your phone number'), '0700 000 001');
+      await tester.tap(find.text('Send me a code'));
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.textContaining('Send a new code in'), findsOneWidget);
+
+      await tester.enterText(find.byKey(const Key('signup-code')), '123456');
+      await tester.pumpAndSettle();
+      expect(seen.map((r) => r.url.path), contains('/api/auth/signup/verify'));
+      expect(jsonDecode(seen.firstWhere((r) => r.url.path == '/api/auth/signup/verify').body), containsPair('code', '123456'));
     });
 
     test('a correct code saves the session like a sign in and moves the app to signed in', () async {
