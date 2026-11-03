@@ -10,10 +10,10 @@ import java.util.List;
 @ConfigurationProperties(prefix = "mpesa")
 public record MpesaProperties(
         @NotBlank String baseUrl,
-        @NotBlank String consumerKey,
-        @NotBlank String consumerSecret,
+        String consumerKey,
+        String consumerSecret,
         @NotBlank String shortcode,
-        @NotBlank String passkey,
+        String passkey,
         @NotBlank String transactionType,
         @NotBlank String publicBaseUrl,
         @NotBlank String callbackSecret,
