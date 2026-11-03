@@ -7,7 +7,7 @@
 
 <br/>
 
-<img src="../docs/assets/badges-postman.svg" alt="Postman collection with 108 requests, a local environment, and chaining by test scripts." width="880"/>
+<img src="../docs/assets/badges-postman.svg" alt="Postman collection with 137 requests, a local environment, and chaining by test scripts." width="880"/>
 
 <br/><br/>
 
@@ -23,7 +23,7 @@ A collection and an environment for every HTTP endpoint of the services, with a 
 
 | File | What it is |
 |---|---|
-| `daraja-agent-x.postman_collection.json` | 108 requests for every HTTP endpoint of the three services |
+| `daraja-agent-x.postman_collection.json` | 137 requests for every HTTP endpoint of the three services |
 | `daraja-agent-x-local.postman_environment.json` | Addresses, the internal key, test phone numbers and secrets for a local run |
 
 ## Use it
@@ -51,7 +51,7 @@ A collection and an environment for every HTTP endpoint of the services, with a 
 | Folder | Contents |
 |---|---|
 | 1. agent-service | Deliver a customer message straight to the agent (text, voice, image, document, contact, location, buttons, menu), and read or clear a customer's chat |
-| 2. agentx-api | Walkthrough, agent-side calls, app-side calls, the chat (read, send, upload, download), business accounts and business requests (C3, C4), public pages |
+| 2. agentx-api | Walkthrough, agent-side calls, app-side calls, the chat (read, send, upload, download), business accounts and business requests (C3, C4), sign up and profile (C5), email addresses and reports (C6), the agent side of profile and email (B2), public pages |
 | 3. payment-service | Optional Daraja module: payments, refunds and payouts with approvals, QR, staff roles, Daraja callbacks |
 
 ## Good to know

@@ -5,6 +5,10 @@ import '../layout/responsive.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ui.dart';
 import '../chat/media_cache.dart';
+import '../profile/profile_avatar.dart';
+import 'email_recipients_screen.dart';
+import 'profile_screen.dart';
+import '../models/profile.dart';
 import 'business_accounts_screen.dart';
 import 'one_app_screen.dart';
 import 'storage_screen.dart';
@@ -33,6 +37,7 @@ class SettingsScreen extends StatelessWidget {
       } catch (_) {
         // the cache is best effort
       }
+      ProfileAvatar.forget();
       await state.signOut();
     }
   }
@@ -46,6 +51,16 @@ class SettingsScreen extends StatelessWidget {
         child: ListenableBuilder(
           listenable: state,
           builder: (context, _) => CenteredList(maxWidth: 560, children: [
+            const SectionTitle('You'),
+            _ProfileRow(state: state),
+            const SizedBox(height: 8),
+            _Row(
+              icon: Icons.mark_email_read_outlined,
+              title: 'Email addresses for reports',
+              subtitle: 'The people you send reports to. In the chat, say "send this report to my email as a PDF".',
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => EmailRecipientsScreen(state: state))),
+            ),
+            const SizedBox(height: 20),
             const SectionTitle('For your business'),
             _Row(
               icon: Icons.storefront_outlined,
@@ -106,6 +121,66 @@ class _Row extends StatelessWidget {
       onTap: onTap,
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Icon(icon, color: t.p.accent),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: text.titleMedium),
+            const SizedBox(height: 2),
+            Text(subtitle, style: text.bodySmall),
+          ]),
+        ),
+        const SizedBox(width: 8),
+        const Icon(Icons.chevron_right),
+      ]),
+    );
+  }
+}
+
+/// The first row of Settings: the customer's picture, name and email, opening the profile page.
+class _ProfileRow extends StatefulWidget {
+  const _ProfileRow({required this.state});
+
+  final AppState state;
+
+  @override
+  State<_ProfileRow> createState() => _ProfileRowState();
+}
+
+class _ProfileRowState extends State<_ProfileRow> {
+  Profile? _profile;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final p = await widget.state.api.profile();
+      if (mounted) setState(() => _profile = p);
+    } on Exception {
+      // the row still opens the profile page, which shows the problem
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final p = _profile;
+    final title = p == null || p.fullName.isEmpty ? 'Your profile' : p.fullName;
+    final subtitle = p == null
+        ? 'Name, picture, email and address.'
+        : p.hasEmail
+            ? (p.emailVerified ? p.email : '${p.email} (not verified)')
+            : 'Add your name, email and address.';
+    return Panel(
+      onTap: () async {
+        await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => ProfileScreen(state: widget.state)));
+        if (mounted) await _load();
+      },
+      child: Row(children: [
+        ProfileAvatar(api: widget.state.api, profile: p, size: 48),
         const SizedBox(width: 14),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

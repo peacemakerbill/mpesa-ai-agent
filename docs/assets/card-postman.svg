@@ -34,6 +34,6 @@ text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Ne
 <rect x="0" y="62" width="384" height="4" style="fill:#FF8A5C" fill-opacity=".9"/>
 <text x="24" y="98" font-size="14">A collection and an environment</text><text x="24" y="118" font-size="14">for every endpoint, with tests.</text>
 <line class="hl" x1="24" y1="142" x2="360" y2="142"/>
-<text class="m mut" x="24" y="165" font-size="11.5" xml:space="preserve">108 requests   3 folders</text></g>
+<text class="m mut" x="24" y="165" font-size="11.5" xml:space="preserve">137 requests   3 folders</text></g>
 <rect class="hl" x=".5" y=".5" width="383" height="183" rx="8"/>
 </svg>

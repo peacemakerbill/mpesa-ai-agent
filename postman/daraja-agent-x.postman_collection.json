@@ -2190,6 +2190,491 @@
           }
         },
         {
+          "name": "B2. Agent side: profile and email (X-Internal-Key)",
+          "description": "What the assistant calls for the signed in customer.",
+          "item": [
+            {
+              "name": "Get a customer's profile",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Internal-Key",
+                    "value": "{{internalKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/internal/profile?phone={{customerPhone}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "profile"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Change a customer's profile",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Key",
+                    "value": "{{internalKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/internal/profile?phone={{customerPhone}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "profile"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"lastName\": \"Otieno\",\n  \"city\": \"Kisumu\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Send an email code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Key",
+                    "value": "{{internalKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/internal/profile/email/request-code?phone={{customerPhone}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "profile",
+                    "email",
+                    "request-code"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": "The answer never holds the code.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"bill@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Confirm the email code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Key",
+                    "value": "{{internalKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/internal/profile/email/verify?phone={{customerPhone}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "profile",
+                    "email",
+                    "verify"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List saved email addresses",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Internal-Key",
+                    "value": "{{internalKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/internal/email/recipients?phone={{customerPhone}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "email",
+                    "recipients"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Save one email address",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Key",
+                    "value": "{{internalKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/internal/email/recipients?phone={{customerPhone}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "email",
+                    "recipients"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"accounts@example.com\",\n  \"name\": \"Accountant\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Save addresses from text",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Key",
+                    "value": "{{internalKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/internal/email/recipients/paste?phone={{customerPhone}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "email",
+                    "recipients",
+                    "paste"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text\": \"a@example.com\\nb@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Remove a saved address",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "X-Internal-Key",
+                    "value": "{{internalKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/internal/email/recipients?phone={{customerPhone}}&target=accounts@example.com",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "email",
+                    "recipients"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    },
+                    {
+                      "key": "target",
+                      "value": "accounts@example.com"
+                    }
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Email a report",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Key",
+                    "value": "{{internalKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/internal/email/report?phone={{customerPhone}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "internal",
+                    "email",
+                    "report"
+                  ],
+                  "query": [
+                    {
+                      "key": "phone",
+                      "value": "{{customerPhone}}"
+                    }
+                  ]
+                },
+                "description": "What the assistant calls for: send this report to my email as a PDF.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"source\": \"PAYMENTS\",\n  \"format\": \"pdf\",\n  \"title\": \"Payments\",\n  \"toMe\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "C. App side (Bearer token)",
           "description": "",
           "item": [
@@ -3722,6 +4207,815 @@
           }
         },
         {
+          "name": "C5. Sign up and profile (Bearer token)",
+          "description": "Create an account, then Settings, Your profile in the app. Run 1 and 2, or sign in with folder A.",
+          "item": [
+            {
+              "name": "1. Sign up: ask for the SMS code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/auth/signup/request",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "signup",
+                    "request"
+                  ]
+                },
+                "description": "Public. Saves the names in a pending profile and sends a 6 digit code to the phone. With CODE_DELIVERY=dev the answer holds the code, saved as linkCode.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customerPhone}}\",\n  \"firstName\": \"Bill\",\n  \"middleName\": \"\",\n  \"lastName\": \"Graham\",\n  \"email\": \"bill@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.devCode; if (v !== undefined && v !== null) { pm.collectionVariables.set('linkCode', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2. Sign up: enter the SMS code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/auth/signup/verify",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "signup",
+                    "verify"
+                  ]
+                },
+                "description": "Public. Activates the profile and signs this device in, like folder A step 2. Saved as deviceToken. When an email was given, a second code is emailed.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customerPhone}}\",\n  \"code\": \"{{linkCode}}\",\n  \"deviceId\": \"{{deviceId}}\",\n  \"deviceName\": \"Postman\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.token; if (v !== undefined && v !== null) { pm.collectionVariables.set('deviceToken', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get my profile",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/profile",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "profile"
+                  ]
+                },
+                "description": "An older account gets an empty profile the first time."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Change my profile",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/profile",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "profile"
+                  ]
+                },
+                "description": "Send only what changes. An empty text clears an optional field. The first and last name can not be cleared.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Bill\",\n  \"middleName\": \"\",\n  \"lastName\": \"Graham\",\n  \"address\": \"Moi Avenue\",\n  \"city\": \"Nairobi\",\n  \"county\": \"Nairobi\",\n  \"country\": \"Kenya\",\n  \"latitude\": -1.2921,\n  \"longitude\": 36.8219,\n  \"notifySignIn\": true,\n  \"notifyPayments\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Remove my saved location",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/profile",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "profile"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clearLocation\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Email: send a code to a new address",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/profile/email/request-code",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "profile",
+                    "email",
+                    "request-code"
+                  ]
+                },
+                "description": "Emails a 6 digit code. With MAIL_TRANSPORT=log the email only appears in the agentx-api log.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"bill@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Email: confirm the code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/profile/email/verify",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "profile",
+                    "email",
+                    "verify"
+                  ]
+                },
+                "description": "The code works once, expires after 10 minutes and is locked after 5 wrong tries.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Email: remove it",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/profile/email",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "profile",
+                    "email"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Upload my picture",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "image/png"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/profile/picture",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "profile",
+                    "picture"
+                  ]
+                },
+                "description": "In Postman choose Body, binary, and pick a PNG or JPEG file (set the header Content-Type to image/png or image/jpeg). The body is the raw file, not a form.",
+                "body": {
+                  "mode": "file",
+                  "file": {}
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get my picture",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/profile/picture",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "profile",
+                    "picture"
+                  ]
+                },
+                "description": "404 when there is no picture."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Remove my picture",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/profile/picture",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "profile",
+                    "picture"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{deviceToken}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "name": "C6. Email addresses and reports (Bearer token)",
+          "description": "Settings, Email addresses in the app, and emailing a report as PDF, CSV or Excel. Set MAIL_TRANSPORT=smtp (see docs/PROFILE_AND_EMAIL.md) for emails to leave the server.",
+          "item": [
+            {
+              "name": "List my saved email addresses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/email/recipients",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "email",
+                    "recipients"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j[0] && j[0].id; if (v !== undefined && v !== null) { pm.collectionVariables.set('recipientId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Save one email address",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/email/recipients",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "email",
+                    "recipients"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"accounts@example.com\",\n  \"name\": \"Accountant\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "try { const j = pm.response.json(); const v = j.id; if (v !== undefined && v !== null) { pm.collectionVariables.set('recipientId', v); } } catch (e) { }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Save many addresses from pasted text",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/email/recipients/paste",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "email",
+                    "recipients",
+                    "paste"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text\": \"a@example.com, b@example.com\\nnot an address\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Save many addresses from a file",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/email/recipients/import",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "email",
+                    "recipients",
+                    "import"
+                  ]
+                },
+                "description": "Body, form-data, a File field called file (CSV or text, up to 1 MB)."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Remove a saved address",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/email/recipients/{{recipientId}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "email",
+                    "recipients",
+                    "{{recipientId}}"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Email a report: business requests as PDF to my email",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/email/report",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "email",
+                    "report"
+                  ]
+                },
+                "description": "toMe sends to the verified email on the profile. delivered is false when the server only logs email.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"source\": \"BUSINESS_REQUESTS\",\n  \"format\": \"pdf\",\n  \"title\": \"Business requests\",\n  \"toMe\": true,\n  \"status\": \"SUCCEEDED\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Email a report: payments as Excel to two addresses",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/email/report",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "email",
+                    "report"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"source\": \"PAYMENTS\",\n  \"format\": \"xlsx\",\n  \"title\": \"Payments in November\",\n  \"to\": [\n    \"accounts@example.com\",\n    \"boss@example.com\"\n  ],\n  \"message\": \"Here are the payments.\",\n  \"from\": \"2026-11-01\",\n  \"until\": \"2026-11-30\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Email a report: a table I supply, as CSV",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/email/report",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "email",
+                    "report"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"source\": \"TABLE\",\n  \"format\": \"csv\",\n  \"title\": \"Sales this week\",\n  \"toMe\": true,\n  \"columns\": [\n    \"Day\",\n    \"Total\"\n  ],\n  \"numericColumns\": [\n    \"Total\"\n  ],\n  \"rows\": [\n    [\n      \"Monday\",\n      \"1200\"\n    ],\n    [\n      \"Tuesday\",\n      \"980\"\n    ]\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "The emails sent for me",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/email/log",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "email",
+                    "log"
+                  ]
+                },
+                "description": "SENT, FAILED, or LOGGED when the server only writes email to its log."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{deviceToken}}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
           "name": "D. Public pages",
           "description": "",
           "item": [
@@ -5128,6 +6422,10 @@
     {
       "key": "bizOperationId",
       "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "recipientId",
+      "value": ""
     }
   ]
 }

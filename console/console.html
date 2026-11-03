@@ -661,6 +661,7 @@ dialog.find-dlg { width: min(620px, calc(100vw - 20px)); }
     <section class="view" id="v-chat" aria-label="Chat" hidden></section>
     <section class="view" id="v-phone" aria-label="Phone" hidden></section>
     <section class="view" id="v-biz" aria-label="Business" hidden></section>
+    <section class="view" id="v-prof" aria-label="Profile" hidden></section>
     <section class="view" id="v-api" aria-label="Explorer" hidden></section>
   </main>
 
@@ -772,6 +773,7 @@ const ICON = {
   x: '<path d="M6 6l12 12M18 6 6 18"/>',
   sliders: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
   biz: '<path d="M4 21V8l8-4 8 4v13"/><path d="M9 21v-6h6v6M8 11h2M14 11h2"/>',
+  prof: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
   more: '<circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/>',
 };
 const icon = (name, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${ICON[name]}</svg>`;
@@ -841,7 +843,7 @@ async function http(o) {
   }
   const url = base + path + qs;
   const headers = { Accept: 'application/json, text/plain, */*' };
-  let bodyText, formData;
+  let bodyText, formData, rawBody;
   if (o.body != null && o.method !== 'GET') {
     bodyText = typeof o.body === 'string' ? f(o.body) : JSON.stringify(o.body);
     bodyText = f(bodyText.replace(/("smsAt":)"\{\{nowMs\}\}"/, '$1{{nowMs}}'));
@@ -850,6 +852,10 @@ async function http(o) {
   if (o.form) {
     formData = o.form;
     bodyText = '[multipart/form-data] ' + Array.from(o.form.entries()).map(([k, v]) => k + '=' + (v && v.name ? v.name + ' (' + v.size + ' bytes)' : v)).join(', ');
+  }
+  if (o.raw) {
+    rawBody = o.raw.blob; headers['Content-Type'] = o.raw.blob.type || 'application/octet-stream';
+    bodyText = `[raw body] ${o.raw.blob.name || 'file'} (${o.raw.blob.size} bytes of ${headers['Content-Type']})`;
   }
   if (o.auth === 'internal') headers['X-Internal-Key'] = cfg.internalKey;
   if (o.auth === 'bearer') headers.Authorization = 'Bearer ' + (vars.deviceToken || '');
@@ -860,7 +866,7 @@ async function http(o) {
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), o.timeout || 30000);
     let res;
-    try { res = await fetch(url, { method: o.method, headers, body: formData || bodyText, signal: ctl.signal }); } finally { clearTimeout(timer); }
+    try { res = await fetch(url, { method: o.method, headers, body: formData || rawBody || bodyText, signal: ctl.signal }); } finally { clearTimeout(timer); }
     result.status = res.status; result.ok = res.ok;
     result.resHeaders = Array.from(res.headers.entries());
     const mime = (res.headers.get('content-type') || '').split(';')[0].trim();
@@ -1000,6 +1006,39 @@ E('co.o.list', 'agentx', BO, 'List my business requests', 'GET', '/api/business-
 E('co.o.get', 'agentx', BO, 'Open a business request', 'GET', '/api/business-operations/{{bizOperationId}}', { auth: 'bearer' });
 E('co.o.approve', 'agentx', BO, 'Approve a business request', 'POST', '/api/business-operations/{{bizOperationId}}/approve', { auth: 'bearer', body: { method: 'BIOMETRIC' }, timeout: 60000, note: 'This is where money going out is sent to Safaricom, once. method is BIOMETRIC or DEVICE_CREDENTIAL and is only recorded.' });
 E('co.o.decline', 'agentx', BO, 'Decline a business request', 'POST', '/api/business-operations/{{bizOperationId}}/decline', { auth: 'bearer' });
+const SU = 'Sign up';
+E('co.s.request', 'agentx', SU, 'Create an account: ask for the SMS code', 'POST', '/api/auth/signup/request', { body: { phone: '{{customerPhone}}', firstName: 'Bill', middleName: '', lastName: 'Graham', email: 'bill@example.com' }, save: { linkCode: 'devCode' }, note: 'Public. Saves the names in a pending profile and sends a 6 digit code to the phone by SMS. Nothing is active until the code is entered. The email is optional. With CODE_DELIVERY=dev the answer also holds the code.' });
+E('co.s.verify', 'agentx', SU, 'Create an account: enter the SMS code', 'POST', '/api/auth/signup/verify', { body: { phone: '{{customerPhone}}', code: '{{linkCode}}', deviceId: '{{deviceId}}', deviceName: 'Console' }, save: { deviceToken: 'token' }, note: 'Public. Activates the profile and signs this device in, so the answer is the same as signing in. When an email was given, a second code is emailed to verify it.' });
+const PF = 'Profile (app side)';
+E('co.pf.get', 'agentx', PF, 'Get my profile', 'GET', '/api/profile', { auth: 'bearer', note: 'An older account gets an empty profile the first time. The answer says whether the email is verified, whether a picture exists (and its version) and whether this server can send email at all (emailDelivers).' });
+E('co.pf.update', 'agentx', PF, 'Change my profile', 'PUT', '/api/profile', { auth: 'bearer', body: { firstName: 'Bill', middleName: '', lastName: 'Graham', address: 'Moi Avenue', city: 'Nairobi', county: 'Nairobi', country: 'Kenya', latitude: -1.2921, longitude: 36.8219, notifySignIn: true, notifyPayments: true }, note: 'Send only what changes. An empty text clears an optional field. The first and last name can not be cleared. The email is changed with the three calls below, and the phone number can not be changed.' });
+E('co.pf.clearloc', 'agentx', PF, 'Remove my saved location', 'PUT', '/api/profile', { auth: 'bearer', body: { clearLocation: true } });
+E('co.pf.email.req', 'agentx', PF, 'Email: send a code to a new address', 'POST', '/api/profile/email/request-code', { auth: 'bearer', body: { email: 'bill@example.com' }, note: 'Emails a 6 digit code. The address stays pending, and a verified address stays in use, until the code is confirmed. With MAIL_TRANSPORT=log the email only appears in the agentx-api log.' });
+E('co.pf.email.ver', 'agentx', PF, 'Email: confirm the code', 'POST', '/api/profile/email/verify', { auth: 'bearer', body: { code: '123456' }, note: 'The code works once, expires after 10 minutes and is locked after 5 wrong tries. The first verified address also gets a welcome email.' });
+E('co.pf.email.del', 'agentx', PF, 'Email: remove it', 'DELETE', '/api/profile/email', { auth: 'bearer' });
+E('co.pf.pic.put', 'agentx', PF, 'Upload my picture', 'PUT', '/api/profile/picture', { auth: 'bearer', note: 'The body is the raw PNG or JPEG file, not a form. The Explorer can not send a file, so use the Profile tab. The server decodes and redraws the picture (max 512 px, hidden data such as the location is removed) and keeps it in the configured storage (agentx.storage.type: local or network).' });
+E('co.pf.pic.get', 'agentx', PF, 'Get my picture', 'GET', '/api/profile/picture', { auth: 'bearer', note: '404 when there is no picture. The ETag changes with every new picture.' });
+E('co.pf.pic.del', 'agentx', PF, 'Remove my picture', 'DELETE', '/api/profile/picture', { auth: 'bearer' });
+const EM = 'Email addresses and reports (app side)';
+E('co.em.list', 'agentx', EM, 'List my saved email addresses', 'GET', '/api/email/recipients', { auth: 'bearer', save: { recipientId: '0.id' } });
+E('co.em.add', 'agentx', EM, 'Save one email address', 'POST', '/api/email/recipients', { auth: 'bearer', body: { email: 'accounts@example.com', name: 'Accountant' }, save: { recipientId: 'id' }, note: 'The name is what the customer calls this person. In the chat they can say send it to the accountant.' });
+E('co.em.paste', 'agentx', EM, 'Save many addresses from pasted text', 'POST', '/api/email/recipients/paste', { auth: 'bearer', body: { text: 'a@example.com, b@example.com\nnot an address' }, note: 'Finds every email address in the text. The answer counts the new ones, the ones already saved and the entries that were not addresses.' });
+E('co.em.import', 'agentx', EM, 'Save many addresses from a file', 'POST', '/api/email/recipients/import', { auth: 'bearer', note: 'A multipart form with a field called file (CSV or text, up to 1 MB). The Explorer can not send a file, so use the Profile tab.' });
+E('co.em.del', 'agentx', EM, 'Remove a saved address', 'DELETE', '/api/email/recipients/{{recipientId}}', { auth: 'bearer' });
+E('co.em.rep.req', 'agentx', EM, 'Email a report: business requests as PDF', 'POST', '/api/email/report', { auth: 'bearer', timeout: 60000, body: { source: 'BUSINESS_REQUESTS', format: 'pdf', title: 'Business requests', toMe: true, status: 'SUCCEEDED' }, note: 'toMe sends to the verified email on the profile. status, type, account, from and until filter the rows (days are Nairobi days). delivered is false when the server only logs email.' });
+E('co.em.rep.pay', 'agentx', EM, 'Email a report: payments as Excel to two addresses', 'POST', '/api/email/report', { auth: 'bearer', timeout: 60000, body: { source: 'PAYMENTS', format: 'xlsx', title: 'Payments in November', to: ['accounts@example.com', 'boss@example.com'], message: 'Here are the payments.', from: '2026-11-01', until: '2026-11-30' }, note: 'format is pdf, csv or xlsx (excel and spreadsheet also work). Addresses to someone else are allowed unless agentx.mail.reports.allow-external is false or allowed-domains is set. The owner also gets a notice email.' });
+E('co.em.rep.table', 'agentx', EM, 'Email a report: a table I supply, as CSV', 'POST', '/api/email/report', { auth: 'bearer', timeout: 60000, body: { source: 'TABLE', format: 'csv', title: 'Sales this week', toMe: true, columns: ['Day', 'Total'], numericColumns: ['Total'], rows: [['Monday', '1200'], ['Tuesday', '980']] }, note: 'This is what the assistant sends when someone says email me this table.' });
+E('co.em.log', 'agentx', EM, 'The emails sent for me', 'GET', '/api/email/log', { auth: 'bearer', note: 'The latest 30: what, to whom and whether it worked. SENT, FAILED, or LOGGED when the server only writes email to its log. Bodies and attachments are never kept.' });
+const IP = 'Agent side: profile and email';
+E('co.ip.get', 'agentx', IP, 'Get a customer\'s profile', 'GET', '/internal/profile', { auth: 'internal', query: { phone: '{{customerPhone}}' } });
+E('co.ip.update', 'agentx', IP, 'Change a customer\'s profile', 'PUT', '/internal/profile', { auth: 'internal', query: { phone: '{{customerPhone}}' }, body: { lastName: 'Otieno', city: 'Kisumu' } });
+E('co.ip.code', 'agentx', IP, 'Send an email code', 'POST', '/internal/profile/email/request-code', { auth: 'internal', query: { phone: '{{customerPhone}}' }, body: { email: 'bill@example.com' }, note: 'The answer never holds the code. The customer reads it in their inbox and types it in the chat.' });
+E('co.ip.verify', 'agentx', IP, 'Confirm the email code', 'POST', '/internal/profile/email/verify', { auth: 'internal', query: { phone: '{{customerPhone}}' }, body: { code: '123456' } });
+E('co.ip.rec.list', 'agentx', IP, 'List saved email addresses', 'GET', '/internal/email/recipients', { auth: 'internal', query: { phone: '{{customerPhone}}' } });
+E('co.ip.rec.add', 'agentx', IP, 'Save one email address', 'POST', '/internal/email/recipients', { auth: 'internal', query: { phone: '{{customerPhone}}' }, body: { email: 'accounts@example.com', name: 'Accountant' } });
+E('co.ip.rec.paste', 'agentx', IP, 'Save addresses from text', 'POST', '/internal/email/recipients/paste', { auth: 'internal', query: { phone: '{{customerPhone}}' }, body: { text: 'a@example.com\nb@example.com' }, note: 'What the assistant calls when the customer pastes or attaches a list.' });
+E('co.ip.rec.del', 'agentx', IP, 'Remove a saved address', 'DELETE', '/internal/email/recipients', { auth: 'internal', query: { phone: '{{customerPhone}}', target: 'accounts@example.com' }, note: 'target is the address or the name it was saved under.' });
+E('co.ip.report', 'agentx', IP, 'Email a report', 'POST', '/internal/email/report', { auth: 'internal', timeout: 60000, query: { phone: '{{customerPhone}}' }, body: { source: 'PAYMENTS', format: 'pdf', title: 'Payments', toMe: true }, note: 'What the assistant calls for send this report to my email as a PDF.' });
 E('co.p.landing', 'agentx', 'Public pages', 'Link landing page', 'GET', '/a/' + ID, { note: 'The page behind the link the assistant puts in the chat.' });
 E('co.p.android', 'agentx', 'Public pages', 'Android app links file', 'GET', '/.well-known/assetlinks.json', { note: '404 until the Android package and fingerprint are set.' });
 E('co.p.ios', 'agentx', 'Public pages', 'iOS app links file', 'GET', '/.well-known/apple-app-site-association', { note: '404 until the iOS app id is set.' });
@@ -1113,7 +1152,7 @@ function initThemes() {
 }
 
 /* ------------------------------------------------------------------ navigation */
-const VIEWS = [{ id: 'route', title: 'Journey', icon: 'route' }, { id: 'chat', title: 'Chat', icon: 'chat' }, { id: 'phone', title: 'Phone', icon: 'phone' }, { id: 'biz', title: 'Business', icon: 'biz' }, { id: 'api', title: 'Explorer', icon: 'api' }];
+const VIEWS = [{ id: 'route', title: 'Journey', icon: 'route' }, { id: 'chat', title: 'Chat', icon: 'chat' }, { id: 'phone', title: 'Phone', icon: 'phone' }, { id: 'biz', title: 'Business', icon: 'biz' }, { id: 'prof', title: 'Profile', icon: 'prof' }, { id: 'api', title: 'Explorer', icon: 'api' }];
 const onShow = {};
 function show(id) {
   if (!VIEWS.some((v) => v.id === id)) id = 'route';
@@ -1565,11 +1604,11 @@ async function authRun(kind, box) {
   AU.busy = false;
   redrawAuth();
 }
-function redrawAuth() { renderPhone(); drawChat(); if ($('#v-biz').dataset.built) renderBiz(); }
+function redrawAuth() { renderPhone(); drawChat(); if ($('#v-biz').dataset.built) renderBiz(); if ($('#v-prof').dataset.built) renderProf(); }
 function afterSignIn() {
   CH.after = 0; CH.reqKeys = null;
   const id = P.pendingOpen; P.pendingOpen = null;
-  P.screen = 'list'; renderPhone(); drawChat(); pollChat(true); if (!$('#v-biz').hidden) onShow.biz();
+  P.screen = 'list'; renderPhone(); drawChat(); pollChat(true); if (!$('#v-biz').hidden) onShow.biz(); if (!$('#v-prof').hidden) onShow.prof();
   if (id) openAction(id); else loadList();
 }
 /** The token is gone or was refused: show the sign-in forms again. */
@@ -2868,6 +2907,339 @@ function onBizInput(e) {
 }
 onShow.biz = () => { renderBiz(); if (signedIn()) { loadBzAccounts(); loadBzOps(); } };
 setInterval(() => { if (!document.hidden && $('#v-biz') && !$('#v-biz').hidden && signedIn() && BZ.opsLoaded) loadBzOps(true); }, 7000);
+
+/* ------------------------------------------------------------------ profile, sign up, email addresses and emailed reports
+   The same screens the app has under Settings, Your profile and Email addresses. The picture is sent as the raw request
+   body. An emailed code is typed here by hand: the server never returns it. */
+const PR = {
+  profile: null, loaded: false, err: '', info: '', busy: '', picUrl: '', picVer: -1,
+  su: { first: '', middle: '', last: '', phone: '', email: '', code: '', sent: false, busy: false, err: '', info: '' },
+  newEmail: '', emailCode: '', emailErr: '', emailInfo: '',
+  rec: [], recLoaded: false, recErr: '', recInfo: '', recAdd: { email: '', name: '' }, recPaste: '', recFile: null, recBusy: false,
+  rep: { source: 'BUSINESS_REQUESTS', format: 'pdf', to: '', status: '', message: '', busy: false, ok: '', err: '' },
+  log: [], logLoaded: false,
+};
+const pr = (method, path, extra = {}) => http(Object.assign({ svc: 'agentx', method, path, auth: 'bearer' }, extra));
+/** True when the token was refused, after showing the sign-in forms again. */
+function prFail(r) { if (r.status === 401) { dropSession('Your session ended. Sign in again.'); return true; } return false; }
+
+function renderProf() {
+  const root = $('#v-prof');
+  if (!root.dataset.built) {
+    root.dataset.built = '1';
+    root.innerHTML = `
+    <div class="view-head"><div><h1>Profile</h1><p>Create an account, keep your names, address, picture and email, save the addresses you send reports to, and email a report as PDF, CSV or Excel. This is the same data the app shows under Settings, Your profile. In the Chat tab you can also say, for example, <i>send this report to my email as a PDF</i>.</p></div></div>
+    <section class="panel signin-panel" id="prSign" hidden aria-label="Sign in or create an account"><div class="ph"><h2>Sign in, or create an account</h2></div><div class="pb stack" id="prSignBody"></div></section>
+    <div class="stack" id="prMain" hidden>
+      <section class="panel" aria-label="Your profile"><div class="ph"><h2>Your profile</h2><div class="row tight"><button type="button" class="btn sm" data-pr="refresh">Refresh</button></div></div><div class="pb stack" id="prProfile"></div></section>
+      <section class="panel" aria-label="Email"><div class="ph"><h2>Email</h2></div><div class="pb stack" id="prEmail"></div></section>
+      <section class="panel" aria-label="Email addresses for reports"><div class="ph"><h2>Email addresses for reports</h2><div class="row tight"><button type="button" class="btn sm" data-pr="rec-refresh">Refresh</button></div></div><div class="pb stack" id="prRec"></div></section>
+      <section class="panel" aria-label="Email a report"><div class="ph"><h2>Email a report</h2></div><div class="pb stack" id="prRep"></div></section>
+      <section class="panel" aria-label="Emails sent"><div class="ph"><h2>Emails sent</h2><div class="row tight"><button type="button" class="btn sm" data-pr="log-refresh">Refresh</button></div></div><div class="pb stack" id="prLog"></div></section>
+    </div>`;
+    root.addEventListener('click', onProfClick);
+    root.addEventListener('input', onProfInput);
+    root.addEventListener('change', onProfInput);
+  }
+  const on = signedIn();
+  $('#prSign').hidden = on; $('#prMain').hidden = !on;
+  if (!on) { drawPrSign(); return; }
+  drawPrProfile(); drawPrEmail(); drawPrRec(); drawPrRep(); drawPrLog();
+}
+
+/* ---------------------------------------------------------------- sign up */
+function drawPrSign() {
+  const s = PR.su;
+  const inp = (key, label, o = {}) => `<div class="field"><label for="prsu-${key}">${label}</label><input id="prsu-${key}" data-su="${key}" type="${o.type || 'text'}" autocomplete="off" value="${esc(s[key])}" placeholder="${esc(o.ph || '')}" ${s.sent ? 'disabled' : ''}></div>`;
+  $('#prSignBody').innerHTML = `<p class="muted">Already have an account? Ask for a code, then enter it. This is the same sign-in the Chat and Phone tabs use.</p>
+    <div class="signin-box">${signInHtml('prof', false)}</div>
+    <hr>
+    <h3>New here? Create an account</h3>
+    <p class="muted small">The details wait until the SMS code is typed. When an email is given, a second code goes to that inbox and is typed under Email after sign in.</p>
+    <div class="grid2">${inp('first', 'First name')}${inp('last', 'Last name')}</div>
+    <div class="grid2">${inp('middle', 'Middle name (optional)')}${inp('phone', 'Phone number', { type: 'tel', ph: '0712 345 678' })}</div>
+    ${inp('email', 'Email (optional)', { type: 'email' })}
+    ${s.sent ? `<div class="field"><label for="prsu-code">6 digit code</label><input id="prsu-code" data-su="code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" value="${esc(s.code)}"></div>` : ''}
+    ${s.err ? `<div class="err" role="alert">${esc(s.err)}</div>` : ''}${s.info ? `<div class="note" role="status">${esc(s.info)}</div>` : ''}
+    <div class="row">${s.sent
+    ? `<button type="button" class="btn primary" data-pr="su-verify" ${s.busy ? 'disabled' : ''}>${s.busy ? 'Creating' : 'Create account'}</button><button type="button" class="btn" data-pr="su-request" ${s.busy ? 'disabled' : ''}>Send a new code</button><button type="button" class="btn ghost" data-pr="su-change">Change my details</button>`
+    : `<button type="button" class="btn primary" data-pr="su-request" ${s.busy ? 'disabled' : ''}>${s.busy ? 'Sending' : 'Send me a code'}</button>`}</div>`;
+}
+async function prSignupRequest() {
+  const s = PR.su; if (s.busy) return;
+  if (!s.first.trim() || !s.last.trim()) { s.err = 'Enter the first and last name.'; s.info = ''; return drawPrSign(); }
+  if (!s.phone.trim()) { s.err = 'Enter the phone number.'; s.info = ''; return drawPrSign(); }
+  s.busy = true; s.err = ''; s.info = ''; drawPrSign();
+  const body = { phone: s.phone.trim(), firstName: s.first.trim(), lastName: s.last.trim() };
+  if (s.middle.trim()) body.middleName = s.middle.trim();
+  if (s.email.trim()) body.email = s.email.trim();
+  const r = await send('co.s.request', { body });
+  s.busy = false;
+  if (!r.ok) s.err = errText(r);
+  else { s.sent = true; s.info = r.json && r.json.devCode ? `The code ${r.json.devCode} is filled in below (the Daraja Agent-X API runs with CODE_DELIVERY=dev, for tests only).` : 'A code is on its way by SMS.'; if (r.json && r.json.devCode) s.code = r.json.devCode; cfg.customerPhone = s.phone.trim(); saveCfg(); }
+  drawPrSign();
+}
+async function prSignupVerify() {
+  const s = PR.su; if (s.busy) return;
+  if (!/^\d{6}$/.test(s.code.trim())) { s.err = 'The code has 6 digits.'; return drawPrSign(); }
+  s.busy = true; s.err = ''; drawPrSign();
+  const r = await send('co.s.verify', { body: { phone: s.phone.trim(), code: s.code.trim(), deviceId: cfg.deviceId, deviceName: 'Console' } });
+  s.busy = false;
+  if (!r.ok) { s.err = errText(r); return drawPrSign(); }
+  PR.su = { first: '', middle: '', last: '', phone: '', email: '', code: '', sent: false, busy: false, err: '', info: '' };
+  PR.loaded = false; PR.rec = []; PR.recLoaded = false; PR.log = []; PR.logLoaded = false;
+  afterSignIn();
+}
+
+/* ---------------------------------------------------------------- the profile */
+async function loadPrProfile() {
+  PR.busy = 'load'; PR.err = ''; drawPrProfile();
+  const r = await pr('GET', '/api/profile');
+  PR.busy = '';
+  if (prFail(r)) return;
+  if (r.ok && r.json) { PR.profile = r.json; PR.loaded = true; } else PR.err = errText(r);
+  drawPrProfile(); drawPrEmail();
+  if (PR.profile && PR.profile.hasPicture && PR.picVer !== PR.profile.pictureVersion) loadPrPicture(); else if (PR.profile && !PR.profile.hasPicture) { PR.picUrl = ''; PR.picVer = -1; drawPrProfile(); }
+}
+async function loadPrPicture() {
+  const ver = PR.profile.pictureVersion;
+  const r = await pr('GET', '/api/profile/picture', { silent: true });
+  if (r.ok && r.blobUrl) { PR.picUrl = r.blobUrl; PR.picVer = ver; drawPrProfile(); }
+}
+function drawPrProfile() {
+  const box = $('#prProfile'); if (!box) return;
+  const p = PR.profile;
+  if (!p) { box.innerHTML = PR.err ? `<div class="err" role="alert">${esc(PR.err)}</div>` : '<div class="empty">Loading</div>'; return; }
+  const f = PR.form = PR.form || {};
+  const val = (k) => (k in f ? f[k] : (p[k] == null ? '' : p[k]));
+  const inp = (key, label, o = {}) => `<div class="field"><label for="prf-${key}">${label}</label><input id="prf-${key}" data-pf="${key}" type="${o.type || 'text'}" autocomplete="off" value="${esc(val(key))}" ${o.step ? `step="${o.step}"` : ''}></div>`;
+  const chk = (key, label) => `<label class="row tight"><input type="checkbox" data-pf="${key}" ${val(key) ? 'checked' : ''}> ${label}</label>`;
+  const pic = PR.picUrl ? `<img src="${PR.picUrl}" alt="Profile picture" width="72" height="72" style="border-radius:50%;object-fit:cover">`
+    : `<div aria-hidden="true" style="width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:var(--surface-3);font-weight:700">${esc(p.initials || '?')}</div>`;
+  box.innerHTML = `${PR.err ? `<div class="err" role="alert">${esc(PR.err)}</div>` : ''}${PR.info ? `<div class="note" role="status">${esc(PR.info)}</div>` : ''}
+    <div class="row">${pic}<div><b>${esc(p.fullName || 'No name yet')}</b><br><span class="muted small">${esc(p.phone)} &middot; ${esc(p.status)}</span></div></div>
+    <div class="row"><input type="file" id="prPicFile" accept="image/png,image/jpeg" aria-label="Picture (PNG or JPEG)"><button type="button" class="btn sm" data-pr="pic-upload" ${PR.busy === 'pic' ? 'disabled' : ''}>${PR.busy === 'pic' ? 'Sending' : 'Upload picture'}</button>${p.hasPicture ? '<button type="button" class="btn sm danger" data-pr="pic-remove">Remove picture</button>' : ''}</div>
+    <div class="grid2">${inp('firstName', 'First name')}${inp('lastName', 'Last name')}</div>
+    <div class="grid2">${inp('middleName', 'Middle name')}${inp('address', 'Street or building')}</div>
+    <div class="grid2">${inp('city', 'Town or city')}${inp('county', 'County')}</div>
+    <div class="grid2">${inp('country', 'Country')}<div></div></div>
+    <div class="grid2">${inp('latitude', 'Latitude', { type: 'number', step: 'any' })}${inp('longitude', 'Longitude', { type: 'number', step: 'any' })}</div>
+    <div class="row tight"><button type="button" class="btn sm" data-pr="use-location">Use this computer's location</button><button type="button" class="btn sm ghost" data-pr="clear-location">Clear the saved location</button></div>
+    <div class="stack tight">${chk('notifySignIn', 'Email me when my account signs in')}${chk('notifyPayments', 'Email me when a payment is complete')}</div>
+    <div class="row"><button type="button" class="btn primary" data-pr="save" ${PR.busy === 'save' ? 'disabled' : ''}>${PR.busy === 'save' ? 'Saving' : 'Save changes'}</button></div>`;
+}
+async function prSave() {
+  const p = PR.profile, f = PR.form || {}; if (!p || PR.busy) return;
+  const body = {};
+  ['firstName', 'middleName', 'lastName', 'address', 'city', 'county', 'country'].forEach((k) => { if (k in f) body[k] = String(f[k]); });
+  if ('notifySignIn' in f) body.notifySignIn = !!f.notifySignIn;
+  if ('notifyPayments' in f) body.notifyPayments = !!f.notifyPayments;
+  if (f.clearLocation) body.clearLocation = true;
+  else if (('latitude' in f || 'longitude' in f) && String(f.latitude ?? p.latitude ?? '') !== '' && String(f.longitude ?? p.longitude ?? '') !== '') { body.latitude = Number(f.latitude ?? p.latitude); body.longitude = Number(f.longitude ?? p.longitude); }
+  if (!Object.keys(body).length) { PR.info = 'Nothing changed.'; return drawPrProfile(); }
+  PR.busy = 'save'; PR.err = ''; PR.info = ''; drawPrProfile();
+  const r = await pr('PUT', '/api/profile', { body });
+  PR.busy = '';
+  if (prFail(r)) return;
+  if (r.ok && r.json) { PR.profile = r.json; PR.form = {}; PR.info = 'Saved.'; setTimeout(() => { PR.info = ''; drawPrProfile(); }, 3000); } else PR.err = errText(r);
+  drawPrProfile(); drawPrEmail();
+}
+async function prPicture(upload) {
+  if (PR.busy) return;
+  if (upload) {
+    const file = $('#prPicFile') && $('#prPicFile').files[0];
+    if (!file) { PR.err = 'Choose a PNG or JPEG picture first.'; return drawPrProfile(); }
+    if (!/^image\/(png|jpeg)$/.test(file.type)) { PR.err = 'Only PNG and JPEG pictures are accepted.'; return drawPrProfile(); }
+    PR.busy = 'pic'; PR.err = ''; drawPrProfile();
+    const r = await pr('PUT', '/api/profile/picture', { raw: { blob: file }, timeout: 60000 });
+    PR.busy = '';
+    if (prFail(r)) return;
+    if (r.ok && r.json) { PR.profile = r.json; PR.picVer = -1; await loadPrPicture(); PR.info = 'Picture saved.'; setTimeout(() => { PR.info = ''; drawPrProfile(); }, 3000); } else PR.err = errText(r);
+    drawPrProfile();
+  } else {
+    const r = await pr('DELETE', '/api/profile/picture');
+    if (prFail(r)) return;
+    if (r.ok && r.json) { PR.profile = r.json; PR.picUrl = ''; PR.picVer = -1; } else PR.err = errText(r);
+    drawPrProfile();
+  }
+}
+
+/* ---------------------------------------------------------------- email and its code */
+function drawPrEmail() {
+  const box = $('#prEmail'); if (!box) return;
+  const p = PR.profile;
+  if (!p) { box.innerHTML = '<div class="empty">Loading</div>'; return; }
+  const state = p.email ? `<b>${esc(p.email)}</b> <span class="tag ${p.emailVerified ? 'good' : 'warn'}">${p.emailVerified ? 'Verified' : 'Not verified'}</span>` : '<span class="muted">No email yet.</span>';
+  const pending = p.pendingEmail ? `<div class="callout">Waiting for the code sent to <b>${esc(p.pendingEmail)}</b>. Until it is confirmed, reports and alerts keep going to the verified address.</div>` : '';
+  const warn = p.emailDelivers ? '' : '<div class="callout warn"><b>This server is not set up to send email.</b> It only writes emails to its log (<code>agentx.mail.transport: log</code>), so the code will not arrive. Read it in the agentx-api log, or set <code>MAIL_TRANSPORT=smtp</code>.</div>';
+  box.innerHTML = `${warn}<div class="row">${state}</div>${pending}
+    ${PR.emailErr ? `<div class="err" role="alert">${esc(PR.emailErr)}</div>` : ''}${PR.emailInfo ? `<div class="note" role="status">${esc(PR.emailInfo)}</div>` : ''}
+    <div class="grid2"><div class="field"><label for="pre-new">${p.email ? 'Change to' : 'Email address'}</label><input id="pre-new" data-pe="newEmail" type="email" autocomplete="off" value="${esc(PR.newEmail)}"></div>
+    <div class="field"><label for="pre-code">6 digit code from the inbox</label><input id="pre-code" data-pe="emailCode" type="text" inputmode="numeric" maxlength="6" autocomplete="off" value="${esc(PR.emailCode)}"></div></div>
+    <div class="row"><button type="button" class="btn" data-pr="email-send">Send me a code</button><button type="button" class="btn primary" data-pr="email-verify">Verify</button>${p.email ? '<button type="button" class="btn danger" data-pr="email-remove">Remove the email</button>' : ''}</div>`;
+}
+async function prEmail(kind) {
+  PR.emailErr = ''; PR.emailInfo = '';
+  let r;
+  if (kind === 'send') {
+    const email = PR.newEmail.trim() || (PR.profile && PR.profile.pendingEmail) || '';
+    if (!email) { PR.emailErr = 'Type the email address first.'; return drawPrEmail(); }
+    r = await pr('POST', '/api/profile/email/request-code', { body: { email } });
+    if (prFail(r)) return;
+    if (r.ok) { PR.emailInfo = `A code was sent to ${email}.`; await loadPrProfile(); } else PR.emailErr = errText(r);
+  } else if (kind === 'verify') {
+    if (!/^\d{6}$/.test(PR.emailCode.trim())) { PR.emailErr = 'The code has 6 digits.'; return drawPrEmail(); }
+    r = await pr('POST', '/api/profile/email/verify', { body: { code: PR.emailCode.trim() } });
+    if (prFail(r)) return;
+    if (r.ok && r.json) { PR.profile = r.json; PR.newEmail = ''; PR.emailCode = ''; PR.emailInfo = 'Your email is verified.'; drawPrProfile(); } else PR.emailErr = errText(r);
+  } else {
+    r = await pr('DELETE', '/api/profile/email');
+    if (prFail(r)) return;
+    if (r.ok && r.json) { PR.profile = r.json; PR.emailInfo = 'Email removed.'; drawPrProfile(); } else PR.emailErr = errText(r);
+  }
+  drawPrEmail();
+}
+
+/* ---------------------------------------------------------------- addresses to send reports to */
+async function loadPrRec() {
+  const r = await pr('GET', '/api/email/recipients');
+  if (prFail(r)) return;
+  if (r.ok && Array.isArray(r.json)) { PR.rec = r.json; PR.recLoaded = true; PR.recErr = ''; } else PR.recErr = errText(r);
+  drawPrRec();
+}
+function drawPrRec() {
+  const box = $('#prRec'); if (!box) return;
+  const list = PR.rec.length
+    ? `<div style="overflow-x:auto"><table><thead><tr><th>Name</th><th>Email</th><th></th></tr></thead><tbody>${PR.rec.map((x) => `<tr><td>${esc(x.name || '')}</td><td class="mono">${esc(x.email)}</td><td><button type="button" class="btn sm danger" data-pr="rec-del" data-id="${esc(x.id)}">Remove</button></td></tr>`).join('')}</tbody></table></div>`
+    : `<div class="empty">${PR.recLoaded ? 'No addresses yet. Add one, paste a list, or upload a CSV or text file.' : 'Loading'}</div>`;
+  box.innerHTML = `${PR.recErr ? `<div class="err" role="alert">${esc(PR.recErr)}</div>` : ''}${PR.recInfo ? `<div class="note" role="status">${esc(PR.recInfo)}</div>` : ''}${list}
+    <div class="grid2"><div class="field"><label for="prr-email">Email address</label><input id="prr-email" data-pr-add="email" type="email" autocomplete="off" value="${esc(PR.recAdd.email)}"></div>
+    <div class="field"><label for="prr-name">Name (optional)</label><input id="prr-name" data-pr-add="name" type="text" autocomplete="off" value="${esc(PR.recAdd.name)}" placeholder="Accountant"></div></div>
+    <div class="row"><button type="button" class="btn" data-pr="rec-add" ${PR.recBusy ? 'disabled' : ''}>Add this address</button></div>
+    <div class="field"><label for="prr-paste">Or paste a list (lines or commas, anything that is not an address is skipped)</label><textarea id="prr-paste" data-pr-paste rows="3">${esc(PR.recPaste)}</textarea></div>
+    <div class="row"><button type="button" class="btn" data-pr="rec-paste" ${PR.recBusy ? 'disabled' : ''}>Save the pasted addresses</button></div>
+    <div class="row"><input type="file" id="prrFile" accept=".csv,.txt,text/csv,text/plain" aria-label="CSV or text file with email addresses"><button type="button" class="btn" data-pr="rec-upload" ${PR.recBusy ? 'disabled' : ''}>Upload the file</button></div>
+    <p class="muted small">Up to 1 MB. One address on each line, or a CSV with the addresses in any column. Names are taken from a column called name when there is one.</p>`;
+}
+function recSummary(j) {
+  const parts = [j.added === 0 ? 'No new addresses were saved.' : `${j.added} saved.`];
+  if (j.alreadySaved) parts.push(`${j.alreadySaved} already on the list.`);
+  if (j.invalid) parts.push(`${j.invalid} not email addresses${j.invalidSamples && j.invalidSamples.length ? ' (for example ' + j.invalidSamples.slice(0, 3).join(', ') + ')' : ''}.`);
+  if (j.limitReached) parts.push('The list is full, so some were left out.');
+  return parts.join(' ');
+}
+async function prRecAct(kind, id) {
+  if (PR.recBusy) return;
+  PR.recErr = ''; PR.recInfo = ''; PR.recBusy = true; drawPrRec();
+  let r;
+  if (kind === 'add') {
+    if (!PR.recAdd.email.trim()) { PR.recBusy = false; PR.recErr = 'Type an email address first.'; return drawPrRec(); }
+    r = await pr('POST', '/api/email/recipients', { body: { email: PR.recAdd.email.trim(), name: PR.recAdd.name.trim() } });
+    if (r.ok) PR.recAdd = { email: '', name: '' };
+  } else if (kind === 'paste') {
+    r = await pr('POST', '/api/email/recipients/paste', { body: { text: PR.recPaste } });
+    if (r.ok && r.json) { PR.recInfo = recSummary(r.json); PR.recPaste = ''; }
+  } else if (kind === 'upload') {
+    const file = $('#prrFile') && $('#prrFile').files[0];
+    if (!file) { PR.recBusy = false; PR.recErr = 'Choose a file first.'; return drawPrRec(); }
+    const fd = new FormData(); fd.append('file', file, file.name);
+    r = await pr('POST', '/api/email/recipients/import', { form: fd, timeout: 60000 });
+    if (r.ok && r.json) PR.recInfo = recSummary(r.json);
+  } else {
+    r = await pr('DELETE', '/api/email/recipients/' + encodeURIComponent(id));
+  }
+  PR.recBusy = false;
+  if (prFail(r)) return;
+  if (!r.ok) PR.recErr = errText(r);
+  await loadPrRec();
+}
+
+/* ---------------------------------------------------------------- email a report */
+function drawPrRep() {
+  const box = $('#prRep'); if (!box) return;
+  const s = PR.rep, p = PR.profile;
+  const opt = (v, t, cur) => `<option value="${v}" ${cur === v ? 'selected' : ''}>${t}</option>`;
+  box.innerHTML = `<p class="muted small">Makes the file on the server and emails it. With <b>To</b> empty it goes to your own verified email${p && p.email ? ` (<span class="mono">${esc(p.email)}</span>${p.emailVerified ? '' : ', not verified yet'})` : ''}. Separate several addresses, or saved names, with commas.</p>
+    <div class="grid2"><div class="field"><label for="prp-source">What to send</label><select id="prp-source" data-rp="source">${opt('BUSINESS_REQUESTS', 'Business requests', s.source)}${opt('BUSINESS_ACCOUNTS', 'Business accounts (no secrets)', s.source)}${opt('PAYMENTS', 'Payments', s.source)}</select></div>
+    <div class="field"><label for="prp-format">File type</label><select id="prp-format" data-rp="format">${opt('pdf', 'PDF', s.format)}${opt('csv', 'CSV', s.format)}${opt('xlsx', 'Excel (xlsx)', s.format)}</select></div></div>
+    <div class="grid2"><div class="field"><label for="prp-to">To</label><input id="prp-to" data-rp="to" type="text" autocomplete="off" value="${esc(s.to)}" placeholder="empty means my email"></div>
+    <div class="field"><label for="prp-status">Only this status (optional)</label><input id="prp-status" data-rp="status" type="text" autocomplete="off" value="${esc(s.status)}" placeholder="SUCCEEDED"></div></div>
+    <div class="field"><label for="prp-msg">Note in the email (optional)</label><input id="prp-msg" data-rp="message" type="text" autocomplete="off" value="${esc(s.message)}"></div>
+    ${s.err ? `<div class="err" role="alert">${esc(s.err)}</div>` : ''}${s.ok ? `<div class="note" role="status">${esc(s.ok)}</div>` : ''}
+    <div class="row"><button type="button" class="btn primary" data-pr="rep-send" ${s.busy ? 'disabled' : ''}>${s.busy ? 'Sending' : 'Email the report'}</button></div>`;
+}
+async function prReport() {
+  const s = PR.rep; if (s.busy) return;
+  s.busy = true; s.err = ''; s.ok = ''; drawPrRep();
+  const to = s.to.split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean);
+  const body = { source: s.source, format: s.format, title: 'Report from the console', toMe: !to.length };
+  if (to.length) body.to = to;
+  if (s.status.trim()) body.status = s.status.trim();
+  if (s.message.trim()) body.message = s.message.trim();
+  const r = await pr('POST', '/api/email/report', { body, timeout: 60000 });
+  s.busy = false;
+  if (prFail(r)) return;
+  if (!r.ok) s.err = errText(r);
+  else if (r.json && r.json.delivered === false) s.err = `The file ${r.json.fileName} was made for ${(r.json.sentTo || []).join(', ')}, but nothing was emailed: this server only writes email to its log.`;
+  else if (r.json) s.ok = `Sent ${r.json.fileName} (${r.json.rows} row${r.json.rows === 1 ? '' : 's'}) to ${(r.json.sentTo || []).join(', ')}.`;
+  drawPrRep(); loadPrLog();
+}
+
+/* ---------------------------------------------------------------- the emails that were sent */
+async function loadPrLog() {
+  const r = await pr('GET', '/api/email/log', { silent: true });
+  if (prFail(r)) return;
+  if (r.ok && Array.isArray(r.json)) { PR.log = r.json; PR.logLoaded = true; }
+  drawPrLog();
+}
+const LOG_TONE = { SENT: 'good', FAILED: 'bad', LOGGED: 'warn' };
+function drawPrLog() {
+  const box = $('#prLog'); if (!box) return;
+  box.innerHTML = PR.log.length
+    ? `<div style="overflow-x:auto"><table><thead><tr><th>When</th><th>What</th><th>To</th><th>Result</th></tr></thead><tbody>${PR.log.map((l) => `<tr><td>${esc(bzWhen(l.at))}</td><td><b>${esc(l.kind)}</b><br><span class="muted small">${esc(l.subject || '')}${l.attachment ? ' &middot; ' + esc(l.attachment) : ''}</span></td><td class="mono small">${esc(l.recipients || '')}</td><td><span class="tag ${LOG_TONE[l.status] || ''}">${esc(l.status)}</span>${l.error ? `<br><span class="muted small">${esc(l.error)}</span>` : ''}</td></tr>`).join('')}</tbody></table></div><p class="muted small">LOGGED means the server only wrote the email to its log and did not send it.</p>`
+    : `<div class="empty">${PR.logLoaded ? 'No emails yet.' : 'Loading'}</div>`;
+}
+
+/* ---------------------------------------------------------------- events */
+function onProfClick(e) {
+  const b = e.target.closest('[data-pr]'); if (!b) return;
+  switch (b.dataset.pr) {
+    case 'refresh': loadPrProfile(); break;
+    case 'save': prSave(); break;
+    case 'pic-upload': prPicture(true); break;
+    case 'pic-remove': prPicture(false); break;
+    case 'use-location':
+      if (!navigator.geolocation) { PR.err = 'This browser cannot share a location.'; drawPrProfile(); break; }
+      navigator.geolocation.getCurrentPosition((pos) => { PR.form = PR.form || {}; PR.form.latitude = pos.coords.latitude.toFixed(6); PR.form.longitude = pos.coords.longitude.toFixed(6); delete PR.form.clearLocation; PR.err = ''; PR.info = 'Location added. Press Save changes to keep it.'; drawPrProfile(); },
+        () => { PR.err = 'The location was not shared.'; drawPrProfile(); }, { timeout: 10000 });
+      break;
+    case 'clear-location': PR.form = PR.form || {}; PR.form.clearLocation = true; PR.form.latitude = ''; PR.form.longitude = ''; PR.info = 'The location will be removed when you press Save changes.'; drawPrProfile(); break;
+    case 'email-send': prEmail('send'); break;
+    case 'email-verify': prEmail('verify'); break;
+    case 'email-remove': prEmail('remove'); break;
+    case 'rec-refresh': loadPrRec(); break;
+    case 'rec-add': prRecAct('add'); break;
+    case 'rec-paste': prRecAct('paste'); break;
+    case 'rec-upload': prRecAct('upload'); break;
+    case 'rec-del': prRecAct('del', b.dataset.id); break;
+    case 'rep-send': prReport(); break;
+    case 'log-refresh': loadPrLog(); break;
+    case 'su-request': prSignupRequest(); break;
+    case 'su-verify': prSignupVerify(); break;
+    case 'su-change': PR.su.sent = false; PR.su.code = ''; PR.su.info = ''; PR.su.err = ''; drawPrSign(); break;
+    default: break;
+  }
+}
+function onProfInput(e) {
+  const t = e.target; if (!t || !t.dataset) return;
+  if ('pf' in t.dataset) { PR.form = PR.form || {}; PR.form[t.dataset.pf] = t.type === 'checkbox' ? t.checked : t.value; }
+  else if ('pe' in t.dataset) PR[t.dataset.pe] = t.value;
+  else if ('prAdd' in t.dataset) PR.recAdd[t.dataset.prAdd] = t.value;
+  else if ('prPaste' in t.dataset) PR.recPaste = t.value;
+  else if ('rp' in t.dataset) PR.rep[t.dataset.rp] = t.value;
+  else if ('su' in t.dataset) PR.su[t.dataset.su] = t.value;
+}
+onShow.prof = () => { renderProf(); if (signedIn()) { loadPrProfile(); loadPrRec(); loadPrLog(); } };
 
 /* ------------------------------------------------------------------ command palette */
 const CMD = { items: [], shown: [], sel: 0 };

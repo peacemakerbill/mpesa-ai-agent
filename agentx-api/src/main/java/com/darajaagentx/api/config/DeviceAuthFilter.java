@@ -30,7 +30,7 @@ public class DeviceAuthFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return !path.startsWith("/api/") || path.equals("/api/auth/verify") || path.equals("/api/auth/request-code");
+        return !path.startsWith("/api/") || path.equals("/api/auth/verify") || path.equals("/api/auth/request-code") || path.startsWith("/api/auth/signup/");
     }
 
     @Override

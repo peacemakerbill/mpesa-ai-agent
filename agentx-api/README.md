@@ -24,6 +24,8 @@ The front door. It signs customers in, relays the chat to the agent, stores prep
 | Job | Detail |
 |---|---|
 | Sign in | A 6 digit code sent by SMS (valid 10 minutes, 5 tries, 3 codes an hour, stored hashed). The result is a signed session token tied to a device |
+| Sign up and profile | Sign up with the same SMS code. A profile with names, email, address, location and a picture. An email is verified with its own code |
+| Email | Welcome, sign in and payment emails, and reports (PDF, CSV, Excel) the customer asks for in the chat or the app. Sent by SMTP, or written to the log. See [`docs/PROFILE_AND_EMAIL.md`](../docs/PROFILE_AND_EMAIL.md) |
 | Relay the chat | The app talks to this service. This service talks to agent-service. Nobody can read another number's chat or files |
 | Store requests | Every request belongs to one phone number and moves through `CREATED`, `APPROVED`, `HANDED_OFF`, then `DONE_REPORTED` or `NOT_DONE` |
 | Match evidence | Compares the code, kind, amount and payee from an M-Pesa message on the customer's phone with the request |
@@ -38,9 +40,13 @@ The front door. It signs customers in, relays the chat to the agent, stores prep
 ```text
 com.darajaagentx.api
   AgentXApiApplication
-  controller/   AuthController, AppActionController, ChatController,
-                InternalActionController, LandingController, WellKnownController
-  service/      sign-in, requests, evidence matching, chat relay
+  controller/   AuthController, SignupController, ProfileController, EmailController,
+                AppActionController, ChatController, InternalActionController,
+                InternalProfileController, LandingController, WellKnownController
+  service/      sign-in, sign up, profile, email, reports, requests, evidence matching, chat relay
+  mail/         mail outbox, log and SMTP transports, email templates
+  report/       CSV, Excel and PDF writers
+  storage/      where profile pictures are kept (local or network)
   repository/   database access, for the database you choose
   model/  dto/  entities and request and response shapes
   config/       typed properties, token filter, internal key filter, CORS, RabbitMQ
@@ -66,6 +72,13 @@ Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS accoun
 |---|---|
 | `POST /api/auth/request-code` | Ask for a sign-in code |
 | `POST /api/auth/verify` | Trade the code for a session token |
+| `POST /api/auth/signup/request`, `POST /api/auth/signup/verify` | Sign up: save the details and send the SMS code, then check it (no token needed) |
+| `GET`, `PUT /api/profile` | Read and change the profile |
+| `POST /api/profile/email/request-code`, `POST /api/profile/email/verify`, `DELETE /api/profile/email` | Verify or remove the email |
+| `PUT`, `GET`, `DELETE /api/profile/picture` | Upload, read and remove the profile picture |
+| `GET`, `POST /api/email/recipients`, `DELETE /api/email/recipients/{id}` | Saved addresses |
+| `POST /api/email/recipients/paste`, `POST /api/email/recipients/import` | Add many addresses from pasted text or a CSV or text file |
+| `POST /api/email/report`, `GET /api/email/log` | Email a report, and the emails sent |
 | `DELETE /api/devices/me` | Sign this phone out |
 | `GET /api/config` | Hand-off settings (dial codes, M-Pesa app ids) |
 | `GET /api/actions`, `GET /api/actions/{id}` | List and read requests |
@@ -88,6 +101,10 @@ Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS accoun
 | `POST /internal/actions/{id}/cancel` | Cancel a waiting request |
 | `POST /internal/actions/{id}/receipt` | Record an M-Pesa code against a request |
 | `POST /internal/link-codes` | Create a link code |
+| `GET`, `PUT /internal/profile` | The customer's profile, for the assistant |
+| `POST /internal/profile/email/request-code`, `POST /internal/profile/email/verify` | Email check, for the assistant |
+| `GET`, `POST`, `DELETE /internal/email/recipients`, `POST /internal/email/recipients/paste` | Saved addresses, for the assistant |
+| `POST /internal/email/report` | Email a report, for the assistant |
 
 ## Configuration
 
@@ -102,6 +119,14 @@ Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS accoun
 | `MONGODB_URI` | Add `serverSelectionTimeoutMS=5000` so a missing database fails fast |
 | `HANDOFF_USSD_MAIN`, `HANDOFF_USSD_PAY_TILL`, `HANDOFF_MPESA_ANDROID_PACKAGE`, `HANDOFF_MPESA_IOS_URL` | Hand-off values. **Not verified, set them yourself** |
 | Android package and signing fingerprint, iOS app id | So `/a/ID` links open the app directly |
+| `MAIL_TRANSPORT` | `log` (default, nothing is sent) or `smtp` |
+| `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_STARTTLS`, `MAIL_SSL` | The mail server, for `smtp` |
+| `MAIL_FROM`, `MAIL_FROM_NAME`, `MAIL_REPLY_TO` | The sender |
+| `MAIL_NOTIFY_WELCOME`, `MAIL_NOTIFY_SIGN_IN`, `MAIL_NOTIFY_PAYMENTS` | Which automatic emails exist |
+| `MAIL_REPORT_MAX_RECIPIENTS`, `MAIL_REPORT_PER_HOUR`, `MAIL_REPORT_MAX_ROWS`, `MAIL_REPORT_MAX_BYTES`, `MAIL_REPORT_ALLOW_EXTERNAL`, `MAIL_REPORT_ALLOWED_DOMAINS` | Limits on emailed reports |
+| `STORAGE_TYPE` | `local` (default) or `network`: where profile pictures are kept |
+| `STORAGE_LOCAL_PATH`, `STORAGE_NETWORK_PATH`, `STORAGE_NETWORK_SUBFOLDER`, `STORAGE_NETWORK_CREATE`, `STORAGE_MAX_PICTURE_BYTES` | Folder, mounted share, sub folder, create it if missing, picture size limit |
+| `SIGNUP_ENABLED` | `true` (default). `false` closes sign up |
 | `CORS_ALLOWED_ORIGINS` | For the browser console only |
 
 > [!CAUTION]

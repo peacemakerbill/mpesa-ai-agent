@@ -2,6 +2,9 @@ package com.darajaagentx.api.config;
 
 import com.darajaagentx.api.model.BusinessAccount;
 import com.darajaagentx.api.model.BusinessOperation;
+import com.darajaagentx.api.model.EmailLog;
+import com.darajaagentx.api.model.EmailRecipient;
+import com.darajaagentx.api.model.UserProfile;
 import com.darajaagentx.api.model.WalletAction;
 import com.darajaagentx.api.model.Device;
 import com.darajaagentx.api.model.LinkCode;
@@ -66,6 +69,30 @@ public class MongoStoreConfig {
 
     @Bean
     BeforeConvertCallback<BusinessOperation> businessOperationBeforeConvert() {
+        return (entity, collection) -> {
+            entity.prepareForMongo(Instant.now());
+            return entity;
+        };
+    }
+
+    @Bean
+    BeforeConvertCallback<UserProfile> userProfileBeforeConvert() {
+        return (entity, collection) -> {
+            entity.prepareForMongo(Instant.now());
+            return entity;
+        };
+    }
+
+    @Bean
+    BeforeConvertCallback<EmailRecipient> emailRecipientBeforeConvert() {
+        return (entity, collection) -> {
+            entity.prepareForMongo(Instant.now());
+            return entity;
+        };
+    }
+
+    @Bean
+    BeforeConvertCallback<EmailLog> emailLogBeforeConvert() {
         return (entity, collection) -> {
             entity.prepareForMongo(Instant.now());
             return entity;

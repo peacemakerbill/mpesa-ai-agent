@@ -8,6 +8,7 @@ import '../models/business_account.dart';
 import '../models/business_operation.dart';
 import '../models/chat.dart';
 import '../models/mpesa_sms.dart';
+import '../models/profile.dart';
 import '../models/wallet_action.dart';
 
 class ApiException implements Exception {
@@ -197,6 +198,118 @@ class ApiClient {
 
   Future<BusinessOperation> declineBusinessOperation(String id) async =>
       BusinessOperation.fromJson(await _send('POST', '/api/business-operations/${Uri.encodeComponent(id)}/decline'));
+
+  // ------------------------------------------------------------ sign up
+
+  /// Starts an account: saves the names and sends a 6 digit code to [phone] by SMS. Nothing is active until the code is entered.
+  Future<CodeRequest> signupRequest({
+    required String phone,
+    required String firstName,
+    String? middleName,
+    required String lastName,
+    String? email,
+  }) async {
+    final json = await _send('POST', '/api/auth/signup/request', auth: false, body: {
+      'phone': phone,
+      'firstName': firstName,
+      'lastName': lastName,
+      if (middleName != null && middleName.isNotEmpty) 'middleName': middleName,
+      if (email != null && email.isNotEmpty) 'email': email,
+    });
+    final devCode = json['devCode'];
+    return CodeRequest(DateTime.parse(json['expiresAt'] as String), devCode is String && devCode.isNotEmpty ? devCode : null);
+  }
+
+  /// Checks the SMS code. The answer is the same as signing in: a token for this device.
+  Future<LinkResult> signupVerify({
+    required String phone,
+    required String code,
+    required String deviceId,
+    String? deviceName,
+  }) async {
+    final json = await _send('POST', '/api/auth/signup/verify', auth: false, body: {
+      'phone': phone,
+      'code': code,
+      'deviceId': deviceId,
+      if (deviceName != null && deviceName.isNotEmpty) 'deviceName': deviceName,
+    });
+    return LinkResult(json['token'] as String, json['phone'] as String, DateTime.parse(json['expiresAt'] as String));
+  }
+
+  // ------------------------------------------------------------ profile
+
+  Future<Profile> profile() async => Profile.fromJson(await _send('GET', '/api/profile'));
+
+  Future<Profile> updateProfile(ProfileChanges changes) async => Profile.fromJson(await _send('PUT', '/api/profile', body: changes.toJson()));
+
+  /// Emails a 6 digit code to [email]. The address is not used until the code is confirmed.
+  Future<void> requestEmailCode(String email) async {
+    await _send('POST', '/api/profile/email/request-code', body: {'email': email});
+  }
+
+  Future<Profile> verifyEmail(String code) async => Profile.fromJson(await _send('POST', '/api/profile/email/verify', body: {'code': code}));
+
+  Future<Profile> removeEmail() async => Profile.fromJson(await _send('DELETE', '/api/profile/email'));
+
+  /// Sends the picture as the raw request body. The server checks it, shrinks it and removes hidden data such as the location.
+  Future<Profile> uploadProfilePicture(Uint8List bytes, {required String mimeType}) async {
+    final response = await _exec('PUT', '/api/profile/picture', bytes: bytes, contentType: mimeType);
+    final decoded = _decode(response);
+    if (decoded is! Map<String, dynamic>) throw ApiException(response.statusCode, 'The picture was not accepted.');
+    return Profile.fromJson(decoded);
+  }
+
+  /// The picture file, or null when there is none.
+  Future<Uint8List?> profilePicture() async {
+    try {
+      return (await _exec('GET', '/api/profile/picture')).bodyBytes;
+    } on ApiException catch (e) {
+      if (e.status == 404) return null;
+      rethrow;
+    }
+  }
+
+  Future<Profile> deleteProfilePicture() async => Profile.fromJson(await _send('DELETE', '/api/profile/picture'));
+
+  // ------------------------------------------------------------ email addresses for reports
+
+  Future<List<EmailRecipient>> emailRecipients() async {
+    final json = await _send('GET', '/api/email/recipients');
+    final list = json['_list'];
+    return list is List ? list.whereType<Map<String, dynamic>>().map(EmailRecipient.fromJson).toList() : <EmailRecipient>[];
+  }
+
+  Future<EmailRecipient> addEmailRecipient(String email, {String? name}) async =>
+      EmailRecipient.fromJson(await _send('POST', '/api/email/recipients', body: {'email': email, if (name != null && name.isNotEmpty) 'name': name}));
+
+  Future<void> removeEmailRecipient(String id) async {
+    await _send('DELETE', '/api/email/recipients/${Uri.encodeComponent(id)}');
+  }
+
+  /// Saves every email address found in [text], for example a list pasted from a message.
+  Future<RecipientImport> pasteEmailRecipients(String text) async =>
+      RecipientImport.fromJson(await _send('POST', '/api/email/recipients/paste', body: {'text': text}));
+
+  /// Sends a CSV or text file and saves every email address found in it.
+  Future<RecipientImport> importEmailRecipients(Uint8List bytes, {required String fileName}) async {
+    final token = tokenProvider == null ? null : await tokenProvider!();
+    if (token == null) throw ApiException(401, 'Please sign in first.');
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/email/recipients/import'))
+      ..headers['Authorization'] = 'Bearer $token'
+      ..headers['Accept'] = 'application/json'
+      ..files.add(http.MultipartFile.fromBytes('file', bytes, filename: _asciiName(fileName.isEmpty ? 'emails.csv' : fileName)));
+    final http.Response response;
+    try {
+      response = await http.Response.fromStream(await _client.send(request).timeout(const Duration(seconds: 60)));
+    } on TimeoutException {
+      throw ApiException(0, 'The service took too long to answer. Please try again.');
+    } on Exception {
+      throw ApiException(0, 'Could not reach the service. Check your internet connection.');
+    }
+    final decoded = _decode(_check(response));
+    if (decoded is! Map<String, dynamic>) throw ApiException(response.statusCode, 'The file was not accepted.');
+    return RecipientImport.fromJson(decoded);
+  }
 
   /// HTTP header values must be plain ASCII, so other letters in a file name become underscores.
   static String _asciiName(String name) => name.replaceAll(RegExp(r'[^\x20-\x7e]'), '_');

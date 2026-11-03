@@ -28,6 +28,7 @@ agent-service is the only part that talks to the model. It never moves money. It
 | Understand the customer | Text, voice notes (optional speech to text), photos, PDFs, Word, Excel, CSV and text files, shared contacts and locations |
 | Keep the chat | Messages and files per phone number, with conversation memory in Redis |
 | Prepare requests | Send money, Paybill, Till, Pochi la Biashara, airtime, Ratiba, and list or cancel requests, by calling agentx-api |
+| Profile and email | Shows and updates the customer's profile, verifies an email, keeps a list of addresses, and emails a report as PDF, CSV or Excel. Edits are in [`HOOKS4.md`](HOOKS4.md) |
 | Hand over to a person | Escalates to the phones in `AGENT_ESCALATION_PHONES` |
 | Stay safe | Refuses the PIN, treats text inside images and files as data, adds scam warnings, rate limits each customer |
 

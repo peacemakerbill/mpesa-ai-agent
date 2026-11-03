@@ -7,7 +7,7 @@
 
 <br/>
 
-<img src="docs/assets/badges-root.svg" alt="Spring Boot 4.1.2, Java 21, Flutter 3.22 or later, Claude with tool use, status reference build. Databases MongoDB, PostgreSQL and MySQL, Redis, RabbitMQ, Flyway 12, Docker compose, Postman with 108 requests." width="880"/>
+<img src="docs/assets/badges-root.svg" alt="Spring Boot 4.1.2, Java 21, Flutter 3.22 or later, Claude with tool use, status reference build. Databases MongoDB, PostgreSQL and MySQL, Redis, RabbitMQ, Flyway 12, Docker compose, Postman with 137 requests." width="880"/>
 
 <br/><br/>
 
@@ -71,7 +71,7 @@ Customers chat with an assistant in the app or on the web, in English or Swahili
 | Part | Port | Job | Needed |
 |---|---|---|---|
 | agent-service | 8082 | Talks to Claude, keeps each customer's chat and files, prepares requests with tools | Yes |
-| agentx-api | 8084 | Signs customers in by SMS code, relays the chat to the agent, stores prepared requests, serves the app and its link files | Yes |
+| agentx-api | 8084 | Signs customers up and in by SMS code, keeps profiles, sends email, relays the chat to the agent, stores prepared requests, serves the app and its link files | Yes |
 | agentx_app | none | Flutter app for Android, iOS, macOS, Linux and Windows: chat, find contacts, approve, hand over to M-Pesa, report | Yes |
 | payment-service | 8083 | Daraja for a **business**: STK Push to your own shortcode, refunds, payouts, staff roles | Optional, off by default |
 | console | 8000 | One HTML file that behaves like a frontend for every endpoint | For testing |
@@ -359,6 +359,13 @@ or in a folder or network share, or in S3-compatible storage (AWS S3, MinIO, Clo
 On the phone, the media cache has a size limit under **Settings, Files and storage**, and My OneApp opens from **Settings**
 ([`agentx-app/docs/FILES_AND_MY_ONEAPP.md`](agentx-app/docs/FILES_AND_MY_ONEAPP.md)).
 
+## Sign up, profiles and email
+
+New customers can sign up with their phone and a name, confirmed by the same SMS code that sign in uses. A profile holds names, email, address, location and a
+picture. The picture is kept in a local folder or on a mounted network share (`agentx.storage.type`). An email address is verified with its own code, then the
+customer gets a welcome, sign in and payment emails, and can say in the chat "send this report to my email as a PDF" (or CSV or Excel), name other addresses or
+upload a list. Mail is written to the log until you set `agentx.mail.transport: smtp`. See [`docs/PROFILE_AND_EMAIL.md`](docs/PROFILE_AND_EMAIL.md).
+
 ## Known gaps
 
 > [!CAUTION]
@@ -389,6 +396,7 @@ On the phone, the media cache has a size limit under **Settings, Files and stora
 | [`FEATURES.md`](FEATURES.md) | Everything the system does today, for customers and for operators |
 | [`docs/DATABASES.md`](docs/DATABASES.md) | PostgreSQL, MySQL and MongoDB: setup, trade-offs, what was tested |
 | [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md) | Business accounts, tills, CSV upload, chat transactions |
+| [`docs/PROFILE_AND_EMAIL.md`](docs/PROFILE_AND_EMAIL.md) | Sign up, profiles, email verification, reports by email, mail and picture storage settings |
 | [`agent-service/STORAGE.md`](agent-service/STORAGE.md) | Where chat files are kept: Redis, a folder or S3 |
 | [`agentx-app/docs/FILES_AND_MY_ONEAPP.md`](agentx-app/docs/FILES_AND_MY_ONEAPP.md) | Phone file cache and My OneApp |
 | [`agentx-app/docs/CONTACTS.md`](agentx-app/docs/CONTACTS.md) | Contact search and the Google and Microsoft sign-ins |

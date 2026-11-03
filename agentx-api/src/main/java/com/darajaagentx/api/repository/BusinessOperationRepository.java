@@ -18,5 +18,8 @@ public interface BusinessOperationRepository extends CrudRepository<BusinessOper
 
     List<BusinessOperation> findTop30ByOwnerPhoneOrderByCreatedAtDesc(String ownerPhone);
 
+    /** For reports, which may cover more than the 30 shown in the app. */
+    List<BusinessOperation> findTop500ByOwnerPhoneOrderByCreatedAtDesc(String ownerPhone);
+
     List<BusinessOperation> findByOwnerPhoneAndStatus(String ownerPhone, BusinessOperationStatus status);
 }

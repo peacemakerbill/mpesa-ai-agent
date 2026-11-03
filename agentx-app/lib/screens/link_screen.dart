@@ -6,6 +6,7 @@ import '../app_state.dart';
 import '../layout/responsive.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ui.dart';
+import 'signup_screen.dart';
 
 /// Signing in: the customer types their phone number, receives a 6 digit code by SMS and types it back.
 /// The code proves the phone is theirs, so nobody can read another person's chat.
@@ -199,6 +200,16 @@ class _LinkScreenState extends State<LinkScreen> {
             child: const Text('Change number'),
           ),
         ]),
+      ],
+      if (!_sent) ...[
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton(
+            onPressed: _busy ? null : () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SignupScreen(state: widget.state))),
+            child: const Text('New here? Create an account'),
+          ),
+        ),
       ],
       const SizedBox(height: 24),
       Row(crossAxisAlignment: CrossAxisAlignment.start, children: [

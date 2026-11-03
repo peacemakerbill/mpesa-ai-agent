@@ -93,6 +93,8 @@ MONGODB_URI=mongodb://localhost:27017/payments?serverSelectionTimeoutMS=5000
 | One change across several records | Transaction | Transaction | Not atomic. See below |
 | Repository code | Spring Data JPA | Spring Data JPA | Spring Data MongoDB |
 
+Flyway migration `V5__profiles_and_email.sql` adds `user_profiles`, `email_recipients` and `email_log` (profiles, saved addresses and the record of emails sent). MongoDB keeps the same data in collections of the same names.
+
 The same model classes are mapped for both worlds, and the services only talk to small repository interfaces, so no business code knows which database is running.
 
 ## Failing well

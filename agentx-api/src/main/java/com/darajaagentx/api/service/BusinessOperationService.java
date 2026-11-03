@@ -85,6 +85,8 @@ public class BusinessOperationService {
     private final SlidingWindowLimiter limiter;
     private final Clock clock;
     private final ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
+    /** Told when a request ends, for example to send an email notice. Optional: tests and a server without mail leave it empty. */
+    private OperationFinishedHook finishedHook = op -> { };
 
     @Autowired
     public BusinessOperationService(BusinessOperationRepository ops, BusinessAccountService accounts, DarajaApi daraja,
@@ -104,6 +106,11 @@ public class BusinessOperationService {
         this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
         this.limiter = limiter;
         this.clock = clock;
+    }
+
+    @Autowired(required = false)
+    public void setFinishedHook(OperationFinishedHook hook) {
+        this.finishedHook = hook == null ? op -> { } : hook;
     }
 
     // ------------------------------------------------------------------ reading
@@ -460,6 +467,11 @@ public class BusinessOperationService {
         BusinessOperation saved = ops.save(op);
         if (tellChat) {
             notifier.text(saved.getOwnerPhone(), chatText(saved));
+        }
+        try {
+            finishedHook.finished(saved);
+        } catch (RuntimeException e) {
+            log.warn("A notice about a finished request failed: {}", e.getMessage());
         }
         return saved;
     }

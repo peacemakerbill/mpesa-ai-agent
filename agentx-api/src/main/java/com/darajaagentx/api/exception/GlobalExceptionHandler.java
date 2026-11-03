@@ -78,6 +78,16 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.PAYLOAD_TOO_LARGE, "That file is too large.");
     }
 
+    @ExceptionHandler(com.darajaagentx.api.mail.MailDeliveryException.class)
+    public ResponseEntity<ApiError> mailNotSent(com.darajaagentx.api.mail.MailDeliveryException e) {
+        return build(HttpStatus.BAD_GATEWAY, e.getMessage());
+    }
+
+    @ExceptionHandler(com.darajaagentx.api.storage.StorageException.class)
+    public ResponseEntity<ApiError> storageProblem(com.darajaagentx.api.storage.StorageException e) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+    }
+
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<ApiError> tooMany(TooManyRequestsException e) {
         return build(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());

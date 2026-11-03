@@ -10,6 +10,7 @@ import com.darajaagentx.api.dto.TokenResponse;
 import com.darajaagentx.api.dto.VerifyRequest;
 import com.darajaagentx.api.exception.TooManyRequestsException;
 import com.darajaagentx.api.service.CodeDelivery;
+import com.darajaagentx.api.service.CustomerMailer;
 import com.darajaagentx.api.service.LinkService;
 import com.darajaagentx.api.service.SlidingWindowLimiter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,12 +38,14 @@ public class AuthController {
     private final SlidingWindowLimiter limiter;
     private final CodeDelivery delivery;
     private final AgentXProperties props;
+    private final CustomerMailer mailer;
 
-    public AuthController(LinkService links, SlidingWindowLimiter limiter, CodeDelivery delivery, AgentXProperties props) {
+    public AuthController(LinkService links, SlidingWindowLimiter limiter, CodeDelivery delivery, AgentXProperties props, CustomerMailer mailer) {
         this.links = links;
         this.limiter = limiter;
         this.delivery = delivery;
         this.props = props;
+        this.mailer = mailer;
     }
 
     /** Sends a six digit code to the number. The answer is the same whether or not the number was seen before. */
@@ -63,7 +66,10 @@ public class AuthController {
         if (!limiter.allow("ip:" + http.getRemoteAddr(), 120, WINDOW) || !limiter.allow("phone:" + request.phone(), 15, WINDOW)) {
             throw new TooManyRequestsException("Too many attempts. Please wait a few minutes.");
         }
-        return links.verify(request);
+        TokenResponse token = links.verify(request);
+        // An email to the customer's verified address, at most once in a while. It never blocks or fails the sign in.
+        mailer.signedIn(Phones.normalize(request.phone()), request.deviceName());
+        return token;
     }
 
     /** Sign this phone out. */

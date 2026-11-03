@@ -101,6 +101,70 @@ agentx:
     approve-collections: ${AGENTX_BUSINESS_APPROVE_COLLECTIONS:false}
     stk-per-hour: ${AGENTX_BUSINESS_STK_PER_HOUR:20}
     max-open-approvals: 10
+  # ---------------------------------------------------------------------------------------------------------------
+  # Email. Used for the code that verifies a customer's email address, the welcome and sign in notices, the notice when a
+  # payment or business request finishes, and reports the customer asks to have emailed (PDF, CSV or Excel).
+  # transport: log writes every email to this service's log and sends nothing (default, for a developer).
+  #            smtp sends through the mail server below. Fill in the MAIL_ values in .env.
+  # ---------------------------------------------------------------------------------------------------------------
+  mail:
+    transport: ${MAIL_TRANSPORT:log}
+    # The sender. Most mail servers only accept an address they own, for example the same as MAIL_USERNAME.
+    from: ${MAIL_FROM:no-reply@localhost}
+    from-name: ${MAIL_FROM_NAME:Daraja Agent-X}
+    reply-to: ${MAIL_REPLY_TO:}
+    smtp:
+      host: ${MAIL_HOST:}
+      # 587 with start-tls true, or 465 with ssl true
+      port: ${MAIL_PORT:587}
+      username: ${MAIL_USERNAME:}
+      password: ${MAIL_PASSWORD:}
+      start-tls: ${MAIL_STARTTLS:true}
+      ssl: ${MAIL_SSL:false}
+      connect-timeout: PT10S
+      timeout: PT30S
+    # Which automatic emails exist at all. Each customer can also switch sign in and payment notices off in their profile.
+    notifications:
+      welcome: ${MAIL_NOTIFY_WELCOME:true}
+      sign-in: ${MAIL_NOTIFY_SIGN_IN:true}
+      payments: ${MAIL_NOTIFY_PAYMENTS:true}
+    reports:
+      max-recipients: ${MAIL_REPORT_MAX_RECIPIENTS:10}
+      per-hour: ${MAIL_REPORT_PER_HOUR:10}
+      max-rows: ${MAIL_REPORT_MAX_ROWS:5000}
+      max-attachment-bytes: ${MAIL_REPORT_MAX_BYTES:8388608}
+      # false: a report can only go to the customer's own verified email or to addresses on their saved list
+      allow-external: ${MAIL_REPORT_ALLOW_EXTERNAL:true}
+      # Comma separated. When set, reports can only go to these domains (the customer's own email always works)
+      allowed-domains: ${MAIL_REPORT_ALLOWED_DOMAINS:}
+    code-ttl: PT10M
+    code-max-attempts: 5
+    codes-per-hour: 5
+    # The least time between two "new sign in" emails to the same customer
+    sign-in-alert-gap: ${MAIL_SIGN_IN_ALERT_GAP:PT30M}
+  # ---------------------------------------------------------------------------------------------------------------
+  # Where files kept by this service go. Today that is the profile pictures.
+  # type: local   a folder on this server (local.path)
+  #       network a shared folder mounted on this server: NFS, SMB/CIFS, a NAS (network.path). The share must already be
+  #               mounted, otherwise the service refuses to start instead of quietly writing to its own disk.
+  # ---------------------------------------------------------------------------------------------------------------
+  storage:
+    type: ${STORAGE_TYPE:local}
+    local:
+      path: ${STORAGE_LOCAL_PATH:./data/files}
+    network:
+      # For example /mnt/agentx on Linux, or \\nas\agentx on Windows. Used only when type is network.
+      path: ${STORAGE_NETWORK_PATH:}
+      create-if-missing: ${STORAGE_NETWORK_CREATE:false}
+      # A folder inside the share, so several services can use one share
+      subfolder: ${STORAGE_NETWORK_SUBFOLDER:agentx-api}
+    max-picture-bytes: ${STORAGE_MAX_PICTURE_BYTES:3145728}
+  # Sign up and the lists customers keep
+  profile:
+    # false closes sign up. People who already have an account can still sign in.
+    signup-enabled: ${SIGNUP_ENABLED:true}
+    signup-ttl: PT15M
+    max-recipients: 200
   hand-off:
     # Verify every value below with the M-Pesa team before relying on it. The app falls back to guided steps
     # when a template is empty. Placeholders: {amount} {phone} {paybill} {account} {till}

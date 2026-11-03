@@ -214,6 +214,17 @@ The 503 handler is in payment-service today. agent-service and agentx-api still 
 - **Chat file storage:** Redis (default, 24 hours), a folder or network share, or S3-compatible storage. See [`agent-service/STORAGE.md`](agent-service/STORAGE.md).
 - **Phone file cache** with a size limit, and a My OneApp screen. See [`agentx-app/docs/FILES_AND_MY_ONEAPP.md`](agentx-app/docs/FILES_AND_MY_ONEAPP.md).
 
+## Sign up, profiles and email
+
+- **Sign up** in the app, the console or over the API: phone, first and last name (middle name and email optional), then the same 6 digit SMS code that sign in uses. No password. A new customer is signed in as soon as the code is right. People who already had an account get an empty profile on first use.
+- **Profile:** first, middle and last name, email, address, city, county, country, a saved location and a profile picture, all editable in the app, in the console, over the API, or by asking the assistant.
+- **Profile picture** is checked, shrunk to 512 pixels and cleaned of EXIF data, then kept where the backend is set to keep files: a local folder, or a mounted network share. One setting, `agentx.storage.type: local` or `network`.
+- **Email address** counts only after a 6 digit code sent to it has been typed. The code never reaches the assistant.
+- **Automatic emails:** a welcome, a notice when the account signs in on a device, and a notice when a payment or business request finishes. Customers can switch the sign in and payment notices off.
+- **Reports by email:** say "send this report to my email as a PDF", "email this as Excel to a@x.com" or "send it to everyone on my list as CSV". PDF, CSV and Excel, from the table in the chat or from business requests, business accounts and payments. With no address named it goes to the verified profile email. The owner is told when a report goes to someone else.
+- **Saved addresses:** add, paste or upload (CSV or text) a list of addresses to send reports to, and name them ("my accountant").
+- **Mail settings** in `application.yml` under `agentx.mail`: `log` (writes emails to the log, the default) or `smtp`, sender, limits, allowed domains. See [`docs/PROFILE_AND_EMAIL.md`](docs/PROFILE_AND_EMAIL.md).
+
 ## Optional business payments (Daraja)
 
 Switched on with `docker compose --profile business up` and `AGENT_BUSINESS_PAYMENTS=true`. Off by default. See [`payment-service/README.md`](payment-service/README.md).
@@ -234,7 +245,7 @@ Switched on with `docker compose --profile business up` and `AGENT_BUSINESS_PAYM
 
 **[`postman/`](postman/README.md)**
 
-A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 108 requests, and a walkthrough you can run with the collection runner.
+A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 137 requests, and a walkthrough you can run with the collection runner.
 
 </td>
 <td width="50%" valign="top">
