@@ -121,7 +121,7 @@ Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS accoun
 | Android package and signing fingerprint, iOS app id | So `/a/ID` links open the app directly |
 | `MAIL_TRANSPORT` | `log` (default, nothing is sent) or `smtp` |
 | `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_STARTTLS`, `MAIL_SSL` | The mail server, for `smtp` |
-| `MAIL_FROM`, `MAIL_FROM_NAME`, `MAIL_REPLY_TO` | The sender |
+| `MAIL_FROM`, `MAIL_FROM_NAME` | The sender. Replies to a report go to the customer who sent it (their verified profile email). `MAIL_REPLY_TO` is only a fallback for system emails |
 | `MAIL_NOTIFY_WELCOME`, `MAIL_NOTIFY_SIGN_IN`, `MAIL_NOTIFY_PAYMENTS` | Which automatic emails exist |
 | `MAIL_REPORT_MAX_RECIPIENTS`, `MAIL_REPORT_PER_HOUR`, `MAIL_REPORT_MAX_ROWS`, `MAIL_REPORT_MAX_BYTES`, `MAIL_REPORT_ALLOW_EXTERNAL`, `MAIL_REPORT_ALLOWED_DOMAINS` | Limits on emailed reports |
 | `STORAGE_TYPE` | `local` (default) or `network`: where profile pictures are kept |

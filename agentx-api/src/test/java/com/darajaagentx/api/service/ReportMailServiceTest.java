@@ -145,6 +145,22 @@ class ReportMailServiceTest {
     }
 
     @Test
+    void repliesToAReportGoToTheCustomerWhoSentIt() {
+        rig.verified(OWNER, "me@example.com");
+        reports.send(OWNER, request("ACCOUNTS", "pdf", List.of("boss@example.com")));
+        assertThat(rig.mailbox.sent.get(0).to()).containsExactly("boss@example.com");
+        assertThat(rig.mailbox.sent.get(0).replyTo()).isEqualTo("me@example.com");
+        // the notice to the customer is from the system, so it has no reply address of its own
+        assertThat(rig.mailbox.sent.get(1).replyTo()).isNull();
+    }
+
+    @Test
+    void withoutAVerifiedProfileEmailAReportHasNoReplyAddress() {
+        reports.send(OWNER, request("ACCOUNTS", "csv", List.of("boss@example.com")));
+        assertThat(last().replyTo()).isNull();
+    }
+
+    @Test
     void theServerCanLimitWhoReceivesReports() {
         MailProperties closed = Fakes.mailProps(false, List.of());
         Fakes.Rig r = new Fakes.Rig(closed, false);

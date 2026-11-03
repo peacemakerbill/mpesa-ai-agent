@@ -149,9 +149,10 @@ agentx:
 | Setting | Env variable | Default | Meaning |
 |---|---|---|---|
 | `transport` | `MAIL_TRANSPORT` | `log` | `log` writes each email to the service log and sends nothing, so a developer can see the words and the code. `smtp` sends through the server below. |
-| `from`, `from-name`, `reply-to` | `MAIL_FROM`, `MAIL_FROM_NAME`, `MAIL_REPLY_TO` | `no-reply@localhost`, `Daraja Agent-X`, blank | Most mail servers only accept a sender address they own, usually the same as the username. |
+| `from`, `from-name` | `MAIL_FROM`, `MAIL_FROM_NAME` | `no-reply@localhost`, `Daraja Agent-X` | Most mail servers only accept a sender address they own, usually the same as the username. |
+| `reply-to` | `MAIL_REPLY_TO` | blank | Only a fallback for the system's own emails. Replies are decided per customer: a report a customer emails to other people carries that customer's verified profile email as its reply address, so an answer goes to them and not to the sender address. |
 | `smtp.host`, `port` | `MAIL_HOST`, `MAIL_PORT` | blank, `587` | Use 587 with `start-tls: true`, or 465 with `ssl: true`. |
-| `smtp.username`, `password` | `MAIL_USERNAME`, `MAIL_PASSWORD` | blank | Keep the password in `.env`, never in a committed file. |
+| `smtp.username`, `password` | `MAIL_USERNAME`, `MAIL_PASSWORD` | blank | Keep the password in `.env`, never in a committed file. Quotes around it are dropped. For Gmail, or a password written as four groups of four letters, spaces are dropped too, so a Gmail app password can be pasted exactly as Google shows it. A warning in the log says when a Gmail password does not have 16 letters. |
 | `smtp.start-tls`, `ssl` | `MAIL_STARTTLS`, `MAIL_SSL` | `true`, `false` | |
 | `smtp.connect-timeout`, `timeout` | none | 10 s, 30 s | |
 | `notifications.welcome`, `sign-in`, `payments` | `MAIL_NOTIFY_WELCOME`, `MAIL_NOTIFY_SIGN_IN`, `MAIL_NOTIFY_PAYMENTS` | all `true` | Which automatic emails exist at all. Customers can also turn off sign in and payment notices for themselves. |

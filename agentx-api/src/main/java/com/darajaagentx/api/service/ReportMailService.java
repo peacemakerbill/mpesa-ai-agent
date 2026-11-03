@@ -86,7 +86,8 @@ public class ReportMailService {
         MailTemplates.Message m = MailTemplates.report(mailer.brand(), PersonNames.full(me.getFirstName(), me.getMiddleName(), me.getLastName()),
                 data.title(), note, file.fileName(), file.rows(), now);
         OutgoingMail mail = new OutgoingMail(to, m.subject(), m.text(), m.html(),
-                List.of(new OutgoingMail.Attachment(file.fileName(), file.contentType(), file.data())));
+                List.of(new OutgoingMail.Attachment(file.fileName(), file.contentType(), file.data())))
+                .withReplyTo(me.isEmailVerified() ? me.getEmail() : null);     // an answer goes to the customer, not to the no-reply sender
         outbox.send(owner, "REPORT", mail);
 
         List<String> others = to.stream().filter(a -> !a.equals(me.getEmail())).toList();
