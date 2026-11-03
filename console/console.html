@@ -907,7 +907,7 @@ function curlOf(r) {
 async function ping(svc) {
   const t0 = performance.now();
   const probe = {
-    agent: { method: 'POST', path: '/internal/inbound', auth: 'internal', body: {} },
+    agent: { method: 'GET', path: '/actuator/health', auth: 'none' },
     agentx: { method: 'GET', path: '/api/config', auth: 'none' },
     payment: { method: 'GET', path: '/internal/staff/' + cfg.customerPhone, auth: 'internal' },
   }[svc];

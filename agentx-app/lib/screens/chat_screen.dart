@@ -14,6 +14,7 @@ import '../layout/responsive.dart';
 import '../models/business_account.dart';
 import '../models/business_operation.dart';
 import '../models/chat.dart';
+import '../profile/profile_avatar.dart';
 import '../theme/app_theme.dart';
 import '../widgets/chat_bubbles.dart';
 import '../widgets/mention_panel.dart';
@@ -139,15 +140,15 @@ class _ChatScreenState extends State<ChatScreen> {
 
   /// A file in the chat: from this phone when it is already here, otherwise from the server and then kept (see Settings, Files and storage).
   Future<ChatFile> _loadFile(String id) => _files.putIfAbsent(id, () async {
-        MediaCache? cache;
-        try {
-          cache = await MediaCache.shared();
-        } catch (_) {
-          cache = null;   // no private folder available: go to the server every time
-        }
-        Future<ChatFile> fetch() => widget.state.api.chatFile(id);
-        return cache == null ? fetch() : cache.load(id, fetch);
-      });
+    MediaCache? cache;
+    try {
+      cache = await MediaCache.shared();
+    } catch (_) {
+      cache = null;   // no private folder available: go to the server every time
+    }
+    Future<ChatFile> fetch() => widget.state.api.chatFile(id);
+    return cache == null ? fetch() : cache.load(id, fetch);
+  });
 
   Future<void> _openLink(String url) async {
     final businessId = businessIdIn(url);
@@ -449,7 +450,15 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
     );
-    if (ok == true) await widget.state.signOut();
+    if (ok == true) {
+      try {
+        await (await MediaCache.shared()).clear();   // do not leave this person's files on the phone
+      } catch (_) {
+        // the cache is best effort
+      }
+      ProfileAvatar.forget();
+      await widget.state.signOut();
+    }
   }
 
   // ------------------------------------------------------------ build
