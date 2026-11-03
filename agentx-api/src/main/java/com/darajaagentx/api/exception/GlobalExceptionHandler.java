@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiError> tooLarge(org.springframework.web.multipart.MaxUploadSizeExceededException e) {
-        return build(HttpStatus.PAYLOAD_TOO_LARGE, "That file is too large.");
+        return build(HttpStatus.CONTENT_TOO_LARGE, "That file is too large.");
     }
 
     @ExceptionHandler(com.darajaagentx.api.mail.MailDeliveryException.class)

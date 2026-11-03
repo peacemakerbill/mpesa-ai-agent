@@ -1,7 +1,7 @@
 package com.darajaagentx.api.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.darajaagentx.api.service.ChatRelay;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -57,11 +56,11 @@ class ChatFlowIntegrationTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
         Map<String, Object> body = new HashMap<>();
         body.put("phone", phone);
-        body.put("code", code.get("code").asText());
+        body.put("code", code.get("code").asString());
         body.put("deviceId", "device-" + phone);
         JsonNode token = mapper.readTree(mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(body))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
-        return token.get("token").asText();
+        return token.get("token").asString();
     }
 
     private static ResponseEntity<byte[]> ok(String json) {

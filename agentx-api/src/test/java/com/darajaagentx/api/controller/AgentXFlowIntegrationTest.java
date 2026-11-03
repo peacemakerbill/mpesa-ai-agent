@@ -1,7 +1,7 @@
 package com.darajaagentx.api.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.darajaagentx.api.event.ActionEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -61,12 +61,12 @@ class AgentXFlowIntegrationTest {
         JsonNode code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
         Map<String, Object> body = new HashMap<>();
         body.put("phone", phone);
-        body.put("code", code.get("code").asText());
+        body.put("code", code.get("code").asString());
         body.put("deviceId", deviceId);
         body.put("deviceName", "Test phone");
         JsonNode token = json(mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(body))).andExpect(status().isOk()));
-        return token.get("token").asText();
+        return token.get("token").asString();
     }
 
     private UUID createBill(String phone, String key) throws Exception {
@@ -79,7 +79,7 @@ class AgentXFlowIntegrationTest {
         body.put("label", "Electricity");
         body.put("details", Map.of("paybill", "888880", "account", "123456"));
         JsonNode created = json(internalPost("/internal/actions", body).andExpect(status().isOk()));
-        return UUID.fromString(created.get("id").asText());
+        return UUID.fromString(created.get("id").asString());
     }
 
     private ResultActions app(String token, String method, String url, Object body) throws Exception {
@@ -230,7 +230,7 @@ class AgentXFlowIntegrationTest {
     void aWrongCodeFiveTimesBurnsTheCode() throws Exception {
         String phone = newPhone();
         JsonNode code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
-        String real = code.get("code").asText();
+        String real = code.get("code").asString();
         String wrong = real.equals("000000") ? "111111" : "000000";
 
         for (int i = 0; i < 5; i++) {
@@ -245,15 +245,15 @@ class AgentXFlowIntegrationTest {
         String phone = newPhone();
         JsonNode code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
 
-        verifyCode(phone, code.get("code").asText(), "device-once-123456").andExpect(status().isOk());
-        verifyCode(phone, code.get("code").asText(), "device-once-123456").andExpect(status().isUnauthorized());
+        verifyCode(phone, code.get("code").asString(), "device-once-123456").andExpect(status().isOk());
+        verifyCode(phone, code.get("code").asString(), "device-once-123456").andExpect(status().isUnauthorized());
     }
 
     @Test
     void aNewCodeReplacesTheOldOne() throws Exception {
         String phone = newPhone();
-        String first = json(internalPost("/internal/link-codes", Map.of("phone", phone))).get("code").asText();
-        String second = json(internalPost("/internal/link-codes", Map.of("phone", phone))).get("code").asText();
+        String first = json(internalPost("/internal/link-codes", Map.of("phone", phone))).get("code").asString();
+        String second = json(internalPost("/internal/link-codes", Map.of("phone", phone))).get("code").asString();
 
         if (!first.equals(second)) {
             verifyCode(phone, first, "device-replace-1234").andExpect(status().isUnauthorized());

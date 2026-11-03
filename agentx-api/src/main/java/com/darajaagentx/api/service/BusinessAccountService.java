@@ -93,7 +93,7 @@ public class BusinessAccountService {
     public BusinessAccountView create(String owner, BusinessAccountRequest request) {
         List<BusinessAccount> all = accounts.findByOwnerPhoneOrderByCreatedAtAsc(owner);
         Draft draft = new Draft(0, request);
-        Context ctx = new Context(owner, all, false);
+        Context ctx = new Context(all, false);
         if (request.parentId() != null) {
             BusinessAccount head = ctx.byId.get(request.parentId());
             if (head == null || head.isBranch()) {
@@ -110,7 +110,7 @@ public class BusinessAccountService {
     @Transactional
     public BusinessAccountView update(String owner, UUID id, BusinessAccountRequest request) {
         List<BusinessAccount> all = accounts.findByOwnerPhoneOrderByCreatedAtAsc(owner);
-        Context ctx = new Context(owner, all, false);
+        Context ctx = new Context(all, false);
         BusinessAccount existing = ctx.byId.get(id);
         if (existing == null) {
             throw new ActionNotFoundException("That business account was not found.");
@@ -148,7 +148,7 @@ public class BusinessAccountService {
             return new ImportResult(dryRun, false, 0, 0, 0, List.of(), parsed.issues(), parsed.ignoredColumns());
         }
         List<BusinessAccount> all = accounts.findByOwnerPhoneOrderByCreatedAtAsc(owner);
-        Context ctx = new Context(owner, all, true);
+        Context ctx = new Context(all, true);
 
         List<Draft> drafts = new ArrayList<>();
         for (BusinessAccountCsv.Row r : parsed.rows()) {
@@ -332,7 +332,6 @@ public class BusinessAccountService {
 
     /** The owner's saved accounts, indexed, plus the heads that are being added in the same upload. */
     private static final class Context {
-        final String owner;
         final boolean importMode;
         final Map<UUID, BusinessAccount> byId;
         final Map<String, BusinessAccount> byKey = new HashMap<>();
@@ -340,8 +339,7 @@ public class BusinessAccountService {
         final Map<String, List<BusinessAccount>> byCode = new HashMap<>();
         final List<Draft> newHeads = new ArrayList<>();
 
-        Context(String owner, List<BusinessAccount> all, boolean importMode) {
-            this.owner = owner;
+        Context(List<BusinessAccount> all, boolean importMode) {
             this.importMode = importMode;
             this.byId = index(all);
             for (BusinessAccount a : all) {

@@ -3,7 +3,6 @@ package com.darajaagentx.api.service;
 import com.darajaagentx.api.dto.CodeRequestResponse;
 import com.darajaagentx.api.dto.ProfileUpdate;
 import com.darajaagentx.api.dto.ProfileView;
-import com.darajaagentx.api.exception.InvalidActionRequestException;
 import com.darajaagentx.api.exception.TooManyRequestsException;
 import com.darajaagentx.api.mail.MailDeliveryException;
 import com.darajaagentx.api.model.ProfileStatus;
