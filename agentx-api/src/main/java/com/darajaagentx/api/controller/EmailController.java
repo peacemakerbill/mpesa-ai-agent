@@ -70,7 +70,7 @@ public class EmailController {
 
     /** An uploaded CSV or text file (form field "file"). */
     @PostMapping("/recipients/import")
-    public RecipientImportResult upload(@RequestParam("file") MultipartFile file, @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) throws IOException {
+    public RecipientImportResult upload(@RequestParam MultipartFile file, @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new InvalidActionRequestException("Choose a CSV or text file with email addresses.");
         }

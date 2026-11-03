@@ -9,7 +9,6 @@ import com.darajaagentx.api.model.EmailRecipient;
 import com.darajaagentx.api.repository.EmailRecipientRepository;
 import com.darajaagentx.api.util.CsvReader;
 import com.darajaagentx.api.util.Emails;
-import com.darajaagentx.api.util.PersonNames;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

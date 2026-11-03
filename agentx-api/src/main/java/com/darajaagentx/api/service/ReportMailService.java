@@ -16,7 +16,6 @@ import com.darajaagentx.api.report.ReportRenderer;
 import com.darajaagentx.api.report.ReportTables;
 import com.darajaagentx.api.util.Emails;
 import com.darajaagentx.api.util.PersonNames;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -52,7 +51,6 @@ public class ReportMailService {
     private final SlidingWindowLimiter limiter;
     private final Clock clock;
 
-    @Autowired
     public ReportMailService(ReportSources sources, ProfileService profiles, RecipientService recipients, MailOutbox outbox,
                              CustomerMailer mailer, MailProperties props, SlidingWindowLimiter limiter, Clock clock) {
         this.sources = sources;

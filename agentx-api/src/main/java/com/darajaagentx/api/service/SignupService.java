@@ -17,7 +17,6 @@ import com.darajaagentx.api.util.PersonNames;
 import com.darajaagentx.api.util.Phones;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +48,6 @@ public class SignupService {
     private final Duration codeTtl;
     private final Clock clock;
 
-    @Autowired
     public SignupService(UserProfileRepository profiles, LinkService links, CodeDelivery delivery, ProfileService profileService,
                          ProfileProperties props, AgentXProperties agentx, Clock clock) {
         this.profiles = profiles;

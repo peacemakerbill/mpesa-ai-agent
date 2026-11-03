@@ -92,8 +92,8 @@ public class BusinessAccountController {
      * would happen. If any row has a problem nothing is saved, so the file can be fixed and sent again.
      */
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ImportResult importCsv(@RequestParam("file") MultipartFile file,
-                                  @RequestParam(name = "dryRun", defaultValue = "true") boolean dryRun,
+    public ImportResult importCsv(@RequestParam MultipartFile file,
+                                  @RequestParam(defaultValue = "true") boolean dryRun,
                                   @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
         if (file.getSize() > BusinessAccountCsv.MAX_BYTES) {
             throw new InvalidActionRequestException("The file is bigger than 1 MB. Split it into smaller files.");
