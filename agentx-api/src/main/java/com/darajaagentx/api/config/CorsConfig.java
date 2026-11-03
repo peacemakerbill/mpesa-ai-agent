@@ -37,7 +37,7 @@ public class CorsConfig {
         if (!allowed.isEmpty()) {
             CorsConfiguration config = new CorsConfiguration();
             config.setAllowedOrigins(allowed);
-            config.setAllowedMethods(List.of("GET", "POST", "DELETE", "OPTIONS"));
+            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             config.setAllowedHeaders(List.of("Content-Type", "Authorization", "Accept", "X-Internal-Key", "X-File-Name"));
             config.setExposedHeaders(List.of("Content-Disposition"));
             config.setMaxAge(600L);

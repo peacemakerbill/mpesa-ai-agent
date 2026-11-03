@@ -34,6 +34,21 @@ class CorsConfigTest {
     }
 
     @Test
+    void editsToTheProfileAndBusinessAccountsUsePutSoPutIsAllowed() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("OPTIONS", "/api/profile");
+        request.addHeader("Origin", "http://localhost:8000");
+        request.addHeader("Access-Control-Request-Method", "PUT");
+        request.addHeader("Access-Control-Request-Headers", "authorization,content-type,x-file-name");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        CorsConfig.corsFilter("http://localhost:8000").doFilter(request, response, new MockFilterChain());
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getHeader("Access-Control-Allow-Methods")).contains("PUT");
+        assertThat(response.getHeader("Access-Control-Allow-Headers")).containsIgnoringCase("x-file-name");
+    }
+
+    @Test
     void otherOriginsAndWildcardsAreRefused() throws Exception {
         assertThat(preflight("http://localhost:8000", "http://evil.example").getStatus()).isEqualTo(403);
         assertThat(preflight("*", "http://evil.example").getHeader("Access-Control-Allow-Origin")).isNull();
