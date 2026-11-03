@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "anthropic")
 public record AnthropicProperties(
-        @NotBlank String apiKey,
+        String apiKey,
         @DefaultValue("https://api.anthropic.com") String baseUrl,
         @DefaultValue("claude-sonnet-5-5") String model,
         @DefaultValue("1024") int maxTokens,
