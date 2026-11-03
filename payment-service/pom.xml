@@ -11,7 +11,7 @@
 		<relativePath />
 	</parent>
 
-	<groupId>com.mganji</groupId>
+	<groupId>com.darajaagentx</groupId>
 	<artifactId>payment-service</artifactId>
 	<version>0.1.0</version>
 	<name>payment-service</name>

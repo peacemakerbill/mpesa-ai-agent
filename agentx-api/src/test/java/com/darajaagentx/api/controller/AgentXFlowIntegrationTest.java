@@ -1,8 +1,8 @@
 package com.darajaagentx.api.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.darajaagentx.api.event.ActionEvent;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +39,7 @@ class AgentXFlowIntegrationTest {
     private static final AtomicInteger NEXT_PHONE = new AtomicInteger(10_000_000);
 
     @Autowired MockMvc mvc;
-    @Autowired JsonMapper mapper;
+    @Autowired ObjectMapper mapper;
     @MockitoBean RabbitTemplate rabbit;
 
     /** A new customer number per test so tests do not see each other's data. */
@@ -53,21 +52,21 @@ class AgentXFlowIntegrationTest {
                 .content(mapper.writeValueAsString(body)));
     }
 
-    private DocumentContext json(ResultActions r) throws Exception {
-        return JsonPath.parse(r.andReturn().getResponse().getContentAsString());
+    private JsonNode json(ResultActions r) throws Exception {
+        return mapper.readTree(r.andReturn().getResponse().getContentAsString());
     }
 
     /** Link a phone the way a customer would: code from the agent, typed into the app. Returns the token. */
     private String link(String phone, String deviceId) throws Exception {
-        DocumentContext code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
+        JsonNode code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
         Map<String, Object> body = new HashMap<>();
         body.put("phone", phone);
-        body.put("code", code.read("$.code", String.class));
+        body.put("code", code.get("code").asText());
         body.put("deviceId", deviceId);
         body.put("deviceName", "Test phone");
-        DocumentContext token = json(mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)
+        JsonNode token = json(mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(body))).andExpect(status().isOk()));
-        return token.read("$.token", String.class);
+        return token.get("token").asText();
     }
 
     private UUID createBill(String phone, String key) throws Exception {
@@ -79,8 +78,8 @@ class AgentXFlowIntegrationTest {
         body.put("source", "IMAGE");
         body.put("label", "Electricity");
         body.put("details", Map.of("paybill", "888880", "account", "123456"));
-        DocumentContext created = json(internalPost("/internal/actions", body).andExpect(status().isOk()));
-        return UUID.fromString(created.read("$.id", String.class));
+        JsonNode created = json(internalPost("/internal/actions", body).andExpect(status().isOk()));
+        return UUID.fromString(created.get("id").asText());
     }
 
     private ResultActions app(String token, String method, String url, Object body) throws Exception {
@@ -230,8 +229,8 @@ class AgentXFlowIntegrationTest {
     @Test
     void aWrongCodeFiveTimesBurnsTheCode() throws Exception {
         String phone = newPhone();
-        DocumentContext code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
-        String real = code.read("$.code", String.class);
+        JsonNode code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
+        String real = code.get("code").asText();
         String wrong = real.equals("000000") ? "111111" : "000000";
 
         for (int i = 0; i < 5; i++) {
@@ -244,17 +243,17 @@ class AgentXFlowIntegrationTest {
     @Test
     void theRightCodeWorksOnlyOnce() throws Exception {
         String phone = newPhone();
-        DocumentContext code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
+        JsonNode code = json(internalPost("/internal/link-codes", Map.of("phone", phone)).andExpect(status().isOk()));
 
-        verifyCode(phone, code.read("$.code", String.class), "device-once-123456").andExpect(status().isOk());
-        verifyCode(phone, code.read("$.code", String.class), "device-once-123456").andExpect(status().isUnauthorized());
+        verifyCode(phone, code.get("code").asText(), "device-once-123456").andExpect(status().isOk());
+        verifyCode(phone, code.get("code").asText(), "device-once-123456").andExpect(status().isUnauthorized());
     }
 
     @Test
     void aNewCodeReplacesTheOldOne() throws Exception {
         String phone = newPhone();
-        String first = json(internalPost("/internal/link-codes", Map.of("phone", phone))).read("$.code", String.class);
-        String second = json(internalPost("/internal/link-codes", Map.of("phone", phone))).read("$.code", String.class);
+        String first = json(internalPost("/internal/link-codes", Map.of("phone", phone))).get("code").asText();
+        String second = json(internalPost("/internal/link-codes", Map.of("phone", phone))).get("code").asText();
 
         if (!first.equals(second)) {
             verifyCode(phone, first, "device-replace-1234").andExpect(status().isUnauthorized());
@@ -311,6 +310,9 @@ class AgentXFlowIntegrationTest {
         UUID id = UUID.randomUUID();
         mvc.perform(get("/a/" + id)).andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("agentx://a/" + id)));
+        mvc.perform(get("/b/" + id)).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("agentx://b/" + id)));
+        mvc.perform(get("/b/not-a-uuid")).andExpect(status().isBadRequest());
         mvc.perform(get("/.well-known/assetlinks.json")).andExpect(status().isNotFound());
         mvc.perform(get("/.well-known/apple-app-site-association")).andExpect(status().isNotFound());
         mvc.perform(get("/a/not-a-uuid")).andExpect(status().isBadRequest());

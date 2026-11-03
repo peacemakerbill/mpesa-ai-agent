@@ -41,7 +41,7 @@ public class WellKnownController {
         Object body = Map.of("applinks", Map.of(
                 "details", List.of(Map.of(
                         "appIDs", List.of(props.iosAppId()),
-                        "components", List.of(Map.of("/", "/a/*"))))));
+                        "components", List.of(Map.of("/", "/a/*"), Map.of("/", "/b/*"))))));
         return ResponseEntity.ok(body);
     }
 }

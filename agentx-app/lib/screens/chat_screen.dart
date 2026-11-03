@@ -6,14 +6,20 @@ import '../api/api_client.dart';
 import '../app_state.dart';
 import '../chat/chat_controller.dart';
 import '../chat/chat_device.dart';
+import '../chat/media_cache.dart';
+import '../chat/mentions.dart';
 import '../contacts/contact_models.dart';
 import '../contacts/contact_services.dart';
 import '../layout/responsive.dart';
+import '../models/business_account.dart';
+import '../models/business_operation.dart';
 import '../models/chat.dart';
 import '../theme/app_theme.dart';
 import '../widgets/chat_bubbles.dart';
+import '../widgets/mention_panel.dart';
 import '../widgets/ui.dart';
 import 'action_screen.dart';
+import 'business_operation_screen.dart';
 import 'contact_finder_screen.dart';
 
 /// Something the customer attached and has not sent yet.
@@ -100,13 +106,19 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _recording = false;
   DateTime? _recordStart;
   Timer? _tick;
+  List<BusinessAccount>? _accounts;
+  DateTime? _accountsAt;
+  bool _accountsLoading = false;
 
   ChatController get _chat => widget.chat;
 
   @override
   void initState() {
     super.initState();
-    _text.addListener(() => setState(() {}));
+    _text.addListener(() {
+      if (_mention != null) _loadAccounts();
+      setState(() {});
+    });
   }
 
   @override
@@ -125,9 +137,24 @@ class _ChatScreenState extends State<ChatScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<ChatFile> _loadFile(String id) => _files.putIfAbsent(id, () => widget.state.api.chatFile(id));
+  /// A file in the chat: from this phone when it is already here, otherwise from the server and then kept (see Settings, Files and storage).
+  Future<ChatFile> _loadFile(String id) => _files.putIfAbsent(id, () async {
+        MediaCache? cache;
+        try {
+          cache = await MediaCache.shared();
+        } catch (_) {
+          cache = null;   // no private folder available: go to the server every time
+        }
+        Future<ChatFile> fetch() => widget.state.api.chatFile(id);
+        return cache == null ? fetch() : cache.load(id, fetch);
+      });
 
   Future<void> _openLink(String url) async {
+    final businessId = businessIdIn(url);
+    if (businessId != null) {
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => BusinessOperationScreen(state: widget.state, operationId: businessId)));
+      return;
+    }
     final id = requestIdIn(url);
     if (id != null) {
       _openRequest(id);
@@ -163,6 +190,73 @@ class _ChatScreenState extends State<ChatScreen> {
     loadFile: _loadFile,
     device: widget.device,
   );
+
+  // ------------------------------------------------------------ @ mentions
+
+  /// The @ being typed right now, or null.
+  MentionQuery? get _mention {
+    final sel = _text.selection;
+    if (_recording || !sel.isValid || !sel.isCollapsed) return null;
+    return activeMention(_text.text, sel.baseOffset);
+  }
+
+  /// The business accounts are fetched the first time an @ is typed and again after two minutes.
+  Future<void> _loadAccounts() async {
+    final at = _accountsAt;
+    if (_accountsLoading || (at != null && DateTime.now().difference(at) < const Duration(minutes: 2))) return;
+    _accountsLoading = true;
+    try {
+      final list = await widget.state.api.businessAccounts();
+      if (mounted) {
+        setState(() {
+          _accounts = list;
+          _accountsAt = DateTime.now();
+        });
+      }
+    } on Exception {
+      // No accounts yet, or the feature is off. The picker still offers contacts.
+      if (mounted) {
+        setState(() {
+          _accounts ??= const <BusinessAccount>[];
+          _accountsAt = DateTime.now();
+        });
+      }
+    } finally {
+      _accountsLoading = false;
+    }
+  }
+
+  /// An account stays in the message as @Name for the assistant to read. A contact is added as a shared contact, the same way
+  /// as from the attach menu, and its name replaces the @.
+  Future<void> _pickMention(MentionItem item) async {
+    final q = _mention;
+    if (q == null) return;
+    final cursor = _text.selection.baseOffset;
+    if (item.kind == MentionKind.account) {
+      final r = applyMention(_text.text, cursor, q, item.insertText);
+      _text.value = TextEditingValue(text: r.text, selection: TextSelection.collapsed(offset: r.cursor));
+      _focus.requestFocus();
+      return;
+    }
+    final picked = await Navigator.of(context).push<PickedContact>(MaterialPageRoute(
+      builder: (_) => ContactFinderScreen(services: widget.contacts, title: 'Choose a contact', query: item.query),
+    ));
+    if (!mounted || picked == null) return;
+    final text = _text.text;
+    if (q.start <= text.length && cursor <= text.length) {
+      final r = applyMention(text, cursor, q, picked.name);
+      _text.value = TextEditingValue(text: r.text, selection: TextSelection.collapsed(offset: r.cursor));
+    }
+    setState(() => _tray.add(_Pending.contact(picked)));
+    _focus.requestFocus();
+  }
+
+  Widget _mentionPanel(BuildContext context) {
+    final q = _mention;
+    if (q == null) return const SizedBox.shrink();
+    final items = mentionSuggestions(_accounts ?? const <BusinessAccount>[], q.query);
+    return _padded(MentionPanel(items: items, loading: _accounts == null, onPick: _pickMention));
+  }
 
   // ------------------------------------------------------------ sending
 
@@ -372,6 +466,7 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(child: _messages(context)),
             if (_chat.error != null) _padded(Callout(_chat.error!, tone: Tone.bad), top: 4),
             if (_tray.isNotEmpty) _trayView(context),
+            _mentionPanel(context),
             _composer(context),
           ]),
         ),
@@ -606,7 +701,7 @@ class _ChatScreenState extends State<ChatScreen> {
             keyboardType: TextInputType.multiline,
             textCapitalization: TextCapitalization.sentences,
             decoration: InputDecoration(
-              hintText: _tray.isEmpty ? 'Message' : 'Add a caption',
+              hintText: _tray.isEmpty ? 'Message, or @ to mention' : 'Add a caption',
               isDense: true,
               filled: false,
               border: InputBorder.none,

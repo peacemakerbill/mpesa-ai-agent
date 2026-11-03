@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 
 import 'app_state.dart';
 import 'config.dart';
+import 'models/business_operation.dart';
 import 'models/deep_link.dart';
 import 'screens/action_screen.dart';
+import 'screens/business_operation_screen.dart';
 import 'screens/home_shell.dart';
 import 'screens/link_screen.dart';
 import 'theme/app_theme.dart';
@@ -30,6 +32,9 @@ class _AgentXAppState extends State<AgentXApp> {
   final GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
   StreamSubscription<Uri>? _links;
 
+  /// A business request id from a link, opened as soon as the phone is linked.
+  String? _pendingBusinessId;
+
   @override
   void initState() {
     super.initState();
@@ -46,11 +51,23 @@ class _AgentXAppState extends State<AgentXApp> {
   }
 
   void _handle(Uri uri) {
+    final businessId = parseBusinessLink(uri, scheme: AppConfig.linkScheme);
+    if (businessId != null) {
+      _pendingBusinessId = businessId;
+      _openPending();
+      return;
+    }
     final id = parseActionLink(uri, scheme: AppConfig.linkScheme);
     if (id != null) state.openLink(id);
   }
 
   void _openPending() {
+    final businessId = _pendingBusinessId;
+    final navigatorState = navigator.currentState;
+    if (businessId != null && state.linked && navigatorState != null) {
+      _pendingBusinessId = null;
+      navigatorState.push(MaterialPageRoute<void>(builder: (_) => BusinessOperationScreen(state: state, operationId: businessId)));
+    }
     if (!state.linked || state.pendingActionId == null) return;
     final id = state.takePending();
     final nav = navigator.currentState;

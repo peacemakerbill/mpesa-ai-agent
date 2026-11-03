@@ -22,6 +22,10 @@ spring:
     password: ${RABBITMQ_PASSWORD:guest}
   jackson:
     default-property-inclusion: non_null
+  servlet:
+    multipart:
+      max-file-size: 1MB
+      max-request-size: 1MB
 
 management:
   endpoints:
@@ -75,6 +79,28 @@ agentx:
   code-delivery: ${CODE_DELIVERY:log}
   # Name shown in the sign-in SMS
   app-name: ${AGENTX_APP_NAME:Daraja Agent-X}
+  # Locks the business credentials people save in the app (consumer secrets, initiator passwords, passkeys).
+  # 32 random bytes in Base64: openssl rand -base64 32. Keep a copy somewhere safe. If this key is lost or changed,
+  # saved credentials cannot be opened and people must enter them again. Blank turns saving business credentials off.
+  vault:
+    key: ${AGENTX_VAULT_KEY:}
+  daraja:
+    sandbox-url: ${DARAJA_SANDBOX_URL:https://sandbox.safaricom.co.ke}
+    production-url: ${DARAJA_PRODUCTION_URL:https://api.safaricom.co.ke}
+    # Optional. A folder on the server holding sandbox/ and production/ sub folders with Safaricom's public
+    # certificates. Blank uses the ones inside the application, in src/main/resources/certs.
+    certs-directory: ${DARAJA_CERTS_DIR:}
+  # Requests made on business accounts from the chat. Safaricom posts its answers to PUBLIC_BASE_URL/daraja/business/...,
+  # so public-base-url above must be an HTTPS address that Safaricom can reach.
+  business:
+    # The most one request may move, in whole KES
+    max-amount: ${AGENTX_BUSINESS_MAX_AMOUNT:150000}
+    # How long a payout waits for the owner's approval in the app
+    approval-ttl: ${AGENTX_BUSINESS_APPROVAL_TTL:PT30M}
+    # false: STK Push goes out at once. true: it waits for approval in the app like a payout does.
+    approve-collections: ${AGENTX_BUSINESS_APPROVE_COLLECTIONS:false}
+    stk-per-hour: ${AGENTX_BUSINESS_STK_PER_HOUR:20}
+    max-open-approvals: 10
   hand-off:
     # Verify every value below with the M-Pesa team before relying on it. The app falls back to guided steps
     # when a template is empty. Placeholders: {amount} {phone} {paybill} {account} {till}

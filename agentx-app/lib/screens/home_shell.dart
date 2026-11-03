@@ -8,6 +8,7 @@ import '../widgets/ui.dart';
 import 'action_screen.dart';
 import 'actions_screen.dart';
 import 'chat_screen.dart';
+import 'settings_screen.dart';
 
 /// The signed in app: the chat with the assistant, and the list of requests to approve.
 ///
@@ -34,7 +35,9 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   /// Counts up whenever the list of requests should be read again.
   final ValueNotifier<int> _requests = ValueNotifier<int>(0);
 
+  /// 0 is the chat, 1 the requests, 2 the settings. The settings are built the first time they are opened.
   int _tab = 0;
+  bool _settingsSeen = false;
   bool _foreground = true;
   bool _chatVisible = true;
 
@@ -91,7 +94,10 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
   void _select(int i) {
     if (i == _tab) return;
-    setState(() => _tab = i);
+    setState(() {
+      _tab = i;
+      if (i == 2) _settingsSeen = true;
+    });
     if (i == 1) _requests.value++;
   }
 
@@ -105,7 +111,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final size = context.screenSize;
-    final chatVisible = size == ScreenSize.expanded || _tab == 0;
+    final chatVisible = size == ScreenSize.expanded ? _tab != 2 : _tab == 0;
     if (chatVisible != _chatVisible) {
       _chatVisible = chatVisible;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -127,11 +133,14 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
   Widget _requestsScreen() => ActionsScreen(state: widget.state, refresh: _requests);
 
+  /// Nothing is built until the customer opens the settings once, then the page is kept.
+  Widget _settingsScreen() => _settingsSeen ? SettingsScreen(state: widget.state) : const SizedBox.shrink();
+
   /// A phone: two tabs and a bottom bar.
   Widget _compact(BuildContext context, Widget chat) {
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     return Scaffold(
-      body: IndexedStack(index: _tab, children: [chat, _requestsScreen()]),
+      body: IndexedStack(index: _tab, children: [chat, _requestsScreen(), _settingsScreen()]),
       // The bar steps aside while the keyboard is open, so the message box sits right above the keyboard.
       bottomNavigationBar: keyboardOpen
           ? null
@@ -141,6 +150,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
               destinations: const [
                 NavigationDestination(icon: Icon(Icons.chat_bubble_outline), selectedIcon: Icon(Icons.chat_bubble), label: 'Chat'),
                 NavigationDestination(icon: Icon(Icons.confirmation_number_outlined), selectedIcon: Icon(Icons.confirmation_number), label: 'Requests'),
+                NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: 'Settings'),
               ],
             ),
     );
@@ -159,29 +169,49 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           destinations: const [
             NavigationRailDestination(icon: Icon(Icons.chat_bubble_outline), selectedIcon: Icon(Icons.chat_bubble), label: Text('Chat')),
             NavigationRailDestination(icon: Icon(Icons.confirmation_number_outlined), selectedIcon: Icon(Icons.confirmation_number), label: Text('Requests')),
+            NavigationRailDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: Text('Settings')),
           ],
         ),
         VerticalDivider(width: 1, thickness: 1, color: t.p.line),
-        Expanded(child: IndexedStack(index: _tab, children: [chat, _requestsScreen()])),
+        Expanded(child: IndexedStack(index: _tab, children: [chat, _requestsScreen(), _settingsScreen()])),
       ]),
     );
   }
 
-  /// A big tablet or a desktop window: the chat on the left, the requests on the right.
+  /// A big tablet or a desktop window: a rail, then the chat with the requests beside it, or the settings.
   Widget _expanded(BuildContext context, Widget chat) {
     final t = context.tk;
     final width = MediaQuery.sizeOf(context).width;
     final pane = (width * 0.36).clamp(380.0, 480.0).toDouble();
+    final inSettings = _tab == 2;
     return Scaffold(
       body: Row(children: [
-        Expanded(child: chat),
+        NavigationRail(
+          selectedIndex: inSettings ? 1 : 0,
+          onDestinationSelected: (i) => _select(i == 0 ? 0 : 2),
+          labelType: NavigationRailLabelType.all,
+          leading: const Padding(padding: EdgeInsets.only(top: 14, bottom: 18), child: BrandMark(size: 34)),
+          destinations: const [
+            NavigationRailDestination(icon: Icon(Icons.chat_bubble_outline), selectedIcon: Icon(Icons.chat_bubble), label: Text('Chat')),
+            NavigationRailDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: Text('Settings')),
+          ],
+        ),
         VerticalDivider(width: 1, thickness: 1, color: t.p.line),
-        SizedBox(
-          width: pane,
-          child: Navigator(
-            key: _paneNav,
-            onGenerateRoute: (settings) => MaterialPageRoute<void>(settings: settings, builder: (_) => _requestsScreen()),
-          ),
+        Expanded(
+          child: IndexedStack(index: inSettings ? 1 : 0, children: [
+            Row(children: [
+              Expanded(child: chat),
+              VerticalDivider(width: 1, thickness: 1, color: t.p.line),
+              SizedBox(
+                width: pane,
+                child: Navigator(
+                  key: _paneNav,
+                  onGenerateRoute: (settings) => MaterialPageRoute<void>(settings: settings, builder: (_) => _requestsScreen()),
+                ),
+              ),
+            ]),
+            _settingsScreen(),
+          ]),
         ),
       ]),
     );

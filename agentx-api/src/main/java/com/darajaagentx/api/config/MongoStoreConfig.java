@@ -1,5 +1,7 @@
 package com.darajaagentx.api.config;
 
+import com.darajaagentx.api.model.BusinessAccount;
+import com.darajaagentx.api.model.BusinessOperation;
 import com.darajaagentx.api.model.WalletAction;
 import com.darajaagentx.api.model.Device;
 import com.darajaagentx.api.model.LinkCode;
@@ -48,6 +50,22 @@ public class MongoStoreConfig {
 
     @Bean
     BeforeConvertCallback<LinkCode> linkCodeBeforeConvert() {
+        return (entity, collection) -> {
+            entity.prepareForMongo(Instant.now());
+            return entity;
+        };
+    }
+
+    @Bean
+    BeforeConvertCallback<BusinessAccount> businessAccountBeforeConvert() {
+        return (entity, collection) -> {
+            entity.prepareForMongo(Instant.now());
+            return entity;
+        };
+    }
+
+    @Bean
+    BeforeConvertCallback<BusinessOperation> businessOperationBeforeConvert() {
         return (entity, collection) -> {
             entity.prepareForMongo(Instant.now());
             return entity;

@@ -343,6 +343,22 @@ With the switch off, the assistant is told nothing about these tools, the code r
 <img src="docs/assets/divider.svg" alt="" width="100%"/>
 </div>
 
+## Business accounts, chat transactions and chat files
+
+A customer can save a Paybill or Buy Goods shortcode under **Settings, Business accounts**: consumer key and secret, STK passkey, initiator name and password
+(secrets encrypted with `AGENTX_VAULT_KEY`), several tills or branches under one shortcode, and a CSV upload with a check before anything is saved.
+The security credential is made by the server from the initiator password and Safaricom's public certificate (sandbox and production folders).
+See [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md).
+
+From the chat the assistant can prepare STK Push, STK Push query, Dynamic QR, account balance, pull transactions, B2C, Pochi la Biashara and B2B.
+Money going out always waits for approval in the app. A request is sent once; if the answer is unclear it is shown as unknown and never sent again.
+The B2B and pull transactions request shapes were written from memory and must be checked against Safaricom's documentation before production.
+
+In chat, type `@` to mention a saved contact or open the contact picker. Chat photos, voice notes and documents are kept in Redis for 24 hours by default,
+or in a folder or network share, or in S3-compatible storage (AWS S3, MinIO, Cloudflare R2, Spaces, Wasabi). See [`agent-service/STORAGE.md`](agent-service/STORAGE.md).
+On the phone, the media cache has a size limit under **Settings, Files and storage**, and My OneApp opens from **Settings**
+([`agentx-app/docs/FILES_AND_MY_ONEAPP.md`](agentx-app/docs/FILES_AND_MY_ONEAPP.md)).
+
 ## Known gaps
 
 > [!CAUTION]
@@ -372,6 +388,9 @@ With the switch off, the assistant is told nothing about these tools, the code r
 |---|---|
 | [`FEATURES.md`](FEATURES.md) | Everything the system does today, for customers and for operators |
 | [`docs/DATABASES.md`](docs/DATABASES.md) | PostgreSQL, MySQL and MongoDB: setup, trade-offs, what was tested |
+| [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md) | Business accounts, tills, CSV upload, chat transactions |
+| [`agent-service/STORAGE.md`](agent-service/STORAGE.md) | Where chat files are kept: Redis, a folder or S3 |
+| [`agentx-app/docs/FILES_AND_MY_ONEAPP.md`](agentx-app/docs/FILES_AND_MY_ONEAPP.md) | Phone file cache and My OneApp |
 | [`agentx-app/docs/CONTACTS.md`](agentx-app/docs/CONTACTS.md) | Contact search and the Google and Microsoft sign-ins |
 | [`agentx-app/docs/SMS.md`](agentx-app/docs/SMS.md) | How the M-Pesa message check works and what it sends |
 | [`agentx-app/docs/PLATFORM_SETUP.md`](agentx-app/docs/PLATFORM_SETUP.md) | Settings for each platform, signing and app links |

@@ -206,6 +206,14 @@ The 503 handler is in payment-service today. agent-service and agentx-api still 
 <img src="docs/assets/divider.svg" alt="" width="100%"/>
 </div>
 
+## Business accounts, chat transactions and chat files
+
+- **Business accounts** (Settings): Paybill or Buy Goods shortcode, till numbers, consumer key and secret, STK passkey, initiator name and password, encrypted on the server. Security credential made by the server. Several branches or tills under one shortcode, and CSV upload with a full check first. See [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md).
+- **Transactions in chat:** STK Push, STK Push query, Dynamic QR, balance, pull transactions, B2C, Pochi la Biashara, B2B. Money out needs approval in the app. Requests are sent once.
+- **`@` mentions and contact picker** in the chat box.
+- **Chat file storage:** Redis (default, 24 hours), a folder or network share, or S3-compatible storage. See [`agent-service/STORAGE.md`](agent-service/STORAGE.md).
+- **Phone file cache** with a size limit, and a My OneApp screen. See [`agentx-app/docs/FILES_AND_MY_ONEAPP.md`](agentx-app/docs/FILES_AND_MY_ONEAPP.md).
+
 ## Optional business payments (Daraja)
 
 Switched on with `docker compose --profile business up` and `AGENT_BUSINESS_PAYMENTS=true`. Off by default. See [`payment-service/README.md`](payment-service/README.md).

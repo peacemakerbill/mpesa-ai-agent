@@ -23,15 +23,15 @@ A collection and an environment for every HTTP endpoint of the services, with a 
 
 | File | What it is |
 |---|---|
-| `m-ganji.postman_collection.json` | 93 requests for every HTTP endpoint of the three services |
-| `m-ganji-local.postman_environment.json` | Addresses, the internal key, test phone numbers and secrets for a local run |
+| `daraja-agent-x.postman_collection.json` | 93 requests for every HTTP endpoint of the three services |
+| `daraja-agent-x-local.postman_environment.json` | Addresses, the internal key, test phone numbers and secrets for a local run |
 
 ## Use it
 
-1. In Postman choose **Import**, select both files, then pick the environment **m-ganji local**.
+1. In Postman choose **Import**, select both files, then pick the environment **daraja-agent-x local**.
 2. Set `internalKey` to the same value as `INTERNAL_KEY` in your `.env` files, and `callbackSecret` to your own value. Never put real production secrets in a file you share.
-3. Start the services with `docker compose up --build`. For the walkthrough, start ganji-api with `CODE_DELIVERY=dev` so asking for a sign-in code returns it (`devCode`).
-4. **No Daraja account needed for the wallet flow.** Run the folder `2. ganji-api / A. Walkthrough` with the collection runner, then try `C2. Chat`.
+3. Start the services with `docker compose up --build`. For the walkthrough, start agentx-api with `CODE_DELIVERY=dev` so asking for a sign-in code returns it (`devCode`).
+4. **No Daraja account needed for the wallet flow.** Run the folder `2. agentx-api / A. Walkthrough` with the collection runner, then try `C2. Chat`.
 
 > [!CAUTION]
 > Never use `CODE_DELIVERY=dev` on a server other people can reach. Anyone could sign in as any number.
@@ -51,7 +51,7 @@ A collection and an environment for every HTTP endpoint of the services, with a 
 | Folder | Contents |
 |---|---|
 | 1. agent-service | Deliver a customer message straight to the agent (text, voice, image, document, contact, location, buttons, menu), and read or clear a customer's chat |
-| 2. ganji-api | Walkthrough, agent-side calls, app-side calls, the chat (read, send, upload, download), public pages |
+| 2. agentx-api | Walkthrough, agent-side calls, app-side calls, the chat (read, send, upload, download), public pages |
 | 3. payment-service | Optional Daraja module: payments, refunds and payouts with approvals, QR, staff roles, Daraja callbacks |
 
 ## Good to know
@@ -60,7 +60,7 @@ A collection and an environment for every HTTP endpoint of the services, with a 
 - The agent needs an `ANTHROPIC_API_KEY` to answer. Without one, messages are accepted but there is no reply.
 - Payment and operation requests need Daraja credentials and the optional module running.
 - The collection was generated from the code and has not been run against the services.
-- Addresses and ports in the environment match the defaults: agent-service 8082, payment-service 8083, ganji-api 8084.
+- Addresses and ports in the environment match the defaults: agent-service 8082, payment-service 8083, agentx-api 8084.
 
 <div align="center">
 <sub>M-Pesa is a registered mark of Safaricom. This project is not affiliated with or endorsed by Safaricom.</sub>

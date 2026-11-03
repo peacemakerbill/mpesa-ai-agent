@@ -1,8 +1,8 @@
 package com.darajaagentx.api.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.darajaagentx.api.service.ChatRelay;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,19 +13,20 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -41,7 +42,7 @@ class ChatFlowIntegrationTest {
     private static final AtomicInteger NEXT = new AtomicInteger(30_000_000);
 
     @Autowired MockMvc mvc;
-    @Autowired JsonMapper mapper;
+    @Autowired ObjectMapper mapper;
     @MockitoBean RabbitTemplate rabbit;
     @MockitoBean ChatRelay relay;
 
@@ -51,16 +52,16 @@ class ChatFlowIntegrationTest {
 
     /** Signs in the way a customer does when the code goes to their phone, using the internal code endpoint to read it. */
     private String signIn(String phone) throws Exception {
-        DocumentContext code = JsonPath.parse(mvc.perform(post("/internal/link-codes").header("X-Internal-Key", KEY)
+        JsonNode code = mapper.readTree(mvc.perform(post("/internal/link-codes").header("X-Internal-Key", KEY)
                 .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Map.of("phone", phone))))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
         Map<String, Object> body = new HashMap<>();
         body.put("phone", phone);
-        body.put("code", code.read("$.code", String.class));
+        body.put("code", code.get("code").asText());
         body.put("deviceId", "device-" + phone);
-        DocumentContext token = JsonPath.parse(mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)
+        JsonNode token = mapper.readTree(mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(body))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
-        return token.read("$.token", String.class);
+        return token.get("token").asText();
     }
 
     private static ResponseEntity<byte[]> ok(String json) {
@@ -129,5 +130,19 @@ class ChatFlowIntegrationTest {
                         .contentType("image/png").content(new byte[]{1, 2, 3}))
                 .andExpect(status().isCreated())
                 .andExpect(content().string("{\"mediaId\":\"x\"}"));
+    }
+
+    @Test
+    void deletingAFileNeedsSignInAndAProperId() throws Exception {
+        String phone = newPhone();
+        String token = signIn(phone);
+        String id = "11111111-2222-3333-4444-555555555555";
+
+        mvc.perform(delete("/api/chat/media/" + id)).andExpect(status().isUnauthorized());
+        mvc.perform(delete("/api/chat/media/..%2Fsecrets").header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
+
+        when(relay.call(eq(HttpMethod.DELETE), eq(phone), eq("/media/" + id), isNull(), isNull(), isNull(), isNull()))
+                .thenReturn(ResponseEntity.noContent().<byte[]>build());
+        mvc.perform(delete("/api/chat/media/" + id).header("Authorization", "Bearer " + token)).andExpect(status().isNoContent());
     }
 }

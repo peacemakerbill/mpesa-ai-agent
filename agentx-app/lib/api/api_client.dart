@@ -4,6 +4,8 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
+import '../models/business_account.dart';
+import '../models/business_operation.dart';
 import '../models/chat.dart';
 import '../models/mpesa_sms.dart';
 import '../models/wallet_action.dart';
@@ -111,9 +113,90 @@ class ApiClient {
     return ChatFile(response.bodyBytes, (response.headers['content-type'] ?? 'application/octet-stream').split(';').first.trim());
   }
 
+  /// Deletes one of this customer's files from the server. A file that is already gone counts as deleted.
+  Future<void> deleteChatFile(String mediaId) async {
+    try {
+      await _send('DELETE', '/api/chat/media/${Uri.encodeComponent(mediaId)}');
+    } on ApiException catch (e) {
+      if (e.status != 404) rethrow;
+    }
+  }
+
   Future<void> clearChat() async {
     await _send('DELETE', '/api/chat/messages');
   }
+
+  // ------------------------------------------------------------ business accounts
+
+  /// The business accounts of this customer, heads first and each head followed by its branches.
+  Future<List<BusinessAccount>> businessAccounts() async {
+    final json = await _send('GET', '/api/business-accounts');
+    final list = json['_list'];
+    return list is List ? list.whereType<Map<String, dynamic>>().map(BusinessAccount.fromJson).toList() : <BusinessAccount>[];
+  }
+
+  /// Creates an account, or changes one when [id] is given. On a change, a secret left out keeps the saved one.
+  Future<BusinessAccount> saveBusinessAccount(Map<String, dynamic> fields, {String? id}) async {
+    final json = await _send(id == null ? 'POST' : 'PUT', id == null ? '/api/business-accounts' : '/api/business-accounts/${Uri.encodeComponent(id)}', body: fields);
+    return BusinessAccount.fromJson(json);
+  }
+
+  /// Removes an account. A head takes its branches with it. Returns how many accounts were removed.
+  Future<int> deleteBusinessAccount(String id) async {
+    final json = await _send('DELETE', '/api/business-accounts/${Uri.encodeComponent(id)}');
+    return (json['removed'] as num?)?.toInt() ?? 0;
+  }
+
+  /// Asks Safaricom whether the saved key and secret work, and checks the certificate can lock the initiator password.
+  Future<VerifyOutcome> verifyBusinessAccount(String id) async =>
+      VerifyOutcome.fromJson(await _send('POST', '/api/business-accounts/${Uri.encodeComponent(id)}/verify'));
+
+  /// The example CSV file, as text.
+  Future<String> businessCsvTemplate() async {
+    final response = await _exec('GET', '/api/business-accounts/csv-template');
+    return utf8.decode(response.bodyBytes, allowMalformed: true);
+  }
+
+  /// Sends a CSV file. With [dryRun] true nothing is saved, the result only says what would happen.
+  Future<ImportResult> importBusinessCsv(Uint8List bytes, {required String fileName, required bool dryRun}) async {
+    final token = tokenProvider == null ? null : await tokenProvider!();
+    if (token == null) throw ApiException(401, 'Please sign in first.');
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/business-accounts/import?dryRun=$dryRun'))
+      ..headers['Authorization'] = 'Bearer $token'
+      ..headers['Accept'] = 'application/json'
+      ..files.add(http.MultipartFile.fromBytes('file', bytes, filename: _asciiName(fileName.isEmpty ? 'accounts.csv' : fileName)));
+    final http.Response response;
+    try {
+      response = await http.Response.fromStream(await _client.send(request).timeout(const Duration(seconds: 60)));
+    } on TimeoutException {
+      throw ApiException(0, 'The service took too long to answer. Please try again.');
+    } on Exception {
+      throw ApiException(0, 'Could not reach the service. Check your internet connection.');
+    }
+    final decoded = _decode(_check(response));
+    if (decoded is! Map<String, dynamic>) throw ApiException(response.statusCode, 'The file was not accepted.');
+    return ImportResult.fromJson(decoded);
+  }
+
+  // ------------------------------------------------------------ business requests made in the chat
+
+  /// The latest requests made on the customer's business accounts, newest first.
+  Future<List<BusinessOperation>> businessOperations() async {
+    final json = await _send('GET', '/api/business-operations');
+    final list = json['_list'];
+    return list is List ? list.whereType<Map<String, dynamic>>().map(BusinessOperation.fromJson).toList() : <BusinessOperation>[];
+  }
+
+  Future<BusinessOperation> businessOperation(String id) async =>
+      BusinessOperation.fromJson(await _send('GET', '/api/business-operations/${Uri.encodeComponent(id)}'));
+
+  /// Approves a request. The server sends it to Safaricom once, in this call, so it can take a few seconds.
+  Future<BusinessOperation> approveBusinessOperation(String id, {required bool biometric}) async => BusinessOperation.fromJson(await _send(
+      'POST', '/api/business-operations/${Uri.encodeComponent(id)}/approve',
+      body: {'method': biometric ? 'BIOMETRIC' : 'DEVICE_CREDENTIAL'}));
+
+  Future<BusinessOperation> declineBusinessOperation(String id) async =>
+      BusinessOperation.fromJson(await _send('POST', '/api/business-operations/${Uri.encodeComponent(id)}/decline'));
 
   /// HTTP header values must be plain ASCII, so other letters in a file name become underscores.
   static String _asciiName(String name) => name.replaceAll(RegExp(r'[^\x20-\x7e]'), '_');
@@ -206,6 +289,11 @@ class ApiClient {
     } on Exception {
       throw ApiException(0, 'Could not reach the service. Check your internet connection.');
     }
+    return _check(response);
+  }
+
+  /// Returns the response for a 2xx answer and throws [ApiException] with a plain message for anything else.
+  http.Response _check(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) return response;
 
     final decoded = _decode(response);
@@ -215,9 +303,11 @@ class ApiClient {
           ? 'Please sign in again.'
           : response.statusCode == 429
               ? 'Too many tries. Please wait a moment.'
-              : response.statusCode >= 500
-                  ? 'The service had a problem. Please try again.'
-                  : 'The request was not accepted.';
+              : response.statusCode == 413
+                  ? 'That file is too large.'
+                  : response.statusCode >= 500
+                      ? 'The service had a problem. Please try again.'
+                      : 'The request was not accepted.';
     }
     throw ApiException(response.statusCode, message);
   }

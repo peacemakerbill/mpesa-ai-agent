@@ -68,6 +68,16 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_GATEWAY, e.getMessage());
     }
 
+    @ExceptionHandler({VaultNotConfiguredException.class, CertificateMissingException.class})
+    public ResponseEntity<ApiError> notSetUp(RuntimeException e) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> tooLarge(org.springframework.web.multipart.MaxUploadSizeExceededException e) {
+        return build(HttpStatus.PAYLOAD_TOO_LARGE, "That file is too large.");
+    }
+
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<ApiError> tooMany(TooManyRequestsException e) {
         return build(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());

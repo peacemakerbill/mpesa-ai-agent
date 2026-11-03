@@ -107,7 +107,9 @@ No screen hard-codes a colour. Everything reads the palette through `context.tk`
 | `lib/models/mpesa_sms.dart`, `sms_match.dart` | Picks apart M-Pesa messages and finds the one for a request (patterns unverified) |
 | `lib/models/deep_link.dart` | Accepts only the two link shapes with a valid id |
 | `lib/services/` | Secure storage, biometric approval, launcher, SMS reader (Android) |
-| `lib/screens/` | Sign in, chat, contact finder, request list, request detail |
+| `lib/screens/` | Sign in, chat, contact finder, request list, request detail, settings, business accounts (list, form, CSV import), business operations, files and storage, My OneApp |
+| `lib/chat/mentions.dart`, `media_cache.dart`, `one_app.dart` | `@` mentions, the phone file cache with its size limit, and My OneApp |
+| `lib/models/business_account.dart`, `business_operation.dart` | Business accounts, CSV import result, and operations prepared from the chat |
 | `lib/widgets/` | Chat bubbles and shared pieces: panel, status tag, callout, amount, progress timeline, appearance sheet |
 | `lib/theme/app_theme.dart` | The ten looks and the `ThemeData` built from them |
 | `test/` | Hand-off, link parsing, models, API client, chat, contact parsers, sources and finder. Tests import `package:agentx_app/...`, so the project name must stay `agentx_app` |
@@ -132,6 +134,10 @@ No screen hard-codes a colour. Everything reads the palette through `context.tk`
 - **Sign-in codes** arrive by SMS only when the server has `CODE_DELIVERY=sms`. In `dev` mode the server returns the code to the app, for testing only.
 - **Device lock is not M-Pesa authentication.** It protects our approval step. M-Pesa still asks for its own PIN.
 - **Terms.** Check Safaricom's terms and any app store rules about a third party app that hands over to M-Pesa before you publish.
+
+## Business accounts, files and My OneApp
+
+See `docs/BUSINESS_ACCOUNTS.md`, `docs/FILES_AND_MY_ONEAPP.md` and `docs/ANDROID_LINKS.md`.
 
 ## More reading
 

@@ -30,6 +30,8 @@ import java.time.Duration;
 public class ChatController {
 
     private static final int MAX_MESSAGE_BYTES = 200_000;
+    /** A hard stop before the file is passed on. The real, smaller limit per kind of file is set in agent-service. */
+    private static final int MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 
     private final ChatRelay relay;
     private final SlidingWindowLimiter limiter;
@@ -75,6 +77,10 @@ public class ChatController {
         if (!limiter.allow("chat-upload:" + who.phone(), 30, Duration.ofMinutes(10))) {
             throw new TooManyRequestsException("You are uploading files very quickly. Please wait a few minutes.");
         }
+        if (bytes.length > MAX_UPLOAD_BYTES) {
+            return ResponseEntity.status(413).contentType(MediaType.APPLICATION_JSON)
+                    .body("{\"status\":413,\"message\":\"That file is too large.\"}".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        }
         MediaType type;
         try {
             type = contentType == null ? MediaType.APPLICATION_OCTET_STREAM : MediaType.parseMediaType(contentType);
@@ -91,5 +97,14 @@ public class ChatController {
             return ResponseEntity.notFound().build();
         }
         return relay.call(HttpMethod.GET, who.phone(), "/media/" + id, null, null, null, null);
+    }
+
+    /** Delete one of this customer's files from the server. Only the owner can; anyone else gets "not found". */
+    @DeleteMapping("/media/{id}")
+    public ResponseEntity<byte[]> deleteMedia(@PathVariable String id, @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
+        if (!id.matches("^[0-9a-fA-F-]{36}$")) {
+            return ResponseEntity.notFound().build();
+        }
+        return relay.call(HttpMethod.DELETE, who.phone(), "/media/" + id, null, null, null, null);
     }
 }

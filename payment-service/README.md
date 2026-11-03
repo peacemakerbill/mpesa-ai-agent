@@ -39,7 +39,7 @@ The AI agent never moves money. It asks this service for a payment after the cus
 ## Package layout
 
 ```text
-com.mganji.payment
+com.darajaagentx.payment
   PaymentServiceApplication
   controller/   InternalPaymentController, MpesaCallbackController      (HTTP in and out)
   service/      PaymentService, PaymentStateService, MpesaClient        (business rules, Daraja calls)
@@ -91,7 +91,7 @@ The default database when run directly is **MongoDB**. Set `DATABASE_TYPE=postgr
 
 | Variable | Meaning |
 |---|---|
-| `INTERNAL_KEY` | Shared secret sent as `X-Internal-Key` by agent-service and ganji-api |
+| `INTERNAL_KEY` | Shared secret sent as `X-Internal-Key` by agent-service and agentx-api |
 | `MPESA_BASE_URL` | Sandbox `https://sandbox.safaricom.co.ke`, production `https://api.safaricom.co.ke` |
 | `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET` | Daraja app credentials |
 | `MPESA_SHORTCODE` | Sandbox 174379, production your Paybill or Till |
