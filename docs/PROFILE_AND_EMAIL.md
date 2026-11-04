@@ -169,6 +169,8 @@ Start with `transport: log`. Everything works and nothing leaves the server. Swi
 
 ### The automatic emails
 
+The look and wording of each email are files in `agentx-api/src/main/resources/mail/templates`, with the date, time, copyright, reference and company details filled in automatically. See [EMAIL_TEMPLATES.md](EMAIL_TEMPLATES.md).
+
 | When | Who gets it | Notes |
 |---|---|---|
 | First time an email is verified | That address | A welcome. |

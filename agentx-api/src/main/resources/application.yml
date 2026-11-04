@@ -79,6 +79,24 @@ agentx:
   code-delivery: ${CODE_DELIVERY:log}
   # Name shown in the sign-in SMS
   app-name: ${AGENTX_APP_NAME:Daraja Agent-X}
+  # Details in the footer of every email. All optional, a blank one is left out.
+  # The design and wording of each email are files in src/main/resources/mail/templates.
+  brand:
+    # Where customers write for help. Blank uses MAIL_REPLY_TO, then MAIL_FROM.
+    support-email: ${AGENTX_SUPPORT_EMAIL:}
+    # Public address of the product. Shown as a link in the footer and on the welcome email's button.
+    website: ${AGENTX_WEBSITE:}
+    # Where the "Open" button goes: a Google Play or App Store link, or a web address that opens the app. Must start with https://.
+    # Blank uses the website. With neither set, the emails have no button.
+    app-url: ${AGENTX_APP_URL:}
+    tagline: ${AGENTX_TAGLINE:M-Pesa payments and reports, by chat}
+    # Name used in the copyright line, for example "Acme Payments Ltd". Blank uses app-name.
+    company: ${AGENTX_COMPANY:}
+    address: ${AGENTX_COMPANY_ADDRESS:}
+    # The two or three letters in the square logo. Blank uses the initials of app-name.
+    mark: ${AGENTX_BRAND_MARK:}
+    # A folder with edited copies of the email files, so the look can change without a rebuild. Blank uses the built in files.
+    templates-dir: ${MAIL_TEMPLATES_DIR:}
   # Locks the business credentials people save in the app (consumer secrets, initiator passwords, passkeys).
   # 32 random bytes in Base64: openssl rand -base64 32. Keep a copy somewhere safe. If this key is lost or changed,
   # saved credentials cannot be opened and people must enter them again. Blank turns saving business credentials off.

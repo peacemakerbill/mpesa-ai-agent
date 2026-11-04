@@ -56,7 +56,7 @@ This is a colour choice only. The emails carry no Safaricom or M-Pesa logo or na
 
 ### The pattern pictures
 
-The two bands are small PNG files, about 3 KB and 1 KB. The mail sender attaches them inside the email wherever the HTML says `src="cid:hero"` or `src="cid:edge"`, so they show without any web address and without a download. The header and bands sit on a green background, so with images switched off the email still looks green. To change a picture, replace the PNG (keep the name, 1200 by 144 and 1200 by 24 pixels for sharp screens), or add a new one and refer to it as `cid:NAME` in a template. With `MAIL_TEMPLATES_DIR` set, pictures are read from its `images` folder first.
+The two bands are small PNG files, about 3 KB and 1 KB. The mail sender attaches them inside the email wherever the HTML says `src="cid:hero"` or `src="cid:edge"`, so they show without any web address and without a download. If a picture cannot be found, the log says `The email picture "hero" was not found` and the tag is left out, so the reader sees a plain green bar instead of a broken picture icon. If you see that warning, the `images` folder is not on the classpath: check it is under `src/main/resources/mail/templates/` and rebuild or restart. The header and bands sit on a green background, so with images switched off the email still looks green. To change a picture, replace the PNG (keep the name, 1200 by 144 and 1200 by 24 pixels for sharp screens), or add a new one and refer to it as `cid:NAME` in a template. With `MAIL_TEMPLATES_DIR` set, pictures are read from its `images` folder first.
 
 ## What is in each email
 
@@ -71,6 +71,7 @@ Every email, without anyone asking, carries:
 | Copyright line with the year | footer | (c) 2026 Daraja Agent-X Ltd. All rights reserved. |
 | Why you got this email | footer | and how to switch it off |
 | Support address, website, company, address, tagline | footer | only the ones you have set |
+| "Open Daraja Agent-X" button | under the words of every email | only when `app-url` or `website` is set |
 
 On top of that: the code email says when the code stops working (`expires` is the sending time plus the code lifetime), a report shows the file type, its name, the number of rows and when it was made, a payment shows the M-Pesa code in the mono face, and a failed payment adds a "What to do next" note.
 
@@ -91,7 +92,8 @@ Under `agentx.brand` in `application.yml`. Every one is optional, and a blank on
 | Setting | Environment variable | Default | What it does |
 |---|---|---|---|
 | `support-email` | `AGENTX_SUPPORT_EMAIL` | blank | Footer "Questions? Write to". Blank uses `MAIL_REPLY_TO`, then `MAIL_FROM` (unless that is the placeholder `no-reply@localhost`). |
-| `website` | `AGENTX_WEBSITE` | blank | A link in the footer and the button on the welcome email. |
+| `website` | `AGENTX_WEBSITE` | blank | The public web address (https://). Shown in the footer, and as the button target when there is no `app-url`. |
+| `app-url` | `AGENTX_APP_URL` | blank | Where the "Open" button goes: a Google Play or App Store link, or a web address that opens the app. Must start with https://, because many mail programs refuse other kinds of link. With this set, the website gets its own small link under the button. |
 | `tagline` | `AGENTX_TAGLINE` | M-Pesa payments and reports, by chat | The last line of the footer. |
 | `company` | `AGENTX_COMPANY` | blank | The name in the copyright line and the footer. Blank uses `agentx.app-name`. |
 | `address` | `AGENTX_COMPANY_ADDRESS` | blank | Shown after the company name. |

@@ -39,6 +39,7 @@ public class MailConfig {
     MailBranding mailBranding(MailProperties props,
                               @Value("${agentx.brand.support-email:}") String supportEmail,
                               @Value("${agentx.brand.website:}") String website,
+                              @Value("${agentx.brand.app-url:}") String appUrl,
                               @Value("${agentx.brand.tagline:M-Pesa payments and reports, by chat}") String tagline,
                               @Value("${agentx.brand.company:}") String company,
                               @Value("${agentx.brand.address:}") String address,
@@ -51,7 +52,7 @@ public class MailConfig {
         if (support.isEmpty() && props.from() != null && !props.from().isBlank() && !props.from().trim().endsWith("@localhost")) {
             support = props.from().trim();
         }
-        MailBranding branding = new MailBranding(support, website, tagline, company, address, mark, templatesDir);
+        MailBranding branding = new MailBranding(support, website, appUrl, tagline, company, address, mark, templatesDir);
         MailRenderer.install(branding);
         if (!branding.templatesDir().isEmpty()) {
             log.info("Email templates are read from {} (files missing there come from the program)", branding.templatesDir());

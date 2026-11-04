@@ -147,6 +147,37 @@ class MailTemplateFilesTest {
     }
 
     @Test
+    void everyEmailHasAWayBackToTheAppOrTheWebsite() {
+        MailRenderer.install(new MailBranding("", "https://www.acme.co.ke/", "https://play.google.com/store/apps/details?id=ke.co.acme&hl=en", "", "", "", "", ""));
+        for (MailTemplates.Message m : all()) {
+            assertThat(m.html()).contains("Open Daraja Agent-X", "href=\"https://play.google.com/store/apps/details?id=ke.co.acme&amp;hl=en\"",
+                    "Or visit", "href=\"https://www.acme.co.ke/\"");
+        }
+        MailRenderer.install(new MailBranding("", "https://www.acme.co.ke/", "", "", "", "", ""));
+        for (MailTemplates.Message m : all()) {
+            assertThat(m.html()).contains("Open Daraja Agent-X", "href=\"https://www.acme.co.ke/\"");
+            assertThat(m.html()).doesNotContain("Or visit");
+        }
+    }
+
+    @Test
+    void onlyWebAddressesBecomeLinks() {
+        MailRenderer.install(new MailBranding("", "javascript:alert(1)", "agentx://open", "", "", "", "", ""));
+        MailTemplates.Message m = MailTemplates.welcome("Daraja Agent-X", "Amina", AT);
+        assertThat(m.html()).doesNotContain("javascript:", "agentx://", "Open Daraja Agent-X");
+        assertThat(new MailBranding("", "https://a b.co", "", "", "", "", "").website()).isEmpty();
+    }
+
+    @Test
+    void aMissingPictureIsLeftOutInsteadOfShowingABrokenIcon() {
+        MailRenderer.Prepared p = MailRenderer.prepare("<td><img src=\"cid:hero\" width=\"600\"></td><td><img src=\"cid:nope\" width=\"1\" alt=\"\"></td>");
+        assertThat(p.images().keySet()).containsExactly("hero");
+        assertThat(p.html()).contains("cid:hero");
+        assertThat(p.html()).doesNotContain("cid:nope", "<img src=\"cid:nope");
+        assertThat(MailRenderer.prepare(null).images()).isEmpty();
+    }
+
+    @Test
     void withoutCompanyDetailsNothingEmptyIsShown() {
         MailTemplates.Message w = MailTemplates.welcome("Daraja Agent-X", "Amina", AT);
         assertThat(w.html()).doesNotContain("mailto:", "Questions?", "Open Daraja Agent-X", "href=\"\"");

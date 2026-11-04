@@ -24,6 +24,7 @@
     .gutter { padding-left: 20px !important; padding-right: 20px !important; }
     .page-pad { padding: 0 !important; }
     .title { font-size: 29px !important; line-height: 33px !important; }
+    .brand-name { font-size: 19px !important; line-height: 22px !important; }
     .stack { display: block !important; width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; }
     .stack-gap { padding-bottom: 12px !important; }
     .slip-l { display: block !important; width: 100% !important; box-sizing: border-box; padding: 12px 0 0 0 !important; border-bottom: 0 !important; }
@@ -71,7 +72,7 @@
 <td align="left" valign="middle">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
 <td width="46" height="46" align="center" valign="middle" bgcolor="#43B02A" style="width:46px;height:46px;background-color:#43B02A;font-family:'DM Mono','Courier New',Courier,monospace;font-size:17px;font-weight:bold;color:#0C2414;letter-spacing:1px;"><span style="color:#0C2414;">{{brandMark}}</span></td>
-<td valign="middle" style="padding-left:13px;font-family:'Bricolage Grotesque','Trebuchet MS','Segoe UI',Helvetica,Arial,sans-serif;font-size:22px;line-height:25px;font-weight:800;letter-spacing:-0.5px;color:#FFFFFF;"><span style="color:#FFFFFF;">{{brand}}</span></td>
+<td class="brand-name" valign="middle" style="padding-left:13px;font-family:'Bricolage Grotesque','Trebuchet MS','Segoe UI',Helvetica,Arial,sans-serif;font-size:22px;line-height:25px;font-weight:800;letter-spacing:-0.5px;color:#FFFFFF;"><span style="color:#FFFFFF;">{{brand}}</span></td>
 </tr></table>
 </td>
 <td align="right" valign="middle" width="86">
@@ -95,9 +96,18 @@
 <h1 class="title tx" style="margin:0;font-family:'Bricolage Grotesque','Trebuchet MS','Segoe UI',Helvetica,Arial,sans-serif;font-size:37px;line-height:41px;font-weight:800;letter-spacing:-1.1px;color:#0C2414;">{{heading}}</h1>
 </td></tr>
 
-<tr><td class="gutter tx" style="padding:20px 36px 36px 36px;font-family:'Hanken Grotesk','Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:26px;color:#1B2E21;">
+<tr><td class="gutter tx" style="padding:20px 36px 32px 36px;font-family:'Hanken Grotesk','Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:26px;color:#1B2E21;">
 {{{content}}}
 </td></tr>
+
+{{#if openUrl}}
+<tr><td class="gutter" style="padding:0 36px 36px 36px;font-family:'Hanken Grotesk','Segoe UI',Helvetica,Arial,sans-serif;">
+{{> button}}
+{{#if siteUrl}}
+<p class="tx-muted" style="margin:14px 0 0 0;font-size:14px;line-height:22px;color:#4E6355;">Or visit <a class="link" href="{{siteUrl}}" style="color:#0A4A20;font-weight:bold;text-decoration:underline;">{{websiteLabel}}</a></p>
+{{/if}}
+</td></tr>
+{{/if}}
 
 <tr><td class="stub gutter" bgcolor="#E8F6DF" style="background-color:#E8F6DF;padding:18px 36px 20px 36px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>

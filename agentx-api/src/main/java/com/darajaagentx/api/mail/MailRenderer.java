@@ -1,5 +1,8 @@
 package com.darajaagentx.api.mail;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -27,6 +30,7 @@ import java.util.regex.Pattern;
  */
 final class MailRenderer {
 
+    private static final Logger log = LoggerFactory.getLogger(MailRenderer.class);
     static final ZoneId NAIROBI = ZoneId.of("Africa/Nairobi");
     private static final DateTimeFormatter LONG_DATE = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.ENGLISH).withZone(NAIROBI);
     private static final DateTimeFormatter SHORT_DATE = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH).withZone(NAIROBI);
@@ -134,6 +138,10 @@ final class MailRenderer {
         g.put("supportEmail", b.supportEmail());
         g.put("website", b.website());
         g.put("websiteLabel", websiteLabel(b.website()));
+        // The button back to the app or the site. With an app link it goes there and the website gets its own small link.
+        g.put("openUrl", b.appUrl().isEmpty() ? b.website() : b.appUrl());
+        g.put("openLabel", "Open " + brand);
+        g.put("siteUrl", !b.appUrl().isEmpty() && !b.website().isEmpty() ? b.website() : "");
         g.put("tagline", b.tagline());
         g.put("company", b.company());
         g.put("address", b.address());
@@ -225,6 +233,29 @@ final class MailRenderer {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    /** An email's HTML ready to send, and the pictures that go inside it. */
+    record Prepared(String html, java.util.Map<String, byte[]> images) {
+    }
+
+    /**
+     * Finds the pictures the HTML refers to with cid:NAME. A picture that cannot be found is logged and its tag is taken
+     * out, so the reader sees a plain coloured bar and not a broken picture icon.
+     */
+    static Prepared prepare(String html) {
+        java.util.Map<String, byte[]> images = new java.util.LinkedHashMap<>();
+        String out = html;
+        for (String name : imagesIn(html)) {
+            byte[] png = image(name);
+            if (png == null) {
+                log.warn("The email picture \"{}\" was not found in mail/templates/images, so it is left out of the email.", name);
+                out = out.replaceAll("<img[^>]*src=\"cid:" + Pattern.quote(name) + "\"[^>]*>", "");
+            } else {
+                images.put(name, png);
+            }
+        }
+        return new Prepared(out, images);
     }
 
     /** The picture names an HTML email refers to with cid:NAME, in order, each once. */

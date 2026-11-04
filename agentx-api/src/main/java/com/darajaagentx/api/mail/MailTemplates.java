@@ -55,15 +55,12 @@ public final class MailTemplates {
     }
 
     public static Message welcome(String brand, String name, Instant at) {
-        String website = MailRenderer.branding().website();
         Map<String, Object> d = new LinkedHashMap<>();
         d.put("greeting", MailRenderer.greeting(at, name));
         d.put("features", List.of(
                 item("title", "Pay by chat", "text", "Tell the chat what you want to pay and it prepares the request for you."),
                 item("title", "Business accounts", "text", "Set up your business accounts once, then send requests against them from the chat."),
                 item("title", "Reports", "text", "Ask for a report of your payments or requests and have it emailed as a PDF, Excel or CSV file.")));
-        d.put("buttonUrl", website);
-        d.put("buttonLabel", "Open " + brand);
         String digest = MailRenderer.greeting(at, name) + "\n\nYour " + brand + " account is ready, and this email address is now verified, so reports and alerts can reach you here.";
         return build("welcome", brand, at, Tone.OK, "Welcome to " + brand, "Welcome to " + brand, "Email verified",
                 "Your account is ready and this address will receive your reports and alerts.", null, digest, d);

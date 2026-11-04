@@ -66,13 +66,11 @@ public class SmtpMailTransport implements MailTransport {
             helper.setSubject(mail.subject());
             if (mail.html() != null) {
                 // HTML only. The plain text of a message is for the log and for tests, it is not sent.
-                helper.setText(mail.html(), true);
                 // The pattern bands are small pictures sent inside the email, so they show without a web address to fetch them from.
-                for (String name : MailRenderer.imagesIn(mail.html())) {
-                    byte[] png = MailRenderer.image(name);
-                    if (png != null) {
-                        helper.addInline(name, new org.springframework.core.io.ByteArrayResource(png), "image/png");
-                    }
+                MailRenderer.Prepared prepared = MailRenderer.prepare(mail.html());
+                helper.setText(prepared.html(), true);
+                for (java.util.Map.Entry<String, byte[]> picture : prepared.images().entrySet()) {
+                    helper.addInline(picture.getKey(), new org.springframework.core.io.ByteArrayResource(picture.getValue()), "image/png");
                 }
             } else {
                 helper.setText(mail.text(), false);
