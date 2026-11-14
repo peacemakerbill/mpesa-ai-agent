@@ -179,7 +179,7 @@ class _ContactFinderScreenState extends State<ContactFinderScreen> {
       children.add(Callout(_c.error!, tone: Tone.bad));
       children.add(const SizedBox(height: 10));
     }
-    if (_c.source == ContactSourceKind.phone) {
+    if (_c.source == ContactSourceKind.phone && !_c.phoneUnavailable) {
       children.add(Align(
         alignment: Alignment.centerLeft,
         child: TextButton.icon(onPressed: _systemChooser, icon: const Icon(Icons.contacts_outlined), label: const Text('Use the phone\'s own chooser')),

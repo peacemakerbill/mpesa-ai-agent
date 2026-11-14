@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import 'contact_errors.dart';
 import 'contact_models.dart';
 import 'parsers.dart';
 import 'sources.dart';
@@ -49,6 +50,9 @@ class ContactFinderController extends ChangeNotifier {
 
   /// True when the customer refused the contacts permission, so the screen can offer the phone's own chooser.
   bool phoneDenied = false;
+
+  /// True when this device has no address book or chooser the app can use (a computer, say), so the screen does not offer them.
+  bool phoneUnavailable = false;
 
   List<ContactEntry>? _phone;
   List<ContactEntry>? _file;
@@ -112,8 +116,14 @@ class ContactFinderController extends ChangeNotifier {
     } on ContactSourceException catch (e) {
       error = e.message;
       results = const [];
-    } on Exception catch (e) {
-      error = 'Contacts could not be read: $e';
+    } catch (e) {
+      final action = switch (source) {
+        ContactSourceKind.google => ContactAction.google,
+        ContactSourceKind.microsoft => ContactAction.microsoft,
+        _ => ContactAction.readPhone,
+      };
+      if (source == ContactSourceKind.phone && contactFeatureMissing(e)) phoneUnavailable = true;
+      error = contactProblem(e, action);
       results = const [];
     }
     busy = false;
@@ -130,8 +140,10 @@ class ContactFinderController extends ChangeNotifier {
       error = list.isEmpty ? 'No contacts with a phone number were found in ${picked.name}.' : null;
       results = filterContacts(list, query);
       searched = true;
-    } on Exception catch (e) {
-      error = 'That file could not be read: $e';
+    } on ContactSourceException catch (e) {
+      error = e.message;
+    } catch (e) {
+      error = contactProblem(e, ContactAction.readFile);
     }
     notifyListeners();
   }
@@ -140,8 +152,9 @@ class ContactFinderController extends ChangeNotifier {
   Future<ContactEntry?> chooseWithSystemPicker() async {
     try {
       return await addressBook.chooseWithSystemPicker();
-    } on Exception catch (e) {
-      error = 'The contact chooser could not open: $e';
+    } catch (e) {
+      if (contactFeatureMissing(e)) phoneUnavailable = true;
+      error = contactProblem(e, ContactAction.chooser);
       notifyListeners();
       return null;
     }

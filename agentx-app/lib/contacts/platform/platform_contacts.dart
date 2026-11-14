@@ -6,6 +6,7 @@ import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../config.dart';
+import '../contact_errors.dart';
 import '../contact_models.dart';
 import '../contact_services.dart';
 import '../sources.dart';
@@ -86,8 +87,8 @@ class PlatformAccessTokens implements AccessTokens {
       return token;
     } on ContactSourceException {
       rethrow;
-    } on Exception catch (e) {
-      throw ContactSourceException('Google sign-in failed: $e');
+    } catch (e) {
+      throw ContactSourceException(contactProblem(e, ContactAction.google));
     }
   }
 
@@ -114,8 +115,8 @@ class PlatformAccessTokens implements AccessTokens {
       return token;
     } on ContactSourceException {
       rethrow;
-    } on Exception catch (e) {
-      throw ContactSourceException('Microsoft sign-in failed: $e');
+    } catch (e) {
+      throw ContactSourceException(contactProblem(e, ContactAction.microsoft));
     }
   }
 

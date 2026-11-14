@@ -34,6 +34,8 @@ The lookup happens in the chat (when the assistant asks "who is Mama?"), in the 
 | **A file** | A `.vcf` (vCard 2.1, 3.0 or 4.0) or `.csv` export from any address book, CRM or phone | Nothing |
 | **Type it** | A name and number typed by hand | Nothing |
 
+**When a source cannot work.** A computer (Linux, Windows) has no address book the app can read, and some have no file chooser or Google sign-in. The app says so in a plain sentence, hides the phone chooser, and points to the other tabs (Google, vCard or CSV, Type it). Technical error text is written to the debug log only, never shown to the customer.
+
 Numbers are shown the Kenyan way (`0712 345 678`) whatever the source wrote (`+254 712 345 678`, `254712345678`, `712345678`).
 
 <div align="center">
