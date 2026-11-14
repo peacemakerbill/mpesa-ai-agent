@@ -125,7 +125,8 @@ public class BusinessOperationService {
             log.info("Safaricom's answers to STK Pushes go to {}/daraja/business/...", where);
         } else {
             log.warn("Safaricom's answers to STK Pushes would go to {}, but {}. The prompt still reaches the phone, and the result is then fetched "
-                    + "from Safaricom about every minute instead. Set AGENTX_STK_CALLBACK_URL to a public https address to get it at once.", where, problem);
+                    + "from Safaricom about every minute instead. Set AGENTX_STK_CALLBACK_URL to a public https address to get it at once, or in development "
+                    + "start with ./run-dev.sh to open a tunnel for you.", where, problem);
         }
     }
 
