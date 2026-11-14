@@ -31,8 +31,8 @@ class ContactFinderController extends ChangeNotifier {
     required this.microsoft,
     required this.files,
     required this.microsoftConfigured,
-    String query = '',
-  }) : query = query;
+    this.query = '',
+  });
 
   final AddressBook addressBook;
   final GoogleContactsClient google;

@@ -24,7 +24,7 @@ class AppState extends ChangeNotifier {
     this.store = store ?? SecureStore();
     this.api = api ?? ApiClient(baseUrl: AppConfig.apiBaseUrl, tokenProvider: this.store.token);
     this.approval = approval ?? Approval();
-    this.launcher = launcher ?? Launcher();
+    this.launcher = launcher ?? const Launcher();
     this.contacts = contacts ?? createPlatformContactServices();
     this.chatDevice = chatDevice ?? PlatformChatDevice();
     this.sms = sms ?? DeviceSmsReader();

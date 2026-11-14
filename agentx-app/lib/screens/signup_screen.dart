@@ -631,8 +631,6 @@ class _CodeEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.tk;
-    final p = t.p;
     return Semantics(
       label: '6 digit code',
       textField: true,

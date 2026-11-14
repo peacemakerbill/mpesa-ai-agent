@@ -536,7 +536,7 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
 
 /// A text box for a secret. It hides the characters until the eye is pressed, and never offers suggestions.
 class _SecretField extends StatefulWidget {
-  const _SecretField({required this.controller, required this.label, this.savedNote, this.help, this.mandatory = false, this.minLength = 1, this.extra});
+  const _SecretField({required this.controller, required this.label, this.savedNote, this.help, this.minLength = 1, this.extra});
 
   final TextEditingController controller;
   final String label;
@@ -544,7 +544,6 @@ class _SecretField extends StatefulWidget {
   /// Shown instead of [help] when a value is already saved.
   final String? savedNote;
   final String? help;
-  final bool mandatory;
   final int minLength;
   final String? Function(String value)? extra;
 
@@ -578,7 +577,7 @@ class _SecretFieldState extends State<_SecretField> {
         final value = (v ?? '').trim();
         final extra = widget.extra?.call(value);
         if (extra != null) return extra;
-        if (value.isEmpty) return widget.mandatory ? 'This is required.' : null;
+        if (value.isEmpty) return null;
         if (value.startsWith('PASTE_')) return 'Replace the placeholder with the real value.';
         if (!_noSpace.hasMatch(value) || value.length < widget.minLength) return 'Check you copied all of it, at least ${widget.minLength} characters.';
         return null;
