@@ -152,6 +152,30 @@
       "name": "agentx.hand-off.ussd-templates",
       "type": "java.util.Map<java.lang.String,java.lang.String>",
       "description": "USSD string per request type, with the placeholders {amount} {phone} {paybill} {account} {till}. Verify each with the M-Pesa team. The app falls back to guided steps when a template is empty. Keys are SEND_MONEY, PAY_BILL, PAY_TILL and BUY_AIRTIME."
+    },
+    {
+      "name": "agentx.business.reconcile.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Runs the job that recovers STK Pushes whose callback from Safaricom never arrived. Set with AGENTX_RECONCILE_ENABLED.",
+      "defaultValue": true
+    },
+    {
+      "name": "agentx.business.reconcile.interval",
+      "type": "java.time.Duration",
+      "description": "How often that job runs. Set with AGENTX_RECONCILE_INTERVAL.",
+      "defaultValue": "PT1M"
+    },
+    {
+      "name": "agentx.business.reconcile.min-age",
+      "type": "java.time.Duration",
+      "description": "How long an STK Push waits for Safaricom's callback before Safaricom is asked directly. Set with AGENTX_RECONCILE_MIN_AGE.",
+      "defaultValue": "PT2M"
+    },
+    {
+      "name": "agentx.business.reconcile.give-up-after",
+      "type": "java.time.Duration",
+      "description": "After this long without an answer an STK Push is marked UNKNOWN, so the owner checks the M-Pesa statement. Set with AGENTX_RECONCILE_GIVE_UP_AFTER.",
+      "defaultValue": "PT15M"
     }
   ],
   "hints": [

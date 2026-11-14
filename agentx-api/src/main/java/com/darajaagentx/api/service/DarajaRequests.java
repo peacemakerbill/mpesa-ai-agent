@@ -13,7 +13,7 @@ import java.util.Map;
  * secret from storage, so it can be checked on its own. The spellings Daraja really uses are kept, including
  * "Occassion" for B2C and B2Pochi and "RecieverIdentifierType".
  *
- * <p>STK Push, STK query, B2C, status, balance, reversal and QR follow the calls payment-service already makes.
+ * <p>STK Push, STK query, B2C, status, balance, reversal and QR follow Safaricom's Daraja documentation for each API.
  * B2Pochi and Pull follow Safaricom's published pages. B2B follows the usual Daraja shape and has not been run
  * against a live shortcode.
  */

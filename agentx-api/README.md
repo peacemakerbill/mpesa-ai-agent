@@ -128,6 +128,8 @@ Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS accoun
 | `STORAGE_TYPE` | `local` (default) or `network`: where profile pictures are kept |
 | `STORAGE_LOCAL_PATH`, `STORAGE_NETWORK_PATH`, `STORAGE_NETWORK_SUBFOLDER`, `STORAGE_NETWORK_CREATE`, `STORAGE_MAX_PICTURE_BYTES` | Folder, mounted share, sub folder, create it if missing, picture size limit |
 | `SIGNUP_ENABLED` | `true` (default). `false` closes sign up |
+| `AGENTX_BUSINESS_MAX_AMOUNT`, `AGENTX_BUSINESS_APPROVAL_TTL`, `AGENTX_BUSINESS_STK_PER_HOUR`, `AGENTX_BUSINESS_APPROVE_COLLECTIONS` | Limits on requests made on business accounts |
+| `AGENTX_RECONCILE_ENABLED`, `AGENTX_RECONCILE_INTERVAL`, `AGENTX_RECONCILE_MIN_AGE`, `AGENTX_RECONCILE_GIVE_UP_AFTER` | The job that asks Safaricom about an STK Push whose callback never arrived (defaults: on, every 1 minute, after 2 minutes, give up after 15 minutes) |
 | `CORS_ALLOWED_ORIGINS` | For the browser console only |
 
 > [!CAUTION]
@@ -138,7 +140,7 @@ Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS accoun
 The profile ymls for PostgreSQL, MySQL and MongoDB carry the resilience settings: Flyway retries the connection 6 times, 5 seconds apart, Hikari gives up after 5 seconds, and the Mongo URI sets `serverSelectionTimeoutMS=5000`. A database that is still starting delays boot instead of crashing it, and one that is missing produces one clear failure.
 
 > [!NOTE]
-> The 503 answers for database and broker outages that payment-service has are not in this service yet. Add them to `GlobalExceptionHandler` the same way.
+> This service does not answer 503 for database and broker outages yet. Add that to `GlobalExceptionHandler`.
 
 ## Known gaps
 

@@ -166,7 +166,7 @@ class BusinessOperationServiceTest {
             switch (method.getName()) {
                 case "save" -> {
                     BusinessOperation o = (BusinessOperation) args[0];
-                    o.prepareForMongo(Instant.now());
+                    o.prepareForMongo(clock.instant());
                     operationRows.put(o.getId(), o);
                     return o;
                 }
@@ -183,6 +183,9 @@ class BusinessOperationServiceTest {
                     List<BusinessOperation> mine = new ArrayList<>(operationRows.values().stream().filter(o -> o.getOwnerPhone().equals(args[0])).toList());
                     Collections.reverse(mine);
                     return mine.size() > 30 ? mine.subList(0, 30) : mine;
+                }
+                case "findTop50ByStatusAndTypeAndCreatedAtBeforeOrderByCreatedAtAsc" -> {
+                    return operationRows.values().stream().filter(o -> o.getStatus() == args[0] && o.getType() == args[1] && o.getCreatedAt().isBefore((Instant) args[2])).limit(50).toList();
                 }
                 case "findByOwnerPhoneAndStatus" -> {
                     return operationRows.values().stream().filter(o -> o.getOwnerPhone().equals(args[0]) && o.getStatus() == args[1]).toList();
@@ -359,6 +362,66 @@ class BusinessOperationServiceTest {
         BusinessOperation op = prepare("Counter two", "STK_PUSH", params("amount", "5", "phone", "0712345678"), "x").operation();
         assertThat(op.getStatus()).isEqualTo(BusinessOperationStatus.FAILED);
         assertThat(op.getFailure()).contains("Invalid Access Token");
+    }
+
+    // ---------------------------------------------------------------- a callback that never came
+
+    private static final Duration MIN_AGE = Duration.ofMinutes(2);
+    private static final Duration GIVE_UP = Duration.ofMinutes(15);
+
+    private BusinessOperation submittedPush(String key) {
+        daraja.answer = Map.of("ResponseCode", "0", "CheckoutRequestID", "ws_CO_" + key);
+        return prepare("Counter two", "STK_PUSH", params("amount", "5", "phone", "0712345678"), key).operation();
+    }
+
+    @Test
+    void aPushWhoseCallbackNeverCameIsSettledBySafaricomsAnswer() {
+        BusinessOperation push = submittedPush("lost1");
+        assertThat(service.reconcileStalledPushes(MIN_AGE, GIVE_UP)).isZero();
+        assertThat(push.getStatus()).isEqualTo(BusinessOperationStatus.SUBMITTED);
+
+        clock.advance(Duration.ofMinutes(3));
+        daraja.answer = Map.of("ResponseCode", "0", "ResultCode", "0", "ResultDesc", "The service request is processed successfully.");
+        assertThat(service.reconcileStalledPushes(MIN_AGE, GIVE_UP)).isEqualTo(1);
+        assertThat(push.getStatus()).isEqualTo(BusinessOperationStatus.SUCCEEDED);
+        assertThat(daraja.lastPath()).isEqualTo("/mpesa/stkpushquery/v1/query");
+        assertThat(daraja.lastBody().get("CheckoutRequestID")).isEqualTo("ws_CO_lost1");
+        assertThat(chat.last()).contains("The customer paid");
+    }
+
+    @Test
+    void aPushTheCustomerCancelledIsMarkedFailedWhenCheckedLater() {
+        BusinessOperation push = submittedPush("lost2");
+        clock.advance(Duration.ofMinutes(3));
+        daraja.answer = Map.of("ResponseCode", "0", "ResultCode", "1032", "ResultDesc", "Request cancelled by user");
+        assertThat(service.reconcileStalledPushes(MIN_AGE, GIVE_UP)).isEqualTo(1);
+        assertThat(push.getStatus()).isEqualTo(BusinessOperationStatus.FAILED);
+        assertThat(chat.last()).contains("Request cancelled by user");
+    }
+
+    @Test
+    void aPushStillBeingProcessedIsLeftAloneUntilItIsGivenUpOn() {
+        BusinessOperation push = submittedPush("lost3");
+        clock.advance(Duration.ofMinutes(3));
+        daraja.failure = new DarajaRefusedException("The transaction is being processed");
+        assertThat(service.reconcileStalledPushes(MIN_AGE, GIVE_UP)).isZero();
+        assertThat(push.getStatus()).isEqualTo(BusinessOperationStatus.SUBMITTED);
+
+        clock.advance(Duration.ofMinutes(15));
+        assertThat(service.reconcileStalledPushes(MIN_AGE, GIVE_UP)).isEqualTo(1);
+        assertThat(push.getStatus()).isEqualTo(BusinessOperationStatus.UNKNOWN);
+        assertThat(push.getFailure()).contains("M-Pesa statement");
+        assertThat(chat.last()).contains("No answer from Safaricom");
+    }
+
+    @Test
+    void aPushThatAlreadyHasItsAnswerIsNotCheckedAgain() {
+        BusinessOperation push = submittedPush("lost4");
+        service.onCallback(push.getId(), push.getCallbackToken(), "callback", Map.of("Body", Map.of("stkCallback", Map.of("ResultCode", 1032, "ResultDesc", "Request cancelled by user"))));
+        int calls = daraja.paths.size();
+        clock.advance(Duration.ofMinutes(30));
+        assertThat(service.reconcileStalledPushes(MIN_AGE, GIVE_UP)).isZero();
+        assertThat(daraja.paths).hasSize(calls);
     }
 
     @Test

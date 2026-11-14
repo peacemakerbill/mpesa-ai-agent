@@ -36,6 +36,9 @@ agentx:
   max-amount: 250000
   min-airtime: 5
   public-base-url: https://app.example.test
+  business:
+    reconcile:
+      enabled: false
   vault:
     key: YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
   hand-off:

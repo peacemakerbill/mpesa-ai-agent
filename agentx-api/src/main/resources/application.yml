@@ -119,6 +119,13 @@ agentx:
     approve-collections: ${AGENTX_BUSINESS_APPROVE_COLLECTIONS:false}
     stk-per-hour: ${AGENTX_BUSINESS_STK_PER_HOUR:20}
     max-open-approvals: 10
+    # Safety net for an STK Push whose answer from Safaricom never arrived. Every interval it asks Safaricom about pushes
+    # that have waited longer than min-age, and marks a push UNKNOWN after give-up-after so the owner checks the M-Pesa statement.
+    reconcile:
+      enabled: ${AGENTX_RECONCILE_ENABLED:true}
+      interval: ${AGENTX_RECONCILE_INTERVAL:PT1M}
+      min-age: ${AGENTX_RECONCILE_MIN_AGE:PT2M}
+      give-up-after: ${AGENTX_RECONCILE_GIVE_UP_AFTER:PT15M}
   # ---------------------------------------------------------------------------------------------------------------
   # Email. Used for the code that verifies a customer's email address, the welcome and sign in notices, the notice when a
   # payment or business request finishes, and reports the customer asks to have emailed (PDF, CSV or Excel).

@@ -452,6 +452,70 @@ public class BusinessOperationService {
         finish(op, BusinessOperationStatus.SUCCEEDED, text, op.getType() == BusinessOperationType.BALANCE || op.getType() == BusinessOperationType.STATUS ? null : receipt, true);
     }
 
+    // ------------------------------------------------------------------ lost callbacks
+
+    /**
+     * A safety net for an STK Push whose answer never reached us. Safaricom accepted the push and the customer may well have paid, but
+     * the callback was lost. Every push that has waited longer than minAge is checked with Safaricom's STK query, and a final answer
+     * settles it the same way the callback would have. A push that is still unanswered after giveUpAfter becomes UNKNOWN, so the owner
+     * checks the M-Pesa statement. Nothing is ever sent to the customer again.
+     *
+     * @return how many pushes were settled or given up on
+     */
+    public int reconcileStalledPushes(Duration minAge, Duration giveUpAfter) {
+        int changed = 0;
+        for (BusinessOperation waiting : ops.findTop50ByStatusAndTypeAndCreatedAtBeforeOrderByCreatedAtAsc(
+                BusinessOperationStatus.SUBMITTED, BusinessOperationType.STK_PUSH, clock.instant().minus(minAge))) {
+            try {
+                if (reconcileOne(waiting.getId(), giveUpAfter)) {
+                    changed++;
+                }
+            } catch (RuntimeException e) {
+                log.warn("Could not check STK Push {} with Safaricom: {}", waiting.getId(), e.getMessage());
+            }
+        }
+        return changed;
+    }
+
+    private boolean reconcileOne(UUID id, Duration giveUpAfter) {
+        synchronized (lockFor(id)) {
+            BusinessOperation op = ops.findById(id).orElse(null);
+            if (op == null || op.getType() != BusinessOperationType.STK_PUSH || op.getStatus() != BusinessOperationStatus.SUBMITTED) {
+                return false;   // the callback got there first
+            }
+            Instant now = clock.instant();
+            if (!blank(op.getCheckoutRequestId())) {
+                try {
+                    ResolvedCredentials c = accounts.resolve(op.getOwnerPhone(), op.getAccountId());
+                    if (c.passkey() != null) {
+                        DarajaRequests.Call call = DarajaRequests.stkQuery(c, op.getCheckoutRequestId(), now);
+                        Map<String, Object> answer = daraja.post(c.environment(), c.consumerKey(), c.consumerSecret(), call.path(), call.body());
+                        String resultCode = str(answer.get("ResultCode"));
+                        if (resultCode != null) {
+                            boolean paid = "0".equals(resultCode);
+                            String text = paid ? "The customer paid. Safaricom confirmed it when we checked, the M-Pesa code is in your statement."
+                                    : "Not paid: " + firstNonBlank(str(answer.get("ResultDesc")), "the customer did not complete it") + ".";
+                            finish(op, paid ? BusinessOperationStatus.SUCCEEDED : BusinessOperationStatus.FAILED, text, null, true);
+                            return true;
+                        }
+                    }
+                } catch (DarajaRefusedException e) {
+                    log.debug("STK Push {} is still being processed: {}", id, e.getMessage());
+                } catch (RuntimeException e) {
+                    log.debug("STK Push {} could not be checked yet: {}", id, e.getMessage());
+                }
+            }
+            if (op.getCreatedAt() != null && op.getCreatedAt().plus(giveUpAfter).isBefore(now)) {
+                op.setStatus(BusinessOperationStatus.UNKNOWN);
+                op.setFailure("Safaricom never confirmed this payment. The customer may or may not have paid. Check your M-Pesa statement before asking again.");
+                BusinessOperation saved = ops.save(op);
+                notifier.text(op.getOwnerPhone(), "*No answer from Safaricom*\n\n" + saved.getSummary() + "\n\n" + saved.getFailure());
+                return true;
+            }
+            return false;
+        }
+    }
+
     // ------------------------------------------------------------------ ending an operation
 
     private BusinessOperation finish(BusinessOperation op, BusinessOperationStatus status, String text, String receipt, boolean tellChat) {
