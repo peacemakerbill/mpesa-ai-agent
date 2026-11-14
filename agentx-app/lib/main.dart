@@ -19,7 +19,34 @@ import 'widgets/ui.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  if (AppConfig.missingServerAddress) {
+    runApp(const _MissingServerAddress());
+    return;
+  }
   runApp(const AgentXApp());
+}
+
+/// Shown by a release build that was made without API_BASE_URL. Customers never see it, because the build that goes out is
+/// checked first. It only turns a silent failure into a sentence the person who built the app can act on.
+class _MissingServerAddress extends StatelessWidget {
+  const _MissingServerAddress();
+
+  @override
+  Widget build(BuildContext context) => const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: EdgeInsets.all(32),
+              child: Text(
+                'This build does not know where the server is.\n\n'
+                'Build it again with --dart-define=API_BASE_URL=https://your-server',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+      );
 }
 
 class AgentXApp extends StatefulWidget {

@@ -17,6 +17,7 @@ hs_err_pid*
 .mvn/wrapper/maven-wrapper.jar
 
 # Flutter and Dart
+agentx-app/env/local.json
 .dart_tool/
 .packages
 .pub-cache/

@@ -153,9 +153,15 @@ Look for `"environment":"staging"`. If a service refuses to start, its log says 
 
 ## Step 6. Point the app at it
 
+Save the address once, in `agentx-app/env/staging.json`, then run:
+
 ```
-flutter run --dart-define=API_BASE_URL=https://agentx-api-free-bgp.onrender.com
+cd agentx-app
+tool/app.sh staging set API_BASE_URL https://agentx-api-free-bgp.onrender.com
+tool/app.sh staging run
 ```
+
+Use your own address. The file is committed, so the next build, and anyone else on the team, uses it without typing it again. See `agentx-app/env/README.md`.
 
 The app shows a small `staging` label in the corner. To see the wake-up screen, leave the services alone for 20 minutes and open the app again.
 

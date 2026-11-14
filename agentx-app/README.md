@@ -61,17 +61,19 @@ The platform folders (`android/`, `ios/`, `linux/`, `macos/`, `windows/`) are ma
 ```bash
 flutter pub get
 flutter analyze && flutter test
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8084
+flutter run
 ```
 
-Pick the right `API_BASE_URL` for the device:
+With no setting, the app looks for a server on your own computer: `http://10.0.2.2:8084` on the Android emulator and `http://localhost:8084` everywhere else. For any other server, pass `API_BASE_URL`:
 
 | Device | `API_BASE_URL` |
 |---|---|
-| Android emulator | `http://10.0.2.2:8084` (the default) |
-| Linux, macOS or Windows | `http://localhost:8084` |
+| Android emulator | Nothing needed, the default is `http://10.0.2.2:8084` |
+| Linux, macOS, Windows, iOS simulator | Nothing needed, the default is `http://localhost:8084` |
 | Real phone on the same Wi-Fi | `http://<your computer's IP>:8084` |
-| Release build | `https://<your public host>` |
+| Release build | `https://<your public host>`, required. A release build without it shows a message and nothing else. |
+
+The addresses for staging and production are kept in `env/*.json` and used by `tool/app.sh`, so they are typed once. See [`env/README.md`](env/README.md).
 
 Plain `http` needs `android:usesCleartextTraffic="true"` in the debug manifest and an App Transport Security exception on iOS. Use https for anything real. Microsoft contact sign-in also needs `--dart-define=MS_CLIENT_ID=<id>`, see [`docs/CONTACTS.md`](docs/CONTACTS.md).
 

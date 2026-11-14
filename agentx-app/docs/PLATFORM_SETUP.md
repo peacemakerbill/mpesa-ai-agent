@@ -197,7 +197,7 @@ No files to edit. Install the build packages:
 ```bash
 sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libsecret-1-dev libjsoncpp-dev \
   libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good gstreamer1.0-libav
-flutter run -d linux --dart-define=API_BASE_URL=http://localhost:8084
+flutter run -d linux
 ```
 
 `libsecret` is for the secure token store, and the GStreamer packages are for voice note playback.
@@ -207,7 +207,7 @@ flutter run -d linux --dart-define=API_BASE_URL=http://localhost:8084
 Build on a Windows PC with Visual Studio 2022 and the "Desktop development with C++" workload. Turn on Developer Mode in Windows Settings, because Flutter plugins need symlinks. Then:
 
 ```bash
-flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8084
+flutter run -d windows
 ```
 
 ## 6. Run settings in Android Studio
@@ -215,15 +215,17 @@ flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8084
 Run, Edit Configurations, select `main.dart`, then fill in Additional run args:
 
 ```
---dart-define=API_BASE_URL=http://10.0.2.2:8084 --dart-define=MS_CLIENT_ID=<your Microsoft app id>
+--dart-define=MS_CLIENT_ID=<your Microsoft app id>
 ```
+
+The server address needs no setting on your own computer. The default is picked by platform. For other servers pass `--dart-define=API_BASE_URL=...`:
 
 | Device | `API_BASE_URL` |
 |---|---|
-| Android emulator | `http://10.0.2.2:8084` |
-| Linux, macOS or Windows | `http://localhost:8084` |
+| Android emulator | Default, `http://10.0.2.2:8084` |
+| Linux, macOS, Windows, iOS simulator | Default, `http://localhost:8084` |
 | Real phone on your Wi-Fi | `http://<your computer's IP>:8084` |
-| Release | `https://YOUR_HOST` |
+| Release | `https://YOUR_HOST`, required. A release build made without it shows a short message instead of the app. |
 
 ## What differs between the platforms
 

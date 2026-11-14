@@ -86,9 +86,11 @@ Sign-in codes on staging: `CODE_SHOW_IN_APP` decides whether the app shows the c
 The app reads the server's environment and shows a corner label for `staging` and `development`. Point a test build at staging like this:
 
 ```
-flutter run --dart-define=API_BASE_URL=https://agentx-api-staging.onrender.com
-flutter build apk --dart-define=API_BASE_URL=https://agentx-api-staging.onrender.com
+tool/app.sh staging run
+tool/app.sh staging build apk
 ```
+
+The address lives in `agentx-app/env/staging.json`, and `env/production.json` holds the live one. `tool/app.sh staging set API_BASE_URL <address>` updates it. See `agentx-app/env/README.md`.
 
 A release build for the store uses the production address and shows no label. Android build flavors (a separate app id so staging and production can be installed side by side) are not set up. Add them if testers need both on one phone.
 
