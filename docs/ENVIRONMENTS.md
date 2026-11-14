@@ -68,7 +68,7 @@ APP_ENV=development
 
 On Render, `deploy/render/render.yaml` sets `APP_ENV=production` in the shared variable group, so both services get it. `render.staging.yaml` sets `staging`.
 
-Use the same value for agentx-api and agent-service. The console shows it as a small label next to the service lights, and the phone app shows a corner label on anything that is not production. Both read it from `GET /api/config`, so they always tell the truth about the server they are connected to.
+Use the same value for agentx-api and agent-service. The console shows it as a small label next to the service lights, and the phone app shows a corner label on a staging copy. Production and a developer's own machine show none. Both read it from `GET /api/config`, so they always tell the truth about the server they are connected to.
 
 ## Running a staging copy on Render
 
@@ -83,7 +83,7 @@ Sign-in codes on staging: `CODE_SHOW_IN_APP` decides whether the app shows the c
 
 ## The phone app
 
-The app reads the server's environment and shows a corner label for `staging` and `development`. Point a test build at staging like this:
+The app reads the server's environment and shows a corner label for `staging`, so a tester never mistakes it for the live system. A development machine shows no label. Point a test build at staging like this:
 
 ```
 tool/app.sh staging run

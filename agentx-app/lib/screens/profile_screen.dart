@@ -164,10 +164,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       showDragHandle: true,
       builder: (c) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Padding(padding: EdgeInsets.fromLTRB(20, 0, 8, 0), child: SheetHeader(title: 'Profile picture')),
           ListTile(leading: const Icon(Icons.photo_camera_outlined), title: const Text('Take a photo'), onTap: () => Navigator.pop(c, 'camera')),
           ListTile(leading: const Icon(Icons.photo_library_outlined), title: const Text('Choose from your photos'), onTap: () => Navigator.pop(c, 'gallery')),
           if (p != null && p.hasPicture)
             ListTile(leading: const Icon(Icons.delete_outline), title: const Text('Remove the picture'), onTap: () => Navigator.pop(c, 'remove')),
+          const Padding(padding: EdgeInsets.fromLTRB(20, 8, 20, 16), child: SheetCloseButton()),
         ]),
       ),
     );

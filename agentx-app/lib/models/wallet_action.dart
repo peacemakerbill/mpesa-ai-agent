@@ -130,6 +130,9 @@ class HandoffConfig {
   /// True for a developer machine or the shared test copy, where the app shows a corner label so nobody mistakes it for the live system.
   bool get isTestSystem => environment == 'staging' || environment == 'development';
 
+  /// Only the shared test copy gets the corner label. A developer's own machine shows nothing, because the person running it knows.
+  bool get showsCornerLabel => environment == 'staging';
+
   static const HandoffConfig fallback = HandoffConfig(
     ussdMain: '*334#',
     mpesaAndroidPackage: '',

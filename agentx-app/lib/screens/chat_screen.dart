@@ -333,39 +333,45 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (sheet) {
         final t = sheet.tk;
         return SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
-            child: Wrap(alignment: WrapAlignment.center, spacing: 12, runSpacing: 12, children: [
-              for (final e in entries)
-                SizedBox(
-                  width: 92,
-                  child: InkWell(
-                    borderRadius: t.corners,
-                    onTap: () {
-                      Navigator.pop(sheet);
-                      e.$3();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Column(children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: t.p.accentSoft,
-                            border: Border.all(color: t.p.accentLine),
-                            shape: t.square ? BoxShape.rectangle : BoxShape.circle,
-                          ),
-                          child: Icon(e.$1, color: t.p.ink),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            const Padding(padding: EdgeInsets.fromLTRB(20, 0, 8, 0), child: SheetHeader(title: 'Attach')),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                child: Wrap(alignment: WrapAlignment.center, spacing: 12, runSpacing: 12, children: [
+                  for (final e in entries)
+                    SizedBox(
+                      width: 92,
+                      child: InkWell(
+                        borderRadius: t.corners,
+                        onTap: () {
+                          Navigator.pop(sheet);
+                          e.$3();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Column(children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: t.p.accentSoft,
+                                border: Border.all(color: t.p.accentLine),
+                                shape: t.square ? BoxShape.rectangle : BoxShape.circle,
+                              ),
+                              child: Icon(e.$1, color: t.p.ink),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(e.$2, style: Theme.of(sheet).textTheme.bodySmall, textAlign: TextAlign.center),
+                          ]),
                         ),
-                        const SizedBox(height: 6),
-                        Text(e.$2, style: Theme.of(sheet).textTheme.bodySmall, textAlign: TextAlign.center),
-                      ]),
+                      ),
                     ),
-                  ),
-                ),
-            ]),
-          ),
+                ]),
+              ),
+            ),
+            const Padding(padding: EdgeInsets.fromLTRB(20, 4, 20, 16), child: SheetCloseButton()),
+          ]),
         );
       },
     );

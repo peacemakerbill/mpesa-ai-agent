@@ -7,6 +7,7 @@ import '../api/api_client.dart';
 import '../chat/chat_device.dart';
 import '../models/chat.dart';
 import '../theme/app_theme.dart';
+import 'ui.dart';
 
 /// What a message can ask the screen to do.
 class BubbleActions {
@@ -167,7 +168,6 @@ class MessageBubble extends StatelessWidget {
   }
 
   void _showRows(BuildContext context) {
-    final text = Theme.of(context).textTheme;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -175,17 +175,22 @@ class MessageBubble extends StatelessWidget {
       builder: (sheet) => SafeArea(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(sheet).height * 0.7),
-          child: ListView(shrinkWrap: true, padding: const EdgeInsets.fromLTRB(8, 12, 8, 12), children: [
-            Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), child: Text(message.listTitle ?? 'Choose', style: text.titleMedium)),
-            for (final row in message.rows)
-              ListTile(
-                title: Text(row.title),
-                subtitle: row.description == null ? null : Text(row.description!),
-                onTap: () {
-                  Navigator.pop(sheet);
-                  actions.onRow(row);
-                },
-              ),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Padding(padding: const EdgeInsets.fromLTRB(24, 4, 8, 0), child: SheetHeader(title: message.listTitle ?? 'Choose')),
+            Flexible(
+              child: ListView(shrinkWrap: true, padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), children: [
+                for (final row in message.rows)
+                  ListTile(
+                    title: Text(row.title),
+                    subtitle: row.description == null ? null : Text(row.description!),
+                    onTap: () {
+                      Navigator.pop(sheet);
+                      actions.onRow(row);
+                    },
+                  ),
+              ]),
+            ),
+            const Padding(padding: EdgeInsets.fromLTRB(20, 4, 20, 16), child: SheetCloseButton()),
           ]),
         ),
       ),

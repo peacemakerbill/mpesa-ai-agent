@@ -143,6 +143,32 @@ void main() {
     expect(store.saved, 'graphite');
   });
 
+  testWidgets('the appearance sheet closes from the top and from the bottom', (tester) async {
+    final state = AppState(store: _FakeStore());
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.build(state.theme),
+      home: Builder(
+        builder: (context) => Scaffold(
+          body: Center(child: FilledButton(onPressed: () => showThemeSheet(context, state), child: const Text('Open'))),
+        ),
+      ),
+    ));
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    expect(find.text('Appearance'), findsOneWidget);
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pumpAndSettle();
+    expect(find.text('Appearance'), findsNothing);
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    expect(find.text('Appearance'), findsOneWidget);
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Close'));
+    await tester.pumpAndSettle();
+    expect(find.text('Appearance'), findsNothing);
+  });
+
   test('the saved look is loaded when the app starts', () async {
     final store = _FakeStore()..saved = 'pwani';
     final state = AppState(store: store);

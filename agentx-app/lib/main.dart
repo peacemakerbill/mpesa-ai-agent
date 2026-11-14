@@ -139,14 +139,13 @@ class _AgentXAppState extends State<AgentXApp> with WidgetsBindingObserver {
             maxScaleFactor: 1.4,
             child: child ?? const SizedBox.shrink(),
           );
-          // A test copy of the server (APP_ENV is staging or development) gets a corner label, so a tester never
-          // mistakes it for the live system. The live system shows nothing.
-          final env = state.config.environment;
-          if (!state.config.isTestSystem) return app;
+          // The shared test copy of the server (APP_ENV is staging) gets a corner label, so a tester never mistakes it
+          // for the live system. The live system and a developer's own machine show nothing.
+          if (!state.config.showsCornerLabel) return app;
           return Banner(
-            message: env,
+            message: state.config.environment,
             location: BannerLocation.topEnd,
-            color: env == 'staging' ? const Color(0xFFB54708) : const Color(0xFF475467),
+            color: const Color(0xFFB54708),
             child: app,
           );
         },

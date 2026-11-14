@@ -57,4 +57,11 @@ void main() {
     expect(HandoffConfig.fromJson({}).environment, '');
     expect(HandoffConfig.fallback.isTestSystem, isFalse);
   });
+
+  test('only the shared staging copy shows the corner label', () {
+    expect(HandoffConfig.fromJson({'environment': 'staging'}).showsCornerLabel, isTrue);
+    expect(HandoffConfig.fromJson({'environment': 'development'}).showsCornerLabel, isFalse);
+    expect(HandoffConfig.fromJson({'environment': 'production'}).showsCornerLabel, isFalse);
+    expect(HandoffConfig.fallback.showsCornerLabel, isFalse);
+  });
 }

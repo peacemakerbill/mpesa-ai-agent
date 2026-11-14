@@ -584,6 +584,45 @@ class AppDialog extends StatelessWidget {
   }
 }
 
+/// The top of a bottom sheet: the title on the left and a close button on the right, so a sheet can be closed without
+/// reaching for the drag handle or the dimmed area behind it.
+class SheetHeader extends StatelessWidget {
+  const SheetHeader({super.key, required this.title, this.subtitle});
+
+  final String title;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Expanded(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: text.titleLarge),
+            if (subtitle != null) ...[const SizedBox(height: 4), Text(subtitle!, style: text.bodySmall)],
+          ]),
+        ),
+      ),
+      IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.close), tooltip: 'Close'),
+    ]);
+  }
+}
+
+/// A full width Close button for the bottom of a bottom sheet.
+class SheetCloseButton extends StatelessWidget {
+  const SheetCloseButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Close')),
+    );
+  }
+}
+
 /// Lets the customer pick one of the ten looks. The choice is saved on the phone.
 Future<void> showThemeSheet(BuildContext context, AppState state) {
   return showModalBottomSheet<void>(
@@ -594,15 +633,12 @@ Future<void> showThemeSheet(BuildContext context, AppState state) {
     builder: (sheetContext) => ListenableBuilder(
       listenable: state,
       builder: (context, _) {
-        final t = context.tk;
         final text = Theme.of(context).textTheme;
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Appearance', style: text.titleLarge),
-              const SizedBox(height: 4),
-              Text('Saved on this device.', style: text.bodySmall),
+              const SheetHeader(title: 'Appearance', subtitle: 'Saved on this device.'),
               const SizedBox(height: 12),
               Flexible(
                 child: SingleChildScrollView(
@@ -621,7 +657,8 @@ Future<void> showThemeSheet(BuildContext context, AppState state) {
                   ]),
                 ),
               ),
-              SizedBox(height: t.square ? 0 : 4),
+              const SizedBox(height: 12),
+              const SheetCloseButton(),
             ]),
           ),
         );
