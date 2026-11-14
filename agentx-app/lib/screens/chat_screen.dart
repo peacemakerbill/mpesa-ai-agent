@@ -17,6 +17,7 @@ import '../models/chat.dart';
 import '../profile/profile_avatar.dart';
 import '../theme/app_theme.dart';
 import '../widgets/chat_bubbles.dart';
+import '../widgets/enter_to_send.dart';
 import '../widgets/mention_panel.dart';
 import '../widgets/otp_approval.dart';
 import '../widgets/ui.dart';
@@ -103,7 +104,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final _text = TextEditingController();
-  final _focus = FocusNode();
+  late final FocusNode _focus = FocusNode(onKeyEvent: _onKey);
   final List<_Pending> _tray = [];
   final Map<String, Future<ChatFile>> _files = {};
   bool _recording = false;
@@ -332,6 +333,15 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   // ------------------------------------------------------------ sending
+
+  /// Enter sends, and Shift+Enter or Alt+Enter starts a new line, on a keyboard. The message box is not used while a voice note is recorded.
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) => handleEnterToSend(
+        event,
+        controller: _text,
+        canSend: !_recording && !_chat.sending,
+        hasAttachment: _tray.isNotEmpty,
+        send: () => unawaited(_send()),
+      );
 
   Future<void> _send() async {
     final text = _text.text.trim();

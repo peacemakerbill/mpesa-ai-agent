@@ -2038,7 +2038,19 @@ function wireComposer() {
     text.style.height = 'auto'; text.style.height = Math.min(text.scrollHeight, 140) + 'px';
   };
   text.addEventListener('input', refresh);
-  text.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
+  // Enter sends. Shift+Enter, Alt+Enter, Ctrl+Enter and Cmd+Enter put in a new line at the cursor.
+  text.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.isComposing) return;
+    e.preventDefault();
+    if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) {
+      const a = text.selectionStart, b = text.selectionEnd;
+      text.value = text.value.slice(0, a) + '\n' + text.value.slice(b);
+      text.selectionStart = text.selectionEnd = a + 1;
+      refresh();
+      return;
+    }
+    sendChat();
+  });
   text.addEventListener('paste', (e) => { const f = Array.from((e.clipboardData || {}).files || []); if (f.length) { e.preventDefault(); stageFiles(f); } });
   $('#chForm').addEventListener('submit', (e) => { e.preventDefault(); sendChat(); });
   $('#chChips').addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (c) { text.value = c.dataset.say; refresh(); sendChat(); } });
