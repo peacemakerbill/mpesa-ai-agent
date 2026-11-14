@@ -133,14 +133,20 @@
     {
       "name": "agentx.code-delivery",
       "type": "java.lang.String",
-      "description": "How sign-in codes reach people. log writes the code to this service's log, for a developer. dev also returns it to the app, for a test console only, never on a real system. sms sends it through Africa's Talking, see the sms block. Set with CODE_DELIVERY.",
+      "description": "How sign-in codes are delivered. log writes the code to this service's log, for a developer. sms sends it through Africa's Talking, see the sms block. dev is the old name for log with the code shown in the app (see agentx.show-code-in-app). Set with CODE_DELIVERY.",
       "defaultValue": "log"
+    },
+    {
+      "name": "agentx.show-code-in-app",
+      "type": "java.lang.String",
+      "description": "Whether the app also shows the sign-in code on its own screen, so a tester needs no text message. auto shows it in development and staging and never in production. true is the same, and production refuses to start. false never shows it: use it once agentx.code-delivery is sms. With sms and the code shown, a failed text does not block signing in, because the code is on screen. Anyone who knows a phone number could sign in as it while a code is shown. Set with CODE_SHOW_IN_APP.",
+      "defaultValue": "auto"
     },
     {
       "name": "agentx.app-name",
       "type": "java.lang.String",
       "description": "Name shown in the sign-in SMS. Set with AGENTX_APP_NAME.",
-      "defaultValue": "Assistant"
+      "defaultValue": "Daraja Agent-X"
     },
     {
       "name": "agentx.hand-off.ussd-main",
@@ -348,12 +354,29 @@
           "description": "Write the code to this service's log. For a developer."
         },
         {
-          "value": "dev",
-          "description": "Also return the code to the app. For a test console only, never on a real system."
-        },
-        {
           "value": "sms",
           "description": "Send the code by SMS through Africa's Talking."
+        },
+        {
+          "value": "dev",
+          "description": "The old name for log with the code shown in the app. Use agentx.show-code-in-app instead."
+        }
+      ]
+    },
+    {
+      "name": "agentx.show-code-in-app",
+      "values": [
+        {
+          "value": "auto",
+          "description": "Shown in the app in development and staging, never in production. The default."
+        },
+        {
+          "value": "true",
+          "description": "The same as auto, and production refuses to start."
+        },
+        {
+          "value": "false",
+          "description": "Never shown. Use this once codes are sent by SMS."
         }
       ]
     },
