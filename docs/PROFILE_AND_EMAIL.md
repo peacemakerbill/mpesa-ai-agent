@@ -13,7 +13,7 @@
 
 Customers can create an account, keep a profile, and have reports and alerts sent to their email.
 
-<sub><a href="../README.md">Back to the project overview</a> &nbsp;|&nbsp; <a href="../APPLY.md">Apply this update</a> &nbsp;|&nbsp; <a href="../agent-service/HOOKS4.md">Agent edits</a></sub>
+<sub><a href="../README.md">Back to the project overview</a> &nbsp;|&nbsp; <a href="../agent-service/HOOKS4.md">Agent edits</a></sub>
 
 <img src="assets/divider.svg" alt="" width="100%"/>
 
@@ -188,7 +188,7 @@ The look and wording of each email are files in `agentx-api/src/main/resources/m
 | A report is sent to anyone other than the owner | The owner's verified email | A short notice listing who got it, so a customer notices if someone else asked on their behalf. |
 | An email address needs verifying | That address | The 6 digit code. |
 
-Sign in emails need one small edit to `AuthController` in your repository, which `agentx-api/tools/apply_profile_hooks.py` makes for you (see APPLY.md). Payment emails cover payments made from the app (the same event that puts the news in the chat) and business requests made from the chat.
+Sign in emails need one small edit to `AuthController` in your repository, which `agentx-api/tools/apply_profile_hooks.py` makes for you (it is already applied in this repository, and the script is safe to run again). Payment emails cover payments made from the app (the same event that puts the news in the chat) and business requests made from the chat.
 
 ## Reports by email
 

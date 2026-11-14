@@ -160,7 +160,7 @@ screen is where you check them.
 1. Safaricom must be able to reach agentx-api to send results. Set `AGENTX_PUBLIC_BASE_URL` to the public HTTPS address. Sandbox callbacks do not work against `localhost`.
 2. agentx-api and agent-service need the same `INTERNAL_KEY`. agentx-api puts results into the chat through agent-service (`/internal/notify/{phone}`), and
    agent-service reads accounts and prepares requests through agentx-api (`/internal/business`).
-3. On Android, the approval link needs a second path in the manifest next to the existing `/a/` one. See `APPLY.md`.
+3. On Android, the approval link needs a second path in the manifest next to the existing `/a/` one. See [ANDROID_LINKS.md](ANDROID_LINKS.md).
 
 ## Not yet
 
