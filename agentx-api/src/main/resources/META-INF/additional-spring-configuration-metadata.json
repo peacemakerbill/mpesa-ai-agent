@@ -42,6 +42,18 @@
       "description": "Shared secret between our own services, sent in the X-Internal-Key header. Only agent-service calls /internal/**. Set with INTERNAL_KEY."
     },
     {
+      "name": "agentx.env",
+      "type": "java.lang.String",
+      "description": "Which copy of the system this is: development, staging (uat means the same) or production. production refuses to start with development only settings; staging only warns. Outside production, production Daraja is refused and email subjects get a [DEV] or [STAGING] tag. Set with APP_ENV.",
+      "defaultValue": "development"
+    },
+    {
+      "name": "agentx.allow-live-daraja",
+      "type": "java.lang.Boolean",
+      "description": "Lets a copy that is not production call Safaricom's production Daraja. Leave false unless you really mean it. Set with AGENTX_ALLOW_LIVE_DARAJA.",
+      "defaultValue": false
+    },
+    {
       "name": "agentx.token-secret",
       "type": "java.lang.String",
       "description": "Signs the phone app's login tokens and hashes link codes. At least 32 random characters. Set with AGENTX_TOKEN_SECRET."
@@ -176,24 +188,211 @@
       "type": "java.time.Duration",
       "description": "After this long without an answer an STK Push is marked UNKNOWN, so the owner checks the M-Pesa statement. Set with AGENTX_RECONCILE_GIVE_UP_AFTER.",
       "defaultValue": "PT15M"
+    },
+    {
+      "name": "agentx.brand.support-email",
+      "type": "java.lang.String",
+      "description": "Where customers write for help, shown in the email footer. Blank uses MAIL_REPLY_TO, then MAIL_FROM. Set with AGENTX_SUPPORT_EMAIL.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.brand.website",
+      "type": "java.lang.String",
+      "description": "Public address of the product. Shown as a link in the email footer and on the welcome email's button. Set with AGENTX_WEBSITE.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.brand.app-url",
+      "type": "java.lang.String",
+      "description": "Where the Open button in the emails goes: a Google Play or App Store link, or a web address that opens the app. Must start with https://. Blank uses the website. With neither set, the emails have no button. Set with AGENTX_APP_URL.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.brand.tagline",
+      "type": "java.lang.String",
+      "description": "The line under the name in the email header. Set with AGENTX_TAGLINE.",
+      "defaultValue": "M-Pesa payments and reports, by chat"
+    },
+    {
+      "name": "agentx.brand.company",
+      "type": "java.lang.String",
+      "description": "Name used in the copyright line of the emails, for example Acme Payments Ltd. Blank uses agentx.app-name. Set with AGENTX_COMPANY.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.brand.address",
+      "type": "java.lang.String",
+      "description": "Postal or street address shown in the email footer. Blank leaves it out. Set with AGENTX_COMPANY_ADDRESS.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.brand.mark",
+      "type": "java.lang.String",
+      "description": "The two or three letters in the square logo of the emails. Blank uses the initials of agentx.app-name. Set with AGENTX_BRAND_MARK.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.brand.templates-dir",
+      "type": "java.lang.String",
+      "description": "A folder with edited copies of the email files, so the look can change without a rebuild. Blank uses the built in files. Set with MAIL_TEMPLATES_DIR.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.vault.key",
+      "type": "java.lang.String",
+      "description": "Locks the business credentials people save in the app (consumer secrets, initiator passwords, passkeys). 32 random bytes in Base64, made with openssl rand -base64 32. Keep a copy somewhere safe: if this key is lost or changed, saved credentials cannot be opened and people must enter them again. Blank turns saving business credentials off. Set with AGENTX_VAULT_KEY.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.storage.type",
+      "type": "java.lang.String",
+      "description": "Where files are kept: profile pictures, and chat files when agent-service uses CHAT_MEDIA_STORE=agentx. local is a folder on this server, network is a mounted shared folder, database is the database this service already uses (no disk needed), cloudinary is Cloudinary as private files. Set with STORAGE_TYPE.",
+      "defaultValue": "local"
+    },
+    {
+      "name": "agentx.storage.local.path",
+      "type": "java.lang.String",
+      "description": "Folder used when the type is local. Created when missing. Set with STORAGE_LOCAL_PATH.",
+      "defaultValue": "./data/files"
+    },
+    {
+      "name": "agentx.storage.network.path",
+      "type": "java.lang.String",
+      "description": "Where the shared folder is mounted, for example /mnt/agentx. It must already exist. Used when the type is network. Set with STORAGE_NETWORK_PATH.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.storage.network.create-if-missing",
+      "type": "java.lang.Boolean",
+      "description": "Create the mount folder when it is not there. Leave false so a share that failed to mount is noticed instead of replaced by an empty local folder. Set with STORAGE_NETWORK_CREATE.",
+      "defaultValue": false
+    },
+    {
+      "name": "agentx.storage.network.subfolder",
+      "type": "java.lang.String",
+      "description": "A folder inside the share, so several services can use one share. Set with STORAGE_NETWORK_SUBFOLDER.",
+      "defaultValue": "agentx-api"
+    },
+    {
+      "name": "agentx.storage.database.max-file-bytes",
+      "type": "java.lang.Long",
+      "description": "Biggest file kept in the database, in bytes. Bigger files are refused with a clear message. MongoDB documents stop at 16 MB, so stay below that. Used when the type is database. Set with STORAGE_DB_MAX_FILE_BYTES.",
+      "defaultValue": 15728640
+    },
+    {
+      "name": "agentx.storage.cloudinary.url",
+      "type": "java.lang.String",
+      "description": "The address shown in the Cloudinary dashboard, cloudinary://API_KEY:API_SECRET@CLOUD_NAME. When it is set, cloud-name, api-key and api-secret are not needed. Used when the type is cloudinary. Set with CLOUDINARY_URL.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.storage.cloudinary.cloud-name",
+      "type": "java.lang.String",
+      "description": "The Cloudinary cloud name. Set with STORAGE_CLOUDINARY_CLOUD_NAME.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.storage.cloudinary.api-key",
+      "type": "java.lang.String",
+      "description": "The Cloudinary API key. Set with STORAGE_CLOUDINARY_API_KEY.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.storage.cloudinary.api-secret",
+      "type": "java.lang.String",
+      "description": "The Cloudinary API secret. Keep it out of the repository. Set with STORAGE_CLOUDINARY_API_SECRET.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.storage.cloudinary.folder",
+      "type": "java.lang.String",
+      "description": "A folder in the cloud, so one account can serve several apps. Files are uploaded as private (authenticated) raw files. Set with STORAGE_CLOUDINARY_FOLDER.",
+      "defaultValue": "agentx"
+    },
+    {
+      "name": "agentx.storage.purge-interval",
+      "type": "java.time.Duration",
+      "description": "How often files in the database that are past their keep time (chat files) are removed. Set with STORAGE_PURGE_INTERVAL.",
+      "defaultValue": "PT1H"
+    },
+    {
+      "name": "agentx.storage.max-picture-bytes",
+      "type": "java.lang.Integer",
+      "description": "Biggest profile picture accepted, in bytes, before it is shrunk. Set with STORAGE_MAX_PICTURE_BYTES.",
+      "defaultValue": 3145728
     }
   ],
   "hints": [
     {
+      "name": "agentx.env",
+      "values": [
+        {
+          "value": "development",
+          "description": "Your own machine. Nothing is checked."
+        },
+        {
+          "value": "staging",
+          "description": "The shared test copy (uat is the same). Warns about settings production would refuse."
+        },
+        {
+          "value": "production",
+          "description": "The live system. Refuses to start with development only settings."
+        }
+      ]
+    },
+    {
       "name": "agentx.code-delivery",
       "values": [
-        { "value": "log", "description": "Write the code to this service's log. For a developer." },
-        { "value": "dev", "description": "Also return the code to the app. For a test console only, never on a real system." },
-        { "value": "sms", "description": "Send the code by SMS through Africa's Talking." }
+        {
+          "value": "log",
+          "description": "Write the code to this service's log. For a developer."
+        },
+        {
+          "value": "dev",
+          "description": "Also return the code to the app. For a test console only, never on a real system."
+        },
+        {
+          "value": "sms",
+          "description": "Send the code by SMS through Africa's Talking."
+        }
+      ]
+    },
+    {
+      "name": "agentx.storage.type",
+      "values": [
+        {
+          "value": "local",
+          "description": "A folder on this server."
+        },
+        {
+          "value": "network",
+          "description": "A shared folder mounted on this server: NFS, SMB or CIFS, a NAS."
+        },
+        {
+          "value": "database",
+          "description": "The database this service already uses. No disk and no other account needed. Files up to database.max-file-bytes."
+        },
+        {
+          "value": "cloudinary",
+          "description": "Cloudinary, as private files. Needs an account."
+        }
       ]
     },
     {
       "name": "agentx.hand-off.ussd-templates.keys",
       "values": [
-        { "value": "SEND_MONEY" },
-        { "value": "PAY_BILL" },
-        { "value": "PAY_TILL" },
-        { "value": "BUY_AIRTIME" }
+        {
+          "value": "SEND_MONEY"
+        },
+        {
+          "value": "PAY_BILL"
+        },
+        {
+          "value": "PAY_TILL"
+        },
+        {
+          "value": "BUY_AIRTIME"
+        }
       ]
     }
   ]
