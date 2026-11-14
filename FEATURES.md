@@ -116,6 +116,8 @@ Picked from the palette button in the app bar. The browser console offers the sa
 
 Request states: `CREATED`, `APPROVED`, `HANDED_OFF`, `DONE_REPORTED`, `NOT_DONE`, `DECLINED`, `CANCELLED`, `EXPIRED`.
 
+**Clearing requests.** A finished request (done, not done, declined, cancelled or expired) can be cleared from the customer's list: one at a time with the small close button on its card, several at once with Select requests, or all of them with Clear finished requests. Clearing hides the request from the customer only. The record stays on the server, so reports, receipt matching and disputes still see it, and opening it by its id still works. A request that is still open (`CREATED`, `APPROVED`, `HANDED_OFF`) is never cleared: one request answers 409, and a bulk clear skips it and says how many were left.
+
 ## Safety and privacy built in
 
 <div align="center">
@@ -245,7 +247,7 @@ Not included, because they belonged to the removed payment-service: staff roles 
 
 **[`postman/`](postman/README.md)**
 
-A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 126 requests, and a walkthrough you can run with the collection runner.
+A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 129 requests, and a walkthrough you can run with the collection runner.
 
 </td>
 <td width="50%" valign="top">

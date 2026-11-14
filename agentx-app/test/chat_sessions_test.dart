@@ -305,6 +305,42 @@ void main() {
       s.chat.dispose();
     });
 
+    test('several chats can be deleted together and the others stay', () async {
+      final s = _setup();
+      s.server.setLive('Wallet', ['Hello']);
+      s.server.addKept('Rent', ['Pay rent']);
+      s.server.addKept('Airtime', ['Buy airtime']);
+      s.server.addKept('Fuel', ['Fuel']);
+      await s.chat.poll();
+      await s.chat.refreshSessions(force: true);
+      final ids = [
+        for (final c in s.chat.sessions)
+          if (c.title == 'Rent' || c.title == 'Airtime') c.id,
+      ];
+
+      expect(await s.chat.deleteChats(ids), isNull);
+
+      expect(s.chat.sessions.map((c) => c.title), unorderedEquals(['Wallet', 'Fuel']));
+      expect(texts(s.chat), ['Hello']);
+      s.chat.dispose();
+    });
+
+    test('deleting several chats stops at a refusal and says so', () async {
+      final s = _setup();
+      s.server.setLive('Wallet', ['Hello']);
+      s.server.addKept('Rent', ['Pay rent']);
+      await s.chat.poll();
+      await s.chat.refreshSessions(force: true);
+      s.server.busy = 'The assistant is replying. Try again in a moment.';
+      final rent = s.chat.sessions.firstWhere((c) => c.title == 'Rent');
+
+      final err = await s.chat.deleteChats([rent.id]);
+
+      expect(err, contains('replying'));
+      expect(s.chat.sessions.map((c) => c.title), contains('Rent'));
+      s.chat.dispose();
+    });
+
     test('a refusal comes back as a sentence and the screen stays as it was', () async {
       final s = _setup();
       s.server.setLive('Wallet', ['Hello']);

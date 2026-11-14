@@ -8,7 +8,8 @@ import '../widgets/ui.dart';
 
 const double _columnWidth = 760;
 
-/// The customer's chats: open an old one, start a new one, rename, pin and delete. Swipe a chat to the left to delete it.
+/// The customer's chats: open an old one, start a new one, rename, pin and delete. Swipe a chat to the left to delete it, or
+/// choose Select chats (or press and hold a chat) to tick several and delete them together.
 class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key, required this.chat});
 
@@ -21,7 +22,74 @@ class ChatsScreen extends StatefulWidget {
 class _ChatsScreenState extends State<ChatsScreen> {
   final _search = TextEditingController();
 
+  /// Select mode: the chats ticked so far.
+  bool _selecting = false;
+  final Set<String> _picked = {};
+
   ChatController get _chat => widget.chat;
+
+  List<ChatSession> get _shown => [
+        for (final s in _chat.sessions)
+          if (s.matches(_search.text)) s,
+      ];
+
+  void _startSelecting([ChatSession? first]) {
+    setState(() {
+      _selecting = true;
+      _picked
+        ..clear()
+        ..addAll(first == null ? const <String>[] : [first.id]);
+    });
+  }
+
+  void _stopSelecting() {
+    setState(() {
+      _selecting = false;
+      _picked.clear();
+    });
+  }
+
+  void _toggle(ChatSession s) {
+    setState(() {
+      if (!_picked.remove(s.id)) _picked.add(s.id);
+    });
+  }
+
+  void _selectAll() {
+    setState(() {
+      _picked
+        ..clear()
+        ..addAll(_shown.map((s) => s.id));
+    });
+  }
+
+  Future<void> _deletePicked() async {
+    final chosen = [
+      for (final s in _chat.sessions)
+        if (_picked.contains(s.id)) s,
+    ];
+    if (chosen.isEmpty) return;
+    final includesOpen = chosen.any((s) => s.active);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AppDialog(
+        title: Text(chosen.length == 1 ? 'Delete this chat?' : 'Delete ${chosen.length} chats?'),
+        content: Text(
+          '${chosen.length == 1 ? 'The chat you ticked and its messages are' : 'The ${chosen.length} chats you ticked and their messages are'} deleted for good.'
+          '${includesOpen ? ' A new empty chat takes the place of the open one.' : ''}',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Keep')),
+          TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Delete')),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final err = await _chat.deleteChats([for (final s in chosen) s.id]);
+    if (!mounted) return;
+    if (err != null) _toast(err);
+    _stopSelecting();
+  }
 
   @override
   void initState() {
@@ -122,16 +190,25 @@ class _ChatsScreenState extends State<ChatsScreen> {
       listenable: _chat,
       builder: (context, _) => Scaffold(
         appBar: AppBar(
-          title: const Text('Chats'),
-          actions: [
-            IconButton(onPressed: _chat.switching ? null : _new, icon: const Icon(Icons.add_comment_outlined), tooltip: 'New chat'),
-            PopupMenuButton<String>(
-              tooltip: 'More',
-              enabled: !_chat.switching,
-              onSelected: (_) => _deleteAll(),
-              itemBuilder: (_) => const [PopupMenuItem(value: 'all', child: Text('Delete all chats'))],
-            ),
-          ],
+          leading: _selecting ? IconButton(onPressed: _chat.switching ? null : _stopSelecting, icon: const Icon(Icons.close), tooltip: 'Cancel selection') : null,
+          title: Text(_selecting ? (_picked.isEmpty ? 'Select chats' : '${_picked.length} selected') : 'Chats'),
+          actions: _selecting
+              ? [
+                  IconButton(onPressed: _chat.switching ? null : _selectAll, icon: const Icon(Icons.select_all), tooltip: 'Select all'),
+                  IconButton(onPressed: _chat.switching || _picked.isEmpty ? null : _deletePicked, icon: const Icon(Icons.delete_outline), tooltip: 'Delete selected'),
+                ]
+              : [
+                  IconButton(onPressed: _chat.switching ? null : _new, icon: const Icon(Icons.add_comment_outlined), tooltip: 'New chat'),
+                  PopupMenuButton<String>(
+                    tooltip: 'More',
+                    enabled: !_chat.switching,
+                    onSelected: (v) => v == 'select' ? _startSelecting() : _deleteAll(),
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(value: 'select', child: Text('Select chats')),
+                      PopupMenuItem(value: 'all', child: Text('Delete all chats')),
+                    ],
+                  ),
+                ],
           bottom: _chat.switching ? const PreferredSize(preferredSize: Size.fromHeight(2), child: LinearProgressIndicator(minHeight: 2)) : null,
         ),
         body: _body(context),
@@ -147,10 +224,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
       );
     }
     if (!_chat.sessionsLoaded) return const Center(child: CircularProgressIndicator());
-    final shown = [
-      for (final s in _chat.sessions)
-        if (s.matches(_search.text)) s,
-    ];
+    final shown = _shown;
     return LayoutBuilder(
       builder: (context, box) {
         final side = sidePad(box.maxWidth, maxWidth: _columnWidth);
@@ -182,6 +256,51 @@ class _ChatsScreenState extends State<ChatsScreen> {
     final t = context.tk;
     final text = Theme.of(context).textTheme;
     final when = chatWhen(s.updatedAt, DateTime.now());
+    final picking = _selecting;
+    final picked = _picked.contains(s.id);
+    final card = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Material(
+        color: picked || s.active ? t.p.accentSoft : t.p.surface,
+        shape: t.shape(),
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          onTap: picking ? () => _toggle(s) : () => _open(s),
+          onLongPress: picking || _chat.switching ? null : () => _startSelecting(s),
+          leading: picking
+              ? Checkbox(value: picked, onChanged: (_) => _toggle(s))
+              : Icon(s.pinned ? Icons.push_pin : Icons.chat_bubble_outline, color: s.pinned ? t.p.accent : t.p.ink2),
+          title: Row(children: [
+            Expanded(child: Text(s.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.titleSmall)),
+            const SizedBox(width: 8),
+            Text(when, style: text.labelSmall?.copyWith(color: t.p.ink3)),
+          ]),
+          subtitle: Text(s.preview.isEmpty ? 'No messages yet' : s.preview, maxLines: 1, overflow: TextOverflow.ellipsis),
+          trailing: picking
+              ? null
+              : PopupMenuButton<String>(
+                  tooltip: 'Options for ${s.title}',
+                  enabled: !_chat.switching,
+                  onSelected: (v) {
+                    if (v == 'rename') {
+                      _rename(s);
+                    } else if (v == 'pin') {
+                      _pin(s);
+                    } else {
+                      _delete(s);
+                    }
+                  },
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(value: 'rename', child: Text('Rename')),
+                    PopupMenuItem(value: 'pin', child: Text(s.pinned ? 'Unpin' : 'Pin to the top')),
+                    const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  ],
+                ),
+        ),
+      ),
+    );
+    // While ticking, a swipe would be confusing next to the checkboxes, so it is switched off.
+    if (picking) return card;
     return Dismissible(
       key: ValueKey(s.id),
       direction: DismissDirection.endToStart,
@@ -196,42 +315,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
         decoration: BoxDecoration(color: t.p.bad, borderRadius: t.corners),
         child: const Icon(Icons.delete_outline, color: Colors.white),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
-        child: Material(
-          color: s.active ? t.p.accentSoft : t.p.surface,
-          shape: t.shape(),
-          clipBehavior: Clip.antiAlias,
-          child: ListTile(
-            onTap: () => _open(s),
-            leading: Icon(s.pinned ? Icons.push_pin : Icons.chat_bubble_outline, color: s.pinned ? t.p.accent : t.p.ink2),
-            title: Row(children: [
-              Expanded(child: Text(s.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.titleSmall)),
-              const SizedBox(width: 8),
-              Text(when, style: text.labelSmall?.copyWith(color: t.p.ink3)),
-            ]),
-            subtitle: Text(s.preview.isEmpty ? 'No messages yet' : s.preview, maxLines: 1, overflow: TextOverflow.ellipsis),
-            trailing: PopupMenuButton<String>(
-              tooltip: 'Options for ${s.title}',
-              enabled: !_chat.switching,
-              onSelected: (v) {
-                if (v == 'rename') {
-                  _rename(s);
-                } else if (v == 'pin') {
-                  _pin(s);
-                } else {
-                  _delete(s);
-                }
-              },
-              itemBuilder: (_) => [
-                const PopupMenuItem(value: 'rename', child: Text('Rename')),
-                PopupMenuItem(value: 'pin', child: Text(s.pinned ? 'Unpin' : 'Pin to the top')),
-                const PopupMenuItem(value: 'delete', child: Text('Delete')),
-              ],
-            ),
-          ),
-        ),
-      ),
+      child: card,
     );
   }
 }

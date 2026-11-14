@@ -22,7 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -80,11 +82,90 @@ public class ActionService {
         return repo.save(action);
     }
 
+    /** What the customer sees, newest first. Requests they cleared are left out. */
     @Transactional
     public List<WalletAction> list(String rawPhone, int limit) {
         String phone = Phones.normalize(rawPhone);
         expireStale(phone);
+        return repo.findByPhoneAndClearedAtIsNullOrderByCreatedAtDesc(phone, PageRequest.of(0, Math.max(1, Math.min(limit, 50))));
+    }
+
+    /** Every request, cleared or not. For reports, which are a record and not a view of the app's list. */
+    @Transactional
+    public List<WalletAction> listAll(String rawPhone, int limit) {
+        String phone = Phones.normalize(rawPhone);
+        expireStale(phone);
         return repo.findByPhoneOrderByCreatedAtDesc(phone, PageRequest.of(0, Math.max(1, Math.min(limit, 50))));
+    }
+
+    /** How many requests a clear took off the list, and how many were left because they are still open or were not found. */
+    public record ClearResult(int cleared, int skipped) {
+    }
+
+    /** The most a customer can clear in one call. */
+    public static final int CLEAR_LIMIT = 100;
+
+    /**
+     * Takes one finished request off the customer's list. The record stays on the server for reports and disputes. A request that
+     * is still open (waiting, approved or with M-Pesa) is refused: finish or cancel it first. Clearing twice is not an error.
+     */
+    @Transactional
+    public ClearResult clear(UUID id, String rawPhone) {
+        WalletAction a = lock(id, rawPhone);
+        expireIfDue(a);
+        if (a.getStatus().isOpen()) {
+            throw new InvalidActionStateException("This request is " + words(a.getStatus()) + ". Finish or cancel it before clearing it");
+        }
+        markCleared(a);
+        return new ClearResult(1, 0);
+    }
+
+    /** Clears the chosen requests that are finished. The others, and any that are not this customer's, are counted as skipped. */
+    @Transactional
+    public ClearResult clearMany(String rawPhone, Collection<UUID> ids) {
+        String phone = Phones.normalize(rawPhone);
+        int cleared = 0;
+        int skipped = 0;
+        for (UUID id : new LinkedHashSet<>(ids).stream().limit(CLEAR_LIMIT).toList()) {
+            WalletAction a = repo.findByIdForUpdate(id).filter(x -> x.getPhone().equals(phone)).orElse(null);
+            if (a == null) {
+                skipped++;
+                continue;
+            }
+            expireIfDue(a);
+            if (a.getStatus().isOpen()) {
+                skipped++;
+                continue;
+            }
+            markCleared(a);
+            cleared++;
+        }
+        return new ClearResult(cleared, skipped);
+    }
+
+    /** Clears every finished request on the customer's list, newest 200 at a time. Open ones stay. */
+    @Transactional
+    public ClearResult clearFinished(String rawPhone) {
+        String phone = Phones.normalize(rawPhone);
+        int cleared = 0;
+        int skipped = 0;
+        for (WalletAction a : repo.findByPhoneAndClearedAtIsNullOrderByCreatedAtDesc(phone, PageRequest.of(0, 200))) {
+            expireIfDue(a);
+            if (a.getStatus().isOpen()) {
+                skipped++;
+                continue;
+            }
+            markCleared(a);
+            cleared++;
+        }
+        return new ClearResult(cleared, skipped);
+    }
+
+    private void markCleared(WalletAction a) {
+        if (a.getClearedAt() == null) {
+            a.markCleared(clock.instant());
+            repo.save(a);
+        }
     }
 
     @Transactional

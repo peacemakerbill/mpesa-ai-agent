@@ -470,11 +470,12 @@ class _TicketBorder extends CustomPainter {
 /// A request drawn as a till slip: the details on the left, the amount on a stub that tears off on the right.
 /// With [highlight] the outline takes the accent colour, which marks a request that needs the customer.
 class TicketCard extends StatelessWidget {
-  const TicketCard({super.key, required this.main, required this.stub, this.onTap, this.stubWidth = 112, this.highlight = false});
+  const TicketCard({super.key, required this.main, required this.stub, this.onTap, this.onLongPress, this.stubWidth = 112, this.highlight = false});
 
   final Widget main;
   final Widget stub;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final double stubWidth;
   final bool highlight;
 
@@ -495,6 +496,7 @@ class TicketCard extends StatelessWidget {
           color: t.p.surface,
           child: InkWell(
             onTap: onTap,
+            onLongPress: onLongPress,
             child: IntrinsicHeight(
               child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 Expanded(child: Padding(padding: const EdgeInsets.fromLTRB(16, 14, 12, 14), child: main)),

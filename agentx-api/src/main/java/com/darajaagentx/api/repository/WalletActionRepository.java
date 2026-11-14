@@ -23,6 +23,9 @@ public interface WalletActionRepository extends CrudRepository<WalletAction, UUI
 
     List<WalletAction> findByPhoneOrderByCreatedAtDesc(String phone, Pageable pageable);
 
+    /** What the customer still sees: requests they have not cleared. */
+    List<WalletAction> findByPhoneAndClearedAtIsNullOrderByCreatedAtDesc(String phone, Pageable pageable);
+
     long countByPhoneAndStatusIn(String phone, Collection<ActionStatus> statuses);
 
     /** Row lock in SQL, so two taps (or the app and the chat) cannot move the same action at once. Version check in MongoDB. */

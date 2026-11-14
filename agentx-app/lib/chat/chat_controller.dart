@@ -183,6 +183,18 @@ class ChatController extends ChangeNotifier {
 
   Future<String?> deleteAllChats() => _changeSessions(api.deleteAllChatSessions);
 
+  /// Deletes the chosen chats one after another and stops at the first one that cannot be deleted. Returns null when all went,
+  /// otherwise a sentence for the customer that also says how many were deleted before it stopped.
+  Future<String?> deleteChats(List<String> ids) async {
+    var done = 0;
+    for (final id in ids) {
+      final err = await deleteChat(id);
+      if (err != null) return done == 0 ? err : '$err $done of ${ids.length} chats were deleted.';
+      done++;
+    }
+    return null;
+  }
+
   Future<String?> _changeSessions(Future<ChatList> Function() call) async {
     if (switching) return 'One moment, the last change is still being made.';
     switching = true;

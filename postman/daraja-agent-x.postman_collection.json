@@ -3371,6 +3371,109 @@
               ]
             },
             {
+              "name": "Clear a request",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/actions/{{actionId}}",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}"
+                  ]
+                },
+                "description": "Hides one finished request from the customer's list. The record stays on the server. A request that is still open answers 409."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Clear selected requests",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/actions/clear",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "clear"
+                  ]
+                },
+                "description": "Hides the finished requests in the list (up to 100). Open ones are skipped and counted in skipped.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ids\": [\n    \"{{actionId}}\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.equal(200); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Clear all finished requests",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/actions",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions"
+                  ]
+                },
+                "description": "Hides every finished request (newest 200 per call). Open ones stay."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.equal(200); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
               "name": "Sign out this phone",
               "request": {
                 "method": "DELETE",

@@ -382,6 +382,15 @@ class ApiClient {
 
   Future<WalletAction> action(String id) async => _action(await _send('GET', '/api/actions/$id'));
 
+  /// Takes one finished request off the list. The server keeps the record for reports. A request that is still open is refused.
+  Future<ClearResult> clearAction(String id) async => ClearResult.fromJson(await _send('DELETE', '/api/actions/$id'));
+
+  /// Clears the chosen requests that are finished. The open ones are left and counted in [ClearResult.skipped].
+  Future<ClearResult> clearActions(List<String> ids) async => ClearResult.fromJson(await _send('POST', '/api/actions/clear', body: {'ids': ids}));
+
+  /// Clears every finished request on the list.
+  Future<ClearResult> clearFinishedActions() async => ClearResult.fromJson(await _send('DELETE', '/api/actions'));
+
   Future<WalletAction> approve(String id, {required bool biometric}) async => _action(await _send(
       'POST', '/api/actions/$id/approve',
       body: {'method': biometric ? 'BIOMETRIC' : 'DEVICE_CREDENTIAL'}));

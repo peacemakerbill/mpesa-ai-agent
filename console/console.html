@@ -1016,6 +1016,9 @@ E('co.a.done', 'agentx', 'App side', 'Report done', 'POST', `/api/actions/${ID}/
 E('co.a.notdone', 'agentx', 'App side', 'Report not done', 'POST', `/api/actions/${ID}/report`, { auth: 'bearer', body: { outcome: 'NOT_DONE' } });
 E('co.a.sms', 'agentx', 'App side', 'Send M-Pesa message evidence', 'POST', `/api/actions/${ID}/sms-evidence`, { auth: 'bearer', body: { code: 'QWE9876543', kind: 'BILL', amount: 1200, payee: 'KPLC PREPAID', account: '123456', smsAt: '{{nowMs}}' }, note: 'Amount, kind, time and account are checked. Change the code to run it again.' });
 E('co.a.decline', 'agentx', 'App side', 'Decline', 'POST', `/api/actions/${ID}/decline`, { auth: 'bearer' });
+E('co.a.clear', 'agentx', 'App side', 'Clear a request', 'DELETE', '/api/actions/' + ID, { auth: 'bearer', note: 'Hides a finished request from the customer list. The record stays on the server. An open request answers 409.' });
+E('co.a.clearmany', 'agentx', 'App side', 'Clear selected requests', 'POST', '/api/actions/clear', { auth: 'bearer', body: { ids: [ID] }, note: 'Up to 100 ids. Finished ones are hidden, open ones are skipped. The answer says how many of each.' });
+E('co.a.clearall', 'agentx', 'App side', 'Clear all finished requests', 'DELETE', '/api/actions', { auth: 'bearer', note: 'Hides every finished request, newest 200 per call. Open ones stay.' });
 const CC = 'Chat (app side)';
 E('co.ch.list', 'agentx', CC, 'Read the chat', 'GET', '/api/chat/messages', { auth: 'bearer', query: { after: '0', limit: '50' }, note: 'The app calls this every second or two while the chat is open.' });
 E('co.ch.send', 'agentx', CC, 'Send a chat message', 'POST', '/api/chat/messages', { auth: 'bearer', body: { clientMessageId: '{{msgid}}', kind: 'TEXT', text: 'send 500 to 0712345678' }, note: 'kind is TEXT, IMAGE, DOCUMENT, AUDIO, VIDEO, LOCATION, CONTACTS, BUTTON_REPLY or LIST_REPLY. The number comes from the token.' });

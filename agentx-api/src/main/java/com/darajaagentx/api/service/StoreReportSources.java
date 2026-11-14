@@ -49,7 +49,7 @@ public class StoreReportSources implements ReportSources {
 
     @Override
     public List<ReportTables.PaymentRow> payments(String owner) {
-        return actions.list(owner, 50).stream().map(StoreReportSources::row).toList();
+        return actions.listAll(owner, 50).stream().map(StoreReportSources::row).toList();
     }
 
     private static ReportTables.PaymentRow row(WalletAction a) {

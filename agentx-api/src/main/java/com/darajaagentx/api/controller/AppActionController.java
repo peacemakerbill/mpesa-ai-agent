@@ -7,10 +7,12 @@ import com.darajaagentx.api.config.EnvironmentPolicy;
 import com.darajaagentx.api.dto.ActionResponse;
 import com.darajaagentx.api.dto.AppConfigResponse;
 import com.darajaagentx.api.dto.ApproveRequest;
+import com.darajaagentx.api.dto.ClearRequest;
 import com.darajaagentx.api.dto.ReportRequest;
 import com.darajaagentx.api.dto.SmsEvidenceRequest;
 import com.darajaagentx.api.service.ActionService;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,6 +77,25 @@ public class AppActionController {
     public ActionResponse smsEvidence(@PathVariable UUID id, @Valid @RequestBody SmsEvidenceRequest request,
                                       @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
         return ActionResponse.from(actions.confirmWithSms(id, who.phone(), request));
+    }
+
+    /** Takes one finished request off the customer's list. The record stays on the server. A request still open is refused. */
+    @DeleteMapping("/actions/{id}")
+    public ActionService.ClearResult clear(@PathVariable UUID id, @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
+        return actions.clear(id, who.phone());
+    }
+
+    /** Clears the chosen requests that are finished. Open ones are left and counted as skipped. */
+    @PostMapping("/actions/clear")
+    public ActionService.ClearResult clearSelected(@Valid @RequestBody ClearRequest request,
+                                                   @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
+        return actions.clearMany(who.phone(), request.ids());
+    }
+
+    /** Clears every finished request on the list. Open ones stay. */
+    @DeleteMapping("/actions")
+    public ActionService.ClearResult clearFinished(@RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
+        return actions.clearFinished(who.phone());
     }
 
     @PostMapping("/actions/{id}/decline")

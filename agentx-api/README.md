@@ -87,6 +87,9 @@ Locally the code is shown on screen by default (`CODE_SHOW_IN_APP=auto`), so you
 | `POST /api/actions/{id}/report` | Customer says it is done, or not done |
 | `POST /api/actions/{id}/sms-evidence` | Send the parsed message fields for matching |
 | `POST /api/actions/{id}/decline` | Decline |
+| `DELETE /api/actions/{id}` | Clear one finished request from the customer's list (hidden, not deleted). Open ones answer 409 |
+| `POST /api/actions/clear` | Clear several finished requests, body `{"ids":[...]}` (up to 100). Open ones are skipped. Answers `{cleared, skipped}` |
+| `DELETE /api/actions` | Clear every finished request (newest 200 per call). Answers `{cleared, skipped}` |
 | `GET`, `POST`, `DELETE /api/chat/messages` | Read, send and clear the chat |
 | `GET`, `POST`, `DELETE /api/chat/sessions`, `POST /api/chat/sessions/{id}/open`, `PUT .../title`, `PUT .../pin`, `DELETE /api/chat/sessions/{id}` | The list of chats: start a new one, open an old one, rename, pin, delete. See [`docs/CHATS.md`](../docs/CHATS.md) |
 | `POST /api/chat/media`, `GET /api/chat/media/{id}` | Upload and download chat files |

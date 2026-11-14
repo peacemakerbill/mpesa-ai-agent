@@ -98,6 +98,9 @@ public class WalletAction {
 
     private Instant reportedAt;
 
+    /** Set when the customer clears a finished request from their list. The record stays, for reports and for disputes. */
+    private Instant clearedAt;
+
     @Column(nullable = false)
     private Instant expiresAt;
 
@@ -176,6 +179,14 @@ public class WalletAction {
 
     public void setStatus(ActionStatus status) {
         this.status = status;
+    }
+
+    public Instant getClearedAt() {
+        return clearedAt;
+    }
+
+    public void markCleared(Instant now) {
+        this.clearedAt = now;
     }
 
     public int getAmount() {

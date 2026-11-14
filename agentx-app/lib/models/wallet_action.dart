@@ -162,3 +162,21 @@ class HandoffConfig {
     );
   }
 }
+
+/// What the server says after requests were cleared from the list: how many it took off, and how many it left because they
+/// are still open (or were not found).
+class ClearResult {
+  const ClearResult({required this.cleared, required this.skipped});
+
+  final int cleared;
+  final int skipped;
+
+  factory ClearResult.fromJson(Map<String, dynamic> json) =>
+      ClearResult(cleared: (json['cleared'] as num?)?.toInt() ?? 0, skipped: (json['skipped'] as num?)?.toInt() ?? 0);
+
+  /// One sentence for the customer.
+  String get sentence {
+    final done = cleared == 1 ? '1 request cleared' : '$cleared requests cleared';
+    return skipped == 0 ? done : '$done. $skipped still open, so left in the list.';
+  }
+}

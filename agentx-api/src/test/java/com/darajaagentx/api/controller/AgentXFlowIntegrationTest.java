@@ -119,6 +119,70 @@ class AgentXFlowIntegrationTest {
         verify(rabbit).convertAndSend(eq("wallet.events"), eq("wallet.action"), any(ActionEvent.class));
     }
 
+    private ResultActions appDelete(String token, String url) throws Exception {
+        return mvc.perform(delete(url).header("Authorization", "Bearer " + token));
+    }
+
+    @Test
+    void aFinishedRequestCanBeClearedFromTheListButAnOpenOneCannot() throws Exception {
+        String phone = newPhone();
+        String token = link(phone, "device-clear-12345");
+        UUID open = createBill(phone, "wa-" + UUID.randomUUID());
+        UUID done = createBill(phone, "wa-" + UUID.randomUUID());
+        app(token, "POST", "/api/actions/" + done + "/decline", null).andExpect(status().isOk());
+
+        appDelete(token, "/api/actions/" + open).andExpect(status().isConflict());
+        appDelete(token, "/api/actions/" + done).andExpect(status().isOk())
+                .andExpect(jsonPath("$.cleared").value(1)).andExpect(jsonPath("$.skipped").value(0));
+        // clearing twice is not an error
+        appDelete(token, "/api/actions/" + done).andExpect(status().isOk());
+
+        app(token, "GET", "/api/actions", null).andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(open.toString()));
+        // the record is still there for a link or a dispute
+        app(token, "GET", "/api/actions/" + done, null).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("DECLINED"));
+    }
+
+    @Test
+    void selectedRequestsAreClearedAndOpenOnesAreSkipped() throws Exception {
+        String phone = newPhone();
+        String token = link(phone, "device-select-1234");
+        UUID a = createBill(phone, "wa-" + UUID.randomUUID());
+        UUID b = createBill(phone, "wa-" + UUID.randomUUID());
+        UUID open = createBill(phone, "wa-" + UUID.randomUUID());
+        app(token, "POST", "/api/actions/" + a + "/decline", null).andExpect(status().isOk());
+        app(token, "POST", "/api/actions/" + b + "/decline", null).andExpect(status().isOk());
+
+        app(token, "POST", "/api/actions/clear", Map.of("ids", java.util.List.of(a, b, open, UUID.randomUUID())))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.cleared").value(2)).andExpect(jsonPath("$.skipped").value(2));
+        app(token, "GET", "/api/actions", null).andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(open.toString()));
+
+        app(token, "POST", "/api/actions/clear", Map.of("ids", java.util.List.of())).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void clearingAllFinishedKeepsTheOpenOnesAndOtherCustomersAreUntouched() throws Exception {
+        String phone = newPhone();
+        String other = newPhone();
+        String token = link(phone, "device-all-1234567");
+        String otherToken = link(other, "device-other-12345");
+        UUID open = createBill(phone, "wa-" + UUID.randomUUID());
+        UUID done = createBill(phone, "wa-" + UUID.randomUUID());
+        UUID theirs = createBill(other, "wa-" + UUID.randomUUID());
+        app(token, "POST", "/api/actions/" + done + "/decline", null).andExpect(status().isOk());
+        app(otherToken, "POST", "/api/actions/" + theirs + "/decline", null).andExpect(status().isOk());
+
+        appDelete(token, "/api/actions").andExpect(status().isOk())
+                .andExpect(jsonPath("$.cleared").value(1)).andExpect(jsonPath("$.skipped").value(1));
+        app(token, "GET", "/api/actions", null).andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(open.toString()));
+        app(otherToken, "GET", "/api/actions", null).andExpect(jsonPath("$.length()").value(1));
+
+        // someone else's request cannot be cleared by id either
+        appDelete(token, "/api/actions/" + theirs).andExpect(status().isNotFound());
+        app(token, "POST", "/api/actions/clear", Map.of("ids", java.util.List.of(theirs))).andExpect(jsonPath("$.cleared").value(0));
+        app(otherToken, "GET", "/api/actions", null).andExpect(jsonPath("$.length()").value(1));
+    }
+
     @Test
     void anotherCustomerCannotSeeOrChangeSomeoneElsesRequest() throws Exception {
         String owner = newPhone();
