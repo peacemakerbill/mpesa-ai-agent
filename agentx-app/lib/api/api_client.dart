@@ -80,9 +80,10 @@ class ApiClient {
 
   static const _timeout = Duration(seconds: 20);
 
-  /// Asks for a 6 digit code to be sent to [phone] by SMS.
-  Future<CodeRequest> requestCode(String phone) async {
-    final json = await _send('POST', '/api/auth/request-code', body: {'phone': phone}, auth: false);
+  /// Asks for a 6 digit code to be sent to [phone] by SMS. [appHash] lets Android read the message without a permission.
+  Future<CodeRequest> requestCode(String phone, {String? appHash}) async {
+    final json = await _send('POST', '/api/auth/request-code',
+        body: {'phone': phone, if (appHash != null && appHash.isNotEmpty) 'appHash': appHash}, auth: false);
     return CodeRequest.fromJson(json);
   }
 
@@ -254,9 +255,11 @@ class ApiClient {
     String? middleName,
     required String lastName,
     String? email,
+    String? appHash,
   }) async {
     final json = await _send('POST', '/api/auth/signup/request', auth: false, body: {
       'phone': phone,
+      if (appHash != null && appHash.isNotEmpty) 'appHash': appHash,
       'firstName': firstName,
       'lastName': lastName,
       if (middleName != null && middleName.isNotEmpty) 'middleName': middleName,

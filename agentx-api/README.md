@@ -140,6 +140,8 @@ Locally the code is shown on screen by default (`CODE_SHOW_IN_APP=auto`), so you
 > [!CAUTION]
 > While `CODE_SHOW_IN_APP` is on, the sign-in code is returned in the response, so anyone who knows a phone number could sign in as it. Production never returns it and refuses to start with `CODE_SHOW_IN_APP=true`. Set it to `false` once `CODE_DELIVERY=sms` works. The old `CODE_DELIVERY=dev` still works and means the same as `log` with the code shown.
 
+A code that is shown in the app is not written to the log. The Android app can read the sign-in text by itself: it sends an optional `appHash` (11 characters) with `POST /api/auth/request-code` and `POST /api/auth/signup/request`, and the server ends the text with it, which is what Google's SMS Retriever needs. A value of the wrong shape is ignored.
+
 ## Failing well
 
 The profile ymls for PostgreSQL, MySQL and MongoDB carry the resilience settings: Flyway retries the connection 6 times, 5 seconds apart, Hikari gives up after 5 seconds, and the Mongo URI sets `serverSelectionTimeoutMS=5000`. A database that is still starting delays boot instead of crashing it, and one that is missing produces one clear failure.

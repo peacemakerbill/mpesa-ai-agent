@@ -139,7 +139,7 @@
     {
       "name": "agentx.show-code-in-app",
       "type": "java.lang.String",
-      "description": "Whether the app also shows the sign-in code on its own screen, so a tester needs no text message. auto shows it in development and staging and never in production. true is the same, and production refuses to start. false never shows it: use it once agentx.code-delivery is sms. With sms and the code shown, a failed text does not block signing in, because the code is on screen. Anyone who knows a phone number could sign in as it while a code is shown. Set with CODE_SHOW_IN_APP.",
+      "description": "Whether the app also shows the sign-in code on its own screen, so a tester needs no text message. auto shows it in development and staging and never in production. true is the same, and production refuses to start. false never shows it: use it once agentx.code-delivery is sms. With sms and the code shown, a failed text does not block signing in, because the code is on screen. Anyone who knows a phone number could sign in as it while a code is shown. A code that is shown in the app is not written to the log. Set with CODE_SHOW_IN_APP.",
       "defaultValue": "auto"
     },
     {

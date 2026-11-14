@@ -18,7 +18,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.regex.Pattern;
 
 /**
  * Gets a sign-in code to the person who asked for it. With no WhatsApp in the middle, this is the only proof that
@@ -35,6 +37,11 @@ import java.time.Duration;
  *
  * When the code is shown and the text message fails (a sandbox key, a provider outage), the sign-in still works,
  * because the person can read the code on screen. Without it, a failed text is reported as an error.
+ *
+ * A code that is shown in the app is not written to the log: the log only holds a code that has nowhere else to go.
+ *
+ * The Android app can read the text by itself, with no SMS permission, when the text ends with the 11 character hash
+ * of the app (Google's SMS Retriever). The app sends its hash with the request, and it is added here.
  */
 @Service
 public class CodeDelivery {
@@ -96,13 +103,27 @@ public class CodeDelivery {
         };
     }
 
+    private static final Pattern APP_HASH = Pattern.compile("^[A-Za-z0-9+/]{11}$");
+
+    /** The hash if it has the right shape, otherwise null. A wrong hash must never stop a sign-in. */
+    static String cleanHash(String appHash) {
+        if (appHash == null) {
+            return null;
+        }
+        String h = appHash.strip();
+        return APP_HASH.matcher(h).matches() ? h : null;
+    }
+
     public Result deliver(String phone, String code, Duration validFor) {
+        return deliver(phone, code, validFor, null);
+    }
+
+    public Result deliver(String phone, String code, Duration validFor, String appHash) {
         String shown = showInApp ? code : null;
         switch (mode) {
             case SMS -> {
                 try {
-                    sendSms(phone, serviceName + " code: " + code + ". It works for " + validFor.toMinutes()
-                            + " minutes. Never share it with anyone.");
+                    sendSms(phone, smsText(serviceName, code, validFor, cleanHash(appHash)));
                     return new Result(shown, true);
                 } catch (CodeDeliveryException e) {
                     if (shown == null) {
@@ -112,16 +133,45 @@ public class CodeDelivery {
                     return new Result(shown, false);
                 }
             }
-            case DEV -> {
-                log.warn("Sign-in code for {} is {} (code-delivery is dev)", Phones.mask(phone), code);
-                return new Result(shown, false);
-            }
             default -> {
-                log.warn("Sign-in code for {} is {} (code-delivery is log, so it is only written here{})", Phones.mask(phone), code,
-                        showInApp ? " and shown in the app" : "");
+                // log (and the old name dev). The log holds the code only when nothing else shows it.
+                if (showInApp) {
+                    log.info("A sign-in code for {} was issued and is shown in the app (code-delivery is {})", Phones.mask(phone),
+                            mode == Mode.DEV ? "dev" : "log");
+                } else {
+                    log.warn("Sign-in code for {} is {} (code-delivery is {}, so it is only written here)", Phones.mask(phone), code,
+                            mode == Mode.DEV ? "dev" : "log");
+                }
                 return new Result(shown, false);
             }
         }
+    }
+
+    /**
+     * The text message. With an app hash it starts with the marker and ends with the hash on its own line, which is what
+     * Android's SMS Retriever needs, and it stays within the 140 bytes it allows.
+     */
+    static String smsText(String appName, String code, Duration validFor, String appHash) {
+        String full = appName + " code: " + code + ". It works for " + validFor.toMinutes() + " minutes. Never share it with anyone.";
+        if (appHash == null) {
+            return full;
+        }
+        String head = "<#> ";
+        String tail = "\n" + appHash;
+        String text = head + full + tail;
+        if (fits(text)) {
+            return text;
+        }
+        text = head + appName + " code: " + code + ". Never share it." + tail;
+        if (fits(text)) {
+            return text;
+        }
+        String name = appName.length() > 40 ? appName.substring(0, 40) : appName;
+        return head + name + " code: " + code + tail;
+    }
+
+    private static boolean fits(String text) {
+        return text.getBytes(StandardCharsets.UTF_8).length <= 140;
     }
 
     private void sendSms(String phone, String message) {

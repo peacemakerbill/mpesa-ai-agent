@@ -56,7 +56,7 @@ public class AuthController {
             throw new TooManyRequestsException("Too many codes were requested. Please wait a few minutes.");
         }
         LinkCodeResponse issued = links.issue(phone);
-        CodeDelivery.Result result = delivery.deliver(phone, issued.code(), props.linkCodeTtl());
+        CodeDelivery.Result result = delivery.deliver(phone, issued.code(), props.linkCodeTtl(), request.appHash());
         return new CodeRequestResponse(issued.expiresAt(), result.devCode(), result.smsSent());
     }
 

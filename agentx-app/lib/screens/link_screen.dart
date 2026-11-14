@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../api/api_client.dart';
 import '../app_state.dart';
 import '../layout/responsive.dart';
+import '../services/code_autofill.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ui.dart';
 import 'signup_screen.dart';
@@ -31,8 +32,13 @@ class _LinkScreenState extends State<LinkScreen> {
   String? _devNote;
   DateTime? _expires;
 
+  /// Fills in the code by itself: from the text message on Android, or from the screen when the server shows it.
+  late final _auto = CodeAutoFill(widget.state.codeReader);
+  String? _waiting;
+
   @override
   void dispose() {
+    _auto.stop();
     _phone.dispose();
     _code.dispose();
     super.dispose();
@@ -50,7 +56,9 @@ class _LinkScreenState extends State<LinkScreen> {
       _error = null;
     });
     try {
-      final r = await widget.state.requestCode(_phone.text.trim());
+      // Listen before asking, so a fast text message is not missed.
+      final hash = await _auto.start(_fill);
+      final r = await widget.state.requestCode(_phone.text.trim(), appHash: hash);
       if (!mounted) return;
       setState(() {
         _sent = true;
@@ -59,11 +67,27 @@ class _LinkScreenState extends State<LinkScreen> {
         _expires = r.expiresAt;
         _code.clear();
       });
+      if (r.devCode != null) _auto.shown(r.devCode!);
     } on ApiException catch (e) {
+      _auto.stop();
       if (mounted) setState(() => _error = e.message);
     } finally {
       if (mounted) setState(() => _busy = false);
+      final early = _waiting;
+      _waiting = null;
+      if (early != null && _sent) _fill(early);
     }
+  }
+
+  /// A code arrived by itself. It is typed into the box and sent.
+  void _fill(String code) {
+    if (!mounted) return;
+    if (_busy) {
+      _waiting = code; // it came before the answer to the request did
+      return;
+    }
+    _code.text = code;
+    _verify();
   }
 
   Future<void> _verify() async {
@@ -166,6 +190,11 @@ class _LinkScreenState extends State<LinkScreen> {
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           autofillHints: const [AutofillHints.oneTimeCode],
           decoration: const InputDecoration(labelText: '6 digit code', counterText: ''),
+          onChanged: (value) {
+            if (_error != null) setState(() => _error = null);
+            // Typed, pasted or suggested by the keyboard: the sixth digit sends it.
+            if (!_busy && RegExp(r'^\d{6}$').hasMatch(value)) _verify();
+          },
           onSubmitted: (_) => _verify(),
         ),
       ],

@@ -159,7 +159,7 @@ flutter run --dart-define=API_BASE_URL=https://agentx-api-free-bgp.onrender.com
 
 The app shows a small `staging` label in the corner. To see the wake-up screen, leave the services alone for 20 minutes and open the app again.
 
-Sign-in codes: the free Blueprint sets `CODE_SHOW_IN_APP=true`, so the app shows the code on its own screen under the box where you type it, and you need no SMS account. The code is also written to the agentx-api log (Render, Logs). Anyone who knows a phone number could sign in as it, so keep the address among your testers. To send real text messages, add `SMS_USERNAME`, `SMS_API_KEY` and `SMS_BASE_URL=https://api.africastalking.com` in Render (agentx-api, Environment), then change the two lines in the Blueprint to `CODE_DELIVERY` `sms` and `CODE_SHOW_IN_APP` `false` and push. The Africa's Talking sandbox address does not reach real phones.
+Sign-in codes: the free Blueprint sets `CODE_SHOW_IN_APP=true`, so the app shows the code on its own screen under the box where you type it, and you need no SMS account. The app also fills the code in and signs in by itself a moment later, and the code is not written to the log. Anyone who knows a phone number could sign in as it, so keep the address among your testers. To send real text messages, add `SMS_USERNAME`, `SMS_API_KEY` and `SMS_BASE_URL=https://api.africastalking.com` in Render (agentx-api, Environment), then change the two lines in the Blueprint to `CODE_DELIVERY` `sms` and `CODE_SHOW_IN_APP` `false` and push. The Africa's Talking sandbox address does not reach real phones.
 
 ## Moving up
 

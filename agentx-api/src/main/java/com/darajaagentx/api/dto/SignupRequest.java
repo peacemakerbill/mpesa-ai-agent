@@ -9,6 +9,12 @@ public record SignupRequest(
         @NotBlank @Size(max = 60) String firstName,
         @Size(max = 60) String middleName,
         @NotBlank @Size(max = 60) String lastName,
-        @Size(max = 254) String email
+        @Size(max = 254) String email,
+        /** The Android app's SMS reader code, see PhoneRequest. Optional. */
+        String appHash
 ) {
+
+    public SignupRequest(String phone, String firstName, String middleName, String lastName, String email) {
+        this(phone, firstName, middleName, lastName, email, null);
+    }
 }

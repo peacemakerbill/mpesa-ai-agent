@@ -91,3 +91,16 @@ If Play refuses it, you have two options:
 <img src="../../docs/assets/divider.svg" alt="" width="100%"/>
 <sub>M-Pesa is a registered mark of Safaricom. This project is not affiliated with or endorsed by Safaricom.</sub>
 </div>
+
+
+## The sign-in code (no permission)
+
+This is separate from reading M-Pesa messages above, and it needs no permission at all.
+
+When the customer asks for a sign-in code on Android, the app starts Google's SMS Retriever and sends its own 11 character app hash with the request. agentx-api ends the text with that hash. The phone then hands the app that one message, and only a message that ends with the app's hash, and the app fills the code in and signs in. It listens for five minutes at most, keeps nothing and reads no other message.
+
+- **No setup.** The hash is worked out by the app, for the debug and the release build alike, and travels with the request. Nothing is configured on the server.
+- **Needs Google Play services.** Without them, or on a phone that does not support it, the customer types the code.
+- **iPhone.** iOS has no such API. The keyboard offers the code from the message, and the sixth digit signs in.
+- **Servers that show the code** (development and staging, `CODE_SHOW_IN_APP`) fill it in and sign in by themselves a moment after showing it.
+- The text has to stay within 140 bytes for Android to accept it, and the server shortens it when needed.

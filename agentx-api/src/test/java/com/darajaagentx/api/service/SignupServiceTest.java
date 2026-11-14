@@ -64,7 +64,7 @@ class SignupServiceTest {
             codes.remove(r.phone());
             return new TokenResponse("token-for-" + r.phone() + "-" + r.deviceId(), r.phone(), Instant.now().plusSeconds(3600));
         });
-        when(delivery.deliver(anyString(), anyString(), any(Duration.class))).thenAnswer(call -> {
+        when(delivery.deliver(anyString(), anyString(), any(Duration.class), any())).thenAnswer(call -> {
             texts.add(new SmsSent(call.getArgument(0), call.getArgument(1)));
             return new CodeDelivery.Result(null);
         });

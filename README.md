@@ -228,7 +228,7 @@ docker compose exec postgres createdb -U app agentx
 
 | Value | Behaviour | Use it |
 |---|---|---|
-| `log` | Writes the code to the agentx-api log. This is the default | Developer machine |
+| `log` | Writes the code to the agentx-api log, unless the app is showing it (see below). This is the default | Developer machine |
 | `dev` | The old name for `log` with the code shown on screen. Still works | Local testing only |
 | `sms` | Sends a text through Africa's Talking (`SMS_USERNAME`, `SMS_API_KEY`, `SMS_SENDER_ID`) | Real use |
 
@@ -238,7 +238,9 @@ docker compose exec postgres createdb -U app agentx
 | `false` | Never shows the code. Turn it off once `sms` works | Real use |
 | `true` | Like `auto`, and production refuses to start | Rarely needed |
 
-With `sms` and the code shown, a tester gets the text and can also read the code on screen. If the text fails, the code on screen still lets them in.
+With `sms` and the code shown, a tester gets the text and can also read the code on screen. If the text fails, the code on screen still lets them in. A code that is shown in the app is not written to the log, and the app fills it in and signs in by itself.
+
+On Android the app also reads the code from the text message and signs in by itself, with no SMS permission. On iPhone the keyboard offers the code and the sixth digit signs in.
 
 > [!CAUTION]
 > While a code is shown, anyone who can reach the system and knows a phone number could sign in as it. Production never shows a code. Set `CODE_SHOW_IN_APP=false` on staging once SMS works.

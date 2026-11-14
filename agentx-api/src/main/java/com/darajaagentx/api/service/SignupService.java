@@ -88,7 +88,7 @@ public class SignupService {
         p.setPendingEmail(email);
         p.setSignupExpiresAt(now.plus(props.signupTtl()));
         profiles.save(p);
-        CodeDelivery.Result sent = delivery.deliver(phone, issued.code(), codeTtl);
+        CodeDelivery.Result sent = delivery.deliver(phone, issued.code(), codeTtl, r.appHash());
         return new CodeRequestResponse(issued.expiresAt(), sent.devCode(), sent.smsSent());
     }
 

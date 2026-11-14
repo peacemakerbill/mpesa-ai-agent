@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../api/api_client.dart';
 import '../app_state.dart';
 import '../profile/signup_flow.dart';
+import '../services/code_autofill.dart';
 import '../theme/app_theme.dart';
 import '../widgets/auth_shell.dart';
 import '../widgets/ui.dart';
@@ -45,8 +46,13 @@ class _SignupScreenState extends State<SignupScreen> {
   String? _devNote;
   DateTime? _expires;
 
+  /// Fills in the code by itself: from the text message on Android, or from the screen when the server shows it.
+  late final _auto = CodeAutoFill(widget.state.codeReader);
+  String? _waiting;
+
   @override
   void dispose() {
+    _auto.stop();
     _ticker?.cancel();
     _first.dispose();
     _middle.dispose();
@@ -139,12 +145,15 @@ class _SignupScreenState extends State<SignupScreen> {
       _error = null;
     });
     try {
+      // Listen before asking, so a fast text message is not missed.
+      final hash = await _auto.start(_fill);
       final r = await widget.state.api.signupRequest(
         phone: _phone.text.trim(),
         firstName: _first.text.trim(),
         middleName: _middle.text.trim(),
         lastName: _last.text.trim(),
         email: _email.text.trim(),
+        appHash: hash,
       );
       if (!mounted) return;
       setState(() {
@@ -155,11 +164,27 @@ class _SignupScreenState extends State<SignupScreen> {
       });
       _startCooldown();
       if (!again || _step != 2) _go(2);
+      if (r.devCode != null) _auto.shown(r.devCode!);
     } on ApiException catch (e) {
+      _auto.stop();
       if (mounted) setState(() => _error = e.message);
     } finally {
       if (mounted) setState(() => _busy = false);
+      final early = _waiting;
+      _waiting = null;
+      if (early != null) _fill(early);
     }
+  }
+
+  /// A code arrived by itself. It is typed into the boxes and sent.
+  void _fill(String code) {
+    if (!mounted) return;
+    if (_busy) {
+      _waiting = code; // it came before the answer to the request did
+      return;
+    }
+    _code.text = code;
+    _verify();
   }
 
   Future<void> _verify() async {

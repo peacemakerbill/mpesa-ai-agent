@@ -4,12 +4,20 @@ import com.darajaagentx.api.config.AppEnvironment;
 import com.darajaagentx.api.config.EnvironmentPolicy;
 import com.darajaagentx.api.config.SmsProperties;
 import com.darajaagentx.api.exception.CodeDeliveryException;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -124,5 +132,112 @@ class CodeDeliveryTest {
         } finally {
             server.stop(0);
         }
+    }
+
+    /** Everything this class writes to the log while [work] runs. */
+    private static List<String> logged(Runnable work) {
+        Logger logger = (Logger) LoggerFactory.getLogger(CodeDelivery.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            work.run();
+            return appender.list.stream().map(ILoggingEvent::getFormattedMessage).toList();
+        } finally {
+            logger.detachAppender(appender);
+        }
+    }
+
+    @Test
+    void aCodeThatIsShownInTheAppIsNotWrittenToTheLog() {
+        for (String mode : new String[]{"log", "dev"}) {
+            CodeDelivery shown = delivery(mode, "auto", AppEnvironment.STAGING, NO_KEY);
+            List<String> lines = logged(() -> shown.deliver("254712345678", "482913", TEN_MINUTES));
+            assertThat(lines).as(mode).noneMatch(l -> l.contains("482913"));
+        }
+    }
+
+    @Test
+    void aCodeWithNowhereElseToGoIsWrittenToTheLog() {
+        CodeDelivery hidden = delivery("log", "false", AppEnvironment.DEVELOPMENT, NO_KEY);
+
+        List<String> lines = logged(() -> hidden.deliver("254712345678", "482913", TEN_MINUTES));
+
+        assertThat(lines).anyMatch(l -> l.contains("482913"));
+    }
+
+    @Test
+    void aCodeSentBySmsIsNeverWrittenToTheLog() {
+        CodeDelivery noKey = delivery("sms", "auto", AppEnvironment.STAGING, NO_KEY);
+        CodeDelivery down = delivery("sms", "false", AppEnvironment.PRODUCTION, UNREACHABLE);
+
+        List<String> lines = logged(() -> {
+            noKey.deliver("254712345678", "482913", TEN_MINUTES);
+            try {
+                down.deliver("254712345678", "482913", TEN_MINUTES);
+            } catch (CodeDeliveryException expected) {
+                // the failure is the point of this part
+            }
+        });
+
+        assertThat(lines).noneMatch(l -> l.contains("482913"));
+    }
+
+    @Test
+    void theAppHashIsKeptOnlyWhenItHasTheRightShape() {
+        assertThat(CodeDelivery.cleanHash("FA+9qCX9VSu")).isEqualTo("FA+9qCX9VSu");
+        assertThat(CodeDelivery.cleanHash("  FA+9qCX9VSu ")).isEqualTo("FA+9qCX9VSu");
+        for (String bad : new String[]{null, "", "short", "FA+9qCX9VSuX", "FA+9qCX9VS!", "FA+9qCX9VS\nu"}) {
+            assertThat(CodeDelivery.cleanHash(bad)).as(String.valueOf(bad)).isNull();
+        }
+    }
+
+    @Test
+    void theTextEndsWithTheHashAndStaysWithinWhatAndroidAllows() {
+        String plain = CodeDelivery.smsText("Daraja Agent-X", "123456", TEN_MINUTES, null);
+        assertThat(plain).isEqualTo("Daraja Agent-X code: 123456. It works for 10 minutes. Never share it with anyone.");
+
+        String withHash = CodeDelivery.smsText("Daraja Agent-X", "123456", TEN_MINUTES, "FA+9qCX9VSu");
+        assertThat(withHash).startsWith("<#> Daraja Agent-X code: 123456").endsWith("\nFA+9qCX9VSu");
+        assertThat(withHash.getBytes(StandardCharsets.UTF_8).length).isLessThanOrEqualTo(140);
+
+        String longName = CodeDelivery.smsText("A very long business name that goes on and on and on and on and on", "123456", TEN_MINUTES, "FA+9qCX9VSu");
+        assertThat(longName.getBytes(StandardCharsets.UTF_8).length).isLessThanOrEqualTo(140);
+        assertThat(longName).contains("123456").endsWith("\nFA+9qCX9VSu");
+    }
+
+    @Test
+    void theHashFromTheAppReachesTheProviderAtTheEndOfTheText() throws Exception {
+        AtomicReference<String> body = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/version1/messaging", exchange -> {
+            body.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            exchange.sendResponseHeaders(201, -1);
+            exchange.close();
+        });
+        server.start();
+        try {
+            SmsProperties live = new SmsProperties("sandbox", "key", "", "http://127.0.0.1:" + server.getAddress().getPort());
+            CodeDelivery sms = delivery("sms", "false", AppEnvironment.STAGING, live);
+
+            sms.deliver("254712345678", "123456", TEN_MINUTES, "FA+9qCX9VSu");
+            String message = formField(body.get(), "message");
+            assertThat(message).startsWith("<#> ").contains("123456").endsWith("\nFA+9qCX9VSu");
+
+            sms.deliver("254712345678", "654321", TEN_MINUTES, "not a hash");
+            assertThat(formField(body.get(), "message")).doesNotStartWith("<#>").contains("654321");
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    private static String formField(String form, String name) {
+        for (String pair : form.split("&")) {
+            int eq = pair.indexOf('=');
+            if (eq > 0 && pair.substring(0, eq).equals(name)) {
+                return URLDecoder.decode(pair.substring(eq + 1), StandardCharsets.UTF_8);
+            }
+        }
+        throw new AssertionError("no field " + name + " in " + form);
     }
 }
