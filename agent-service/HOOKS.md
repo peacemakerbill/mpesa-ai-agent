@@ -21,6 +21,8 @@ Four small edits connect the business tools to the agent-service.
 The new files (`BusinessTools`, `BusinessApi`, `AgentXBusinessClient`, `InternalNotifyController`) are complete. Four small edits to
 existing files wire them in.
 
+**Status.** Edits 1 to 3 are applied in this repository: `ToolExecutor` sends the four tools to `BusinessTools`, `ToolCatalog` shows them to every customer (also when `businessPayments` is off, because the accounts live in agentx-api), and `SystemPrompt` has the business accounts paragraph. The paragraph below shows what was added. `BusinessAccountsWiringTest` checks the wiring.
+
 **Package.** The new files use `package com.darajaagentx.agent...`, which is what `RenameToAgentX.java` gives your agent-service. The JSON imports are
 Jackson 3 (`tools.jackson.databind`). If your agent-service still uses Jackson 2 (`com.fasterxml.jackson.databind`), change the imports in the new files to match.
 

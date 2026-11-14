@@ -76,6 +76,8 @@ public class ToolCatalog {
     public ArrayNode toolsFor(Role role) {
         ArrayNode tools = mapper.createArrayNode();
         walletTools().forEach(tools::add);
+        // The customer's own saved business accounts live in agentx-api, so these are offered whatever businessPayments says.
+        BusinessTools.definitions().forEach(d -> tools.add(mapper.valueToTree(d)));
         tools.add(escalateTool());
         if (!businessPayments) {
             return tools;

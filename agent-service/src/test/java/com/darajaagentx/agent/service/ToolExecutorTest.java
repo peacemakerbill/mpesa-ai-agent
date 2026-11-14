@@ -46,6 +46,7 @@ class ToolExecutorTest {
     @Mock PaymentClient payments;
     @Mock ReplySender sender;
     @Mock com.darajaagentx.agent.client.AgentXClient agentx;
+    @Mock com.darajaagentx.agent.client.BusinessApi businessApi;
 
     private IntentStore intents;
     private ToolExecutor executor;
@@ -54,7 +55,7 @@ class ToolExecutorTest {
     void setUp() {
         intents = new IntentStore(new InMemoryStateStore(), TestSupport.mapper());
         executor = new ToolExecutor(payments, intents, sender, TestSupport.props(), TestSupport.business(),
-                new WalletTools(agentx));
+                new WalletTools(agentx), new BusinessTools(businessApi));
     }
 
     private static ToolContext ctx(String phone, Role role) {

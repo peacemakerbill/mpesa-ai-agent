@@ -46,7 +46,7 @@ class WalletToolsTest {
     @BeforeEach
     void setUp() {
         WalletTools wallet = new WalletTools(agentx);
-        executor = new ToolExecutor(null, null, sender, TestSupport.walletProps(), TestSupport.business(), wallet);
+        executor = new ToolExecutor(null, null, sender, TestSupport.walletProps(), TestSupport.business(), wallet, new BusinessTools(null));
     }
 
     private static ToolContext ctx(String source) {

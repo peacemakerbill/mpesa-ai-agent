@@ -68,15 +68,17 @@ public class ToolExecutor {
     private final AgentProperties props;
     private final com.darajaagentx.agent.config.ServiceProperties.Business business;
     private final WalletTools wallet;
+    private final BusinessTools businessTools;
 
     public ToolExecutor(PaymentClient payments, IntentStore intents, ReplySender sender, AgentProperties props,
-                        com.darajaagentx.agent.config.ServiceProperties.Business business, WalletTools wallet) {
+                        com.darajaagentx.agent.config.ServiceProperties.Business business, WalletTools wallet, BusinessTools businessTools) {
         this.payments = payments;
         this.intents = intents;
         this.sender = sender;
         this.props = props;
         this.business = business;
         this.wallet = wallet;
+        this.businessTools = businessTools;
     }
 
     public Result execute(ToolContext ctx, String name, JsonNode input) {
@@ -87,6 +89,9 @@ public class ToolExecutor {
             }
             if (wallet.handles(name)) {
                 return wallet.execute(ctx, name, input);
+            }
+            if (businessTools.handles(name)) {
+                return businessTools.execute(ctx, name, input);
             }
             if (!props.businessPayments() && ToolCatalog.BUSINESS_TOOLS.contains(name)) {
                 log.warn("Tool {} requested but business payments are switched off", name);

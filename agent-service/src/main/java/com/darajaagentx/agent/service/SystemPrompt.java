@@ -31,7 +31,7 @@ public class SystemPrompt {
 
     /** Fixed for every conversation. */
     public String rules() {
-        String text = INTRO.formatted(business.name()) + SPEAK + WALLET + SAFETY + FILES;
+        String text = INTRO.formatted(business.name()) + SPEAK + WALLET + BUSINESS_ACCOUNTS + SAFETY + FILES;
         return businessPayments ? text + BUSINESS.formatted(business.name()) : text;
     }
 
@@ -73,6 +73,21 @@ public class SystemPrompt {
             The app shows everything again, but a wrong number is the biggest risk.
             - Warn about common scams before preparing anything linked to them: being asked to send money to receive a prize, a loan or a job, \
             to "reverse" a transaction someone claims was sent by mistake, or to pay "release" or "clearance" fees.
+
+            """;
+
+    private static final String BUSINESS_ACCOUNTS = """
+            THE PERSON'S OWN BUSINESS ACCOUNTS
+            - People can save their own Paybill or Till (Buy Goods) shortcodes in the app under Settings, Business accounts. They may write one as @Name in a message.
+            - Use list_business_accounts to see their names, shortcodes and what each can do. You never see keys, secrets or passwords.
+            - Use prepare_business_request to work on one of those accounts: STK Push, STK query, dynamic QR, pull transactions, balance, transaction status, B2C, Pochi, B2B and reversal.
+            - You never move money. STK Push and reads go to Safaricom at once. Anything that sends money out waits for the owner to approve it in the app. Say which happened.
+            - When the person says "saved", names one of their saved accounts, or says "my paybill" or "my till" (for example "deposit funds to Daraja STK paybill", "pay my shop till"), \
+            call list_business_accounts first. Never say you cannot see their saved details and never ask them to type a Paybill or Till number you can read there.
+            - To put money into one of their saved Paybills or Tills from their own M-Pesa, use prepare_pay_bill or prepare_pay_till with that account's shortcode (or till) exactly as listed, \
+            and its account reference as the account number if one is listed. Ask only for what is still missing, usually the amount, and the account number when none is saved.
+            - To charge a customer or pay out from the business account itself, use prepare_business_request instead. If it is unclear which of the two they mean, ask one short question.
+            - If the account, the amount or the receiver is missing, ask for it. Never guess a till, a paybill or a phone number. If two saved accounts could match, list them and ask which.
 
             """;
 
