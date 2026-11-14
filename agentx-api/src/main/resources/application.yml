@@ -168,10 +168,12 @@ agentx:
     # The least time between two "new sign in" emails to the same customer
     sign-in-alert-gap: ${MAIL_SIGN_IN_ALERT_GAP:PT30M}
   # ---------------------------------------------------------------------------------------------------------------
-  # Where files kept by this service go. Today that is the profile pictures.
+  # Where files kept by this service go: the profile pictures, and the chat files when the agent is set to use this service.
   # type: local   a folder on this server (local.path)
   #       network a shared folder mounted on this server: NFS, SMB/CIFS, a NAS (network.path). The share must already be
   #               mounted, otherwise the service refuses to start instead of quietly writing to its own disk.
+  #       database the database this service already uses, no disk and no other account needed (database.max-file-bytes)
+  #       cloudinary Cloudinary, as private files (cloudinary.*)
   # ---------------------------------------------------------------------------------------------------------------
   storage:
     type: ${STORAGE_TYPE:local}
@@ -183,6 +185,18 @@ agentx:
       create-if-missing: ${STORAGE_NETWORK_CREATE:false}
       # A folder inside the share, so several services can use one share
       subfolder: ${STORAGE_NETWORK_SUBFOLDER:agentx-api}
+    # Used when type is database. Files are kept in the database this service already uses. MongoDB documents stop at 16 MB.
+    database:
+      max-file-bytes: ${STORAGE_DB_MAX_FILE_BYTES:15728640}
+    # Used when type is cloudinary. Give the address from the dashboard (cloudinary://API_KEY:API_SECRET@CLOUD_NAME), or the three values.
+    cloudinary:
+      url: ${CLOUDINARY_URL:}
+      cloud-name: ${STORAGE_CLOUDINARY_CLOUD_NAME:}
+      api-key: ${STORAGE_CLOUDINARY_API_KEY:}
+      api-secret: ${STORAGE_CLOUDINARY_API_SECRET:}
+      folder: ${STORAGE_CLOUDINARY_FOLDER:agentx}
+    # How often database files past their keep time are removed
+    purge-interval: ${STORAGE_PURGE_INTERVAL:PT1H}
     max-picture-bytes: ${STORAGE_MAX_PICTURE_BYTES:3145728}
   # Sign up and the lists customers keep
   profile:

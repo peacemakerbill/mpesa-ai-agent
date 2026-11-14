@@ -46,7 +46,7 @@ com.darajaagentx.api
   service/      sign-in, sign up, profile, email, reports, requests, evidence matching, chat relay
   mail/         mail outbox, log and SMTP transports, email templates
   report/       CSV, Excel and PDF writers
-  storage/      where profile pictures are kept (local or network)
+  storage/      where files are kept: profile pictures and chat files (folder, network share, database or Cloudinary)
   repository/   database access, for the database you choose
   model/  dto/  entities and request and response shapes
   config/       typed properties, token filter, internal key filter, CORS, RabbitMQ
@@ -125,8 +125,10 @@ Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS accoun
 | `MAIL_FROM`, `MAIL_FROM_NAME` | The sender. Replies to a report go to the customer who sent it (their verified profile email). `MAIL_REPLY_TO` is only a fallback for system emails |
 | `MAIL_NOTIFY_WELCOME`, `MAIL_NOTIFY_SIGN_IN`, `MAIL_NOTIFY_PAYMENTS` | Which automatic emails exist |
 | `MAIL_REPORT_MAX_RECIPIENTS`, `MAIL_REPORT_PER_HOUR`, `MAIL_REPORT_MAX_ROWS`, `MAIL_REPORT_MAX_BYTES`, `MAIL_REPORT_ALLOW_EXTERNAL`, `MAIL_REPORT_ALLOWED_DOMAINS` | Limits on emailed reports |
-| `STORAGE_TYPE` | `local` (default) or `network`: where profile pictures are kept |
+| `STORAGE_TYPE` | `local` (default), `network`, `database` (the database this service uses, no disk needed) or `cloudinary`: where profile pictures and chat files are kept |
 | `STORAGE_LOCAL_PATH`, `STORAGE_NETWORK_PATH`, `STORAGE_NETWORK_SUBFOLDER`, `STORAGE_NETWORK_CREATE`, `STORAGE_MAX_PICTURE_BYTES` | Folder, mounted share, sub folder, create it if missing, picture size limit |
+| `STORAGE_DB_MAX_FILE_BYTES`, `STORAGE_PURGE_INTERVAL` | Biggest file kept in the database (15 MB, MongoDB stops at 16 MB), how often expired database files are removed |
+| `CLOUDINARY_URL`, `STORAGE_CLOUDINARY_CLOUD_NAME`, `STORAGE_CLOUDINARY_API_KEY`, `STORAGE_CLOUDINARY_API_SECRET`, `STORAGE_CLOUDINARY_FOLDER` | The Cloudinary account when `STORAGE_TYPE=cloudinary`. Give the address from the dashboard, or the three values |
 | `SIGNUP_ENABLED` | `true` (default). `false` closes sign up |
 | `AGENTX_BUSINESS_MAX_AMOUNT`, `AGENTX_BUSINESS_APPROVAL_TTL`, `AGENTX_BUSINESS_STK_PER_HOUR`, `AGENTX_BUSINESS_APPROVE_COLLECTIONS` | Limits on requests made on business accounts |
 | `AGENTX_RECONCILE_ENABLED`, `AGENTX_RECONCILE_INTERVAL`, `AGENTX_RECONCILE_MIN_AGE`, `AGENTX_RECONCILE_GIVE_UP_AFTER` | The job that asks Safaricom about an STK Push whose callback never arrived (defaults: on, every 1 minute, after 2 minutes, give up after 15 minutes) |

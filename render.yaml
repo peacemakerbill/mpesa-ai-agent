@@ -59,6 +59,11 @@ services:
       - key: SPRING_RABBITMQ_ADDRESSES
         sync: false
 
+      # Files people upload (profile pictures, chat photos, voice notes, documents). Render's disk is wiped on every deploy,
+      # so they are kept in the database, files up to 15 MB. Use cloudinary instead if you add CLOUDINARY_URL.
+      - key: STORAGE_TYPE
+        value: database
+
       # Private address of agent-service. The name is the service name, the port is the one in PORT.
       - key: AGENT_BASE_URL
         value: http://agent-service:10000
@@ -128,6 +133,10 @@ services:
         value: http://agentx-api:10000
       - key: AGENTX_PUBLIC_BASE_URL
         sync: false
+
+      # Chat files are sent to agentx-api, which keeps them in its database (STORAGE_TYPE above)
+      - key: CHAT_MEDIA_STORE
+        value: agentx
 
       - key: BUSINESS_NAME
         value: Daraja Agent-X

@@ -1,15 +1,17 @@
 package com.darajaagentx.agent.chat.media;
 
 import com.darajaagentx.agent.store.StateStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 import java.nio.file.Path;
 import java.time.Duration;
 
 /**
- * Chooses where chat files are kept: {@code chat.media.store} = state (default), local or s3.
+ * Chooses where chat files are kept: {@code chat.media.store} = state (default), local, s3 or agentx.
  * A wrong setting stops the service at start with a clear message, so files are never silently lost.
  */
 @Configuration
@@ -18,6 +20,7 @@ public class MediaStorageConfig {
     @Bean
     MediaBlobStore mediaBlobStore(
             StateStore state,
+            @Qualifier("agentxRestClient") RestClient agentxRestClient,
             @Value("${chat.media.store:state}") String store,
             @Value("${chat.media.local-dir:./data/chat-media}") String localDir,
             @Value("${chat.media.retention-days:30}") long retentionDays,
@@ -33,7 +36,8 @@ public class MediaStorageConfig {
             case "state" -> new StateBlobStore(state);
             case "local" -> new LocalDiskBlobStore(Path.of(localDir), retention);
             case "s3" -> new S3BlobStore(endpoint, bucket, region, accessKey, secretKey, pathStyle, prefix, retention);
-            default -> throw new IllegalStateException("chat.media.store must be state, local or s3, not '" + store + "'");
+            case "agentx" -> new AgentXBlobStore(agentxRestClient, retention);
+            default -> throw new IllegalStateException("chat.media.store must be state, local, s3 or agentx, not '" + store + "'");
         };
     }
 }

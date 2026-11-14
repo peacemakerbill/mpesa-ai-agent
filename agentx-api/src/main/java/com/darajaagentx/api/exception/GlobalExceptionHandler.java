@@ -83,6 +83,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_GATEWAY, e.getMessage());
     }
 
+    @ExceptionHandler(com.darajaagentx.api.storage.FileTooLargeException.class)
+    public ResponseEntity<ApiError> fileTooLarge(com.darajaagentx.api.storage.FileTooLargeException e) {
+        return build(HttpStatus.CONTENT_TOO_LARGE, e.getMessage());
+    }
+
     @ExceptionHandler(com.darajaagentx.api.storage.StorageException.class)
     public ResponseEntity<ApiError> storageProblem(com.darajaagentx.api.storage.StorageException e) {
         return build(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());

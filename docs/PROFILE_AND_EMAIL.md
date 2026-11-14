@@ -87,20 +87,25 @@ Where the code goes: in the app and the console the customer types it. In the ch
 
 The server does not store the upload as it came. It reads the picture, checks that it really is a PNG or JPEG, shrinks it to at most 512 pixels on the longest side, and writes a fresh image. That removes EXIF data such as the place a photo was taken, and rejects files that only pretend to be pictures.
 
-## Where files are kept: local or network
+## Where files are kept: local, network, database or Cloudinary
 
-One setting chooses the storage. Pictures are the first thing to use it.
+One setting chooses the storage. Profile pictures use it, and so do the chat files when `agent-service` is set to `chat.media.store: agentx` (see below).
 
 ```yaml
 agentx:
   storage:
-    type: local            # local or network
+    type: local            # local, network, database or cloudinary
     local:
       path: ./data/files
     network:
       path: /mnt/agentx    # a shared folder already mounted on this server
       create-if-missing: false
       subfolder: agentx-api
+    database:
+      max-file-bytes: 15728640   # the biggest file kept in the database
+    cloudinary:
+      url: cloudinary://API_KEY:API_SECRET@CLOUD_NAME   # or cloud-name, api-key and api-secret
+      folder: agentx
     max-picture-bytes: 3145728
 ```
 
@@ -108,12 +113,16 @@ agentx:
 |---|---|---|
 | `local` | The folder in `local.path` on this server. | One server, development, a mounted disk. |
 | `network` | A shared folder in `network.path` that is mounted on this server: NFS, SMB or CIFS, a NAS. Files go in `subfolder` so several services can share one share. | Several servers, or pictures that must outlive a redeploy. |
+| `database` | The database this service already uses (PostgreSQL, MySQL or MongoDB), in the table or collection `stored_files`. Needs no disk and no other account. Files over `database.max-file-bytes` (15 MB) are refused, and files that carry a keep time (chat files) are removed once it has passed. | A host with no disk to trust, such as a free Render service, and small amounts of files. A free database has little room. |
+| `cloudinary` | Cloudinary, as private files (delivery type `authenticated`, uploaded as `raw` so nothing is resized or recompressed). This service downloads them with links signed by the API secret and never gives a link to a phone. | When you want the files outside your own database. Files stay until they are deleted: Cloudinary has no keep time, so chat files are not removed by retention. |
 
 With `network`, the share must already be mounted. If the folder is missing the service **refuses to start** rather than quietly writing to its own disk. Set `create-if-missing: true` only if you want the folder created.
 
-The environment variables are `STORAGE_TYPE`, `STORAGE_LOCAL_PATH`, `STORAGE_NETWORK_PATH`, `STORAGE_NETWORK_CREATE`, `STORAGE_NETWORK_SUBFOLDER` and `STORAGE_MAX_PICTURE_BYTES`.
+The environment variables are `STORAGE_TYPE`, `STORAGE_LOCAL_PATH`, `STORAGE_NETWORK_PATH`, `STORAGE_NETWORK_CREATE`, `STORAGE_NETWORK_SUBFOLDER`, `STORAGE_DB_MAX_FILE_BYTES`, `CLOUDINARY_URL` (or `STORAGE_CLOUDINARY_CLOUD_NAME`, `STORAGE_CLOUDINARY_API_KEY`, `STORAGE_CLOUDINARY_API_SECRET`), `STORAGE_CLOUDINARY_FOLDER`, `STORAGE_PURGE_INTERVAL` and `STORAGE_MAX_PICTURE_BYTES`.
 
-`network` here means a mounted shared folder. It is not an object store. The chat files in `agent-service` have their own setting, `chat.media.store`, with an S3 option (see `agent-service/STORAGE.md`). Pictures do not use S3 in this update.
+With `database`, MongoDB keeps a file in one document, which is limited to 16 MB, and the SQL databases keep it in a `stored_files` table created by migration `V6`. The service checks that the database answers, and an expired file is hidden at once and deleted by a sweep that runs every hour. With `cloudinary`, the service stops at start when the cloud name, key or secret is missing. A wrong value is only noticed on the first upload, which fails as a storage problem (503) with `Cloudinary refused` in the log, so try one upload after you set it up.
+
+`network` here means a mounted shared folder. It is not an object store. The chat files in `agent-service` have their own setting, `chat.media.store`, with S3 and `agentx` options (see `agent-service/STORAGE.md`). With `agentx`, the chat files are sent to this service, which keeps them wherever `agentx.storage.type` says, through `/internal/files/chat-media`. Profile pictures do not use S3.
 
 ## Email settings
 
@@ -323,6 +332,7 @@ Please run these on your own machine before relying on it:
 
 - **No idempotency on report emails.** If the model repeats a tool call, a report can be sent twice. Reports are capped per hour, and the owner is notified, but a repeat is possible.
 - **The PDF uses a built in font.** It handles Latin text. Names with characters outside Latin-1 may print as a placeholder, so use CSV or Excel for those.
-- **Network storage is a mounted folder.** Pictures do not go to S3 in this update.
+- **Network storage is a mounted folder.** Pictures do not go to S3. For a host without a disk use `database`, or `cloudinary`.
+- **Cloudinary was tested only against a local stand-in.** The signing follows the documented method, but it has not run against a real account. Upload one picture after setting it up, and watch the log for `Cloudinary refused`.
 - **Attached files in the chat.** The assistant can only read a file a customer attaches if your agent-service passes its text to the model. Pasted addresses always work.
 - **The sign in edit.** `AuthController` needs the one line from `apply_profile_hooks.py`. If the script cannot find its place in your version of the file it prints the exact lines to add.

@@ -209,14 +209,14 @@ agent-service and agentx-api do not answer **503 Service Unavailable** for a dat
 - **Business accounts** (Settings): Paybill or Buy Goods shortcode, till numbers, consumer key and secret, STK passkey, initiator name and password, encrypted on the server. Security credential made by the server. Several branches or tills under one shortcode, and store numbers or child shortcodes with their own number (a Buy Goods store number has its linked till, a Paybill child has none), each using the head office's credentials or its own, whichever it has from Daraja. CSV upload with a full check first. See [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md).
 - **Transactions in chat:** STK Push, STK Push query, Dynamic QR, balance, pull transactions, B2C, Pochi la Biashara, B2B. Money out needs approval in the app. Requests are sent once.
 - **`@` mentions and contact picker** in the chat box.
-- **Chat file storage:** Redis (default, 24 hours), a folder or network share, or S3-compatible storage. See [`agent-service/STORAGE.md`](agent-service/STORAGE.md).
+- **Chat file storage:** Redis (default, 24 hours), a folder or network share, S3-compatible storage, or through agentx-api into its database or Cloudinary (no disk needed). See [`agent-service/STORAGE.md`](agent-service/STORAGE.md).
 - **Phone file cache** with a size limit, and a My OneApp screen. See [`agentx-app/docs/FILES_AND_MY_ONEAPP.md`](agentx-app/docs/FILES_AND_MY_ONEAPP.md).
 
 ## Sign up, profiles and email
 
 - **Sign up** in the app, the console or over the API: phone, first and last name (middle name and email optional), then the same 6 digit SMS code that sign in uses. No password. A new customer is signed in as soon as the code is right. People who already had an account get an empty profile on first use.
 - **Profile:** first, middle and last name, email, address, city, county, country, a saved location and a profile picture, all editable in the app, in the console, over the API, or by asking the assistant.
-- **Profile picture** is checked, shrunk to 512 pixels and cleaned of EXIF data, then kept where the backend is set to keep files: a local folder, or a mounted network share. One setting, `agentx.storage.type: local` or `network`.
+- **Profile picture** is checked, shrunk to 512 pixels and cleaned of EXIF data, then kept where the backend is set to keep files: a local folder, a mounted network share, the database, or Cloudinary. One setting, `agentx.storage.type`.
 - **Email address** counts only after a 6 digit code sent to it has been typed. The code never reaches the assistant.
 - **Automatic emails:** a welcome, a notice when the account signs in on a device, and a notice when a payment or business request finishes. Customers can switch the sign in and payment notices off.
 - **Reports by email:** say "send this report to my email as a PDF", "email this as Excel to a@x.com" or "send it to everyone on my list as CSV". PDF, CSV and Excel, from the table in the chat or from business requests, business accounts and payments. With no address named it goes to the verified profile email. The owner is told when a report goes to someone else.

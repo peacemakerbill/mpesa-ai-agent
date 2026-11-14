@@ -11,6 +11,7 @@ import java.util.Optional;
  *   <li>{@code state}: the agent's state store (Redis). Short lived. This is how the chat worked before.</li>
  *   <li>{@code local}: a folder on the server, or on a disk or network share mounted there (NFS, SMB, EFS).</li>
  *   <li>{@code s3}: any S3 compatible service over the network: AWS S3, MinIO, Cloudflare R2, DigitalOcean Spaces, Wasabi.</li>
+ *   <li>{@code agentx}: agentx-api keeps them, in its folder, its database or Cloudinary. Needs no disk and no file service here.</li>
  * </ul>
  */
 public interface MediaBlobStore {

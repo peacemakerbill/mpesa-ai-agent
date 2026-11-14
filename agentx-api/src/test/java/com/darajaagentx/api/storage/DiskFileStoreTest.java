@@ -18,7 +18,8 @@ class DiskFileStoreTest {
     }
 
     private static StorageProperties props(String type, Path local, Path network, boolean create) {
-        return new StorageProperties(type, new StorageProperties.Local(local.toString()), new StorageProperties.Network(network == null ? "" : network.toString(), create, "agentx-api"), 3_145_728);
+        return new StorageProperties(type, new StorageProperties.Local(local.toString()), new StorageProperties.Network(network == null ? "" : network.toString(), create, "agentx-api"),
+                new StorageProperties.Database(1_048_576), new StorageProperties.Cloudinary("", "", "", "", "agentx"), 3_145_728);
     }
 
     @Test
@@ -80,7 +81,7 @@ class DiskFileStoreTest {
 
     @Test
     void anUnknownTypeStopsTheServiceWithAClearMessage() throws Exception {
-        assertThatThrownBy(() -> StorageConfig.create(props("s3", temp(), null, false))).hasMessageContaining("local or network");
+        assertThatThrownBy(() -> StorageConfig.create(props("s3", temp(), null, false))).hasMessageContaining("local, network, database or cloudinary");
     }
 
     @Test

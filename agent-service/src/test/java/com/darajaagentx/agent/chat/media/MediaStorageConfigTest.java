@@ -2,6 +2,7 @@ package com.darajaagentx.agent.chat.media;
 
 import com.darajaagentx.agent.store.InMemoryStateStore;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +16,7 @@ class MediaStorageConfigTest {
     private final InMemoryStateStore state = new InMemoryStateStore();
 
     private MediaBlobStore build(String store, String dir, String bucket) {
-        return config.mediaBlobStore(state, store, dir, 30, "", bucket, "us-east-1", "key", "secret", true, "chat");
+        return config.mediaBlobStore(state, RestClient.create("http://localhost:1"), store, dir, 30, "", bucket, "us-east-1", "key", "secret", true, "chat");
     }
 
     @Test
@@ -24,11 +25,12 @@ class MediaStorageConfigTest {
         assertThat(build("state", dir, "").kind()).isEqualTo("state");
         assertThat(build(" LOCAL ", dir, "").kind()).isEqualTo("local");
         assertThat(build("s3", dir, "my-bucket").kind()).isEqualTo("s3");
+        assertThat(build("agentx", dir, "").kind()).isEqualTo("agentx");
     }
 
     @Test
     void failsLoudlyOnAWrongSetting() {
-        assertThatThrownBy(() -> build("ftp", "x", "")).hasMessageContaining("state, local or s3");
+        assertThatThrownBy(() -> build("ftp", "x", "")).hasMessageContaining("state, local, s3 or agentx");
         assertThatThrownBy(() -> build("s3", "x", "")).hasMessageContaining("needs bucket");
     }
 }

@@ -346,14 +346,14 @@ Money going out always waits for approval in the app. A request is sent once; if
 The B2B and pull transactions request shapes were written from memory and must be checked against Safaricom's documentation before production.
 
 In chat, type `@` to mention a saved contact or open the contact picker. Chat photos, voice notes and documents are kept in Redis for 24 hours by default,
-or in a folder or network share, or in S3-compatible storage (AWS S3, MinIO, Cloudflare R2, Spaces, Wasabi). See [`agent-service/STORAGE.md`](agent-service/STORAGE.md).
+or in a folder or network share, or in S3-compatible storage (AWS S3, MinIO, Cloudflare R2, Spaces, Wasabi), or through agentx-api in its database or Cloudinary when there is no disk. See [`agent-service/STORAGE.md`](agent-service/STORAGE.md).
 On the phone, the media cache has a size limit under **Settings, Files and storage**, and My OneApp opens from **Settings**
 ([`agentx-app/docs/FILES_AND_MY_ONEAPP.md`](agentx-app/docs/FILES_AND_MY_ONEAPP.md)).
 
 ## Sign up, profiles and email
 
 New customers can sign up with their phone and a name, confirmed by the same SMS code that sign in uses. A profile holds names, email, address, location and a
-picture. The picture is kept in a local folder or on a mounted network share (`agentx.storage.type`). An email address is verified with its own code, then the
+picture. The picture is kept in a local folder, on a mounted network share, in the database or in Cloudinary (`agentx.storage.type`). An email address is verified with its own code, then the
 customer gets a welcome, sign in and payment emails, and can say in the chat "send this report to my email as a PDF" (or CSV or Excel), name other addresses or
 upload a list. Mail is written to the log until you set `agentx.mail.transport: smtp`. See [`docs/PROFILE_AND_EMAIL.md`](docs/PROFILE_AND_EMAIL.md).
 
@@ -389,7 +389,7 @@ upload a list. Mail is written to the log until you set `agentx.mail.transport: 
 | [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md) | Business accounts, tills, CSV upload, chat transactions |
 | [`docs/PROFILE_AND_EMAIL.md`](docs/PROFILE_AND_EMAIL.md) | Sign up, profiles, email verification, reports by email, mail and picture storage settings |
 | [`docs/CHATS.md`](docs/CHATS.md) | Many chats per customer: new chat, open an old one, rename, pin, delete |
-| [`agent-service/STORAGE.md`](agent-service/STORAGE.md) | Where chat files are kept: Redis, a folder or S3 |
+| [`agent-service/STORAGE.md`](agent-service/STORAGE.md) | Where chat files are kept: Redis, a folder, S3, or agentx-api's database or Cloudinary |
 | [`agentx-app/docs/FILES_AND_MY_ONEAPP.md`](agentx-app/docs/FILES_AND_MY_ONEAPP.md) | Phone file cache and My OneApp |
 | [`agentx-app/docs/CONTACTS.md`](agentx-app/docs/CONTACTS.md) | Contact search and the Google and Microsoft sign-ins |
 | [`agentx-app/docs/SMS.md`](agentx-app/docs/SMS.md) | How the M-Pesa message check works and what it sends |

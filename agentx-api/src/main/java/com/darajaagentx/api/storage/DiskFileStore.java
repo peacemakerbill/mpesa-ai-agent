@@ -8,7 +8,6 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 /**
  * A {@link FileStore} on a folder. The folder can be on the server's own disk or be a network share mounted there:
@@ -19,8 +18,6 @@ import java.util.regex.Pattern;
  * reader never sees half a file.
  */
 public final class DiskFileStore implements FileStore {
-
-    private static final Pattern KEY = Pattern.compile("^[A-Za-z0-9_-][A-Za-z0-9._-]{0,120}(/[A-Za-z0-9_-][A-Za-z0-9._-]{0,120}){0,3}$");
 
     private final Path root;
     private final String label;
@@ -142,7 +139,7 @@ public final class DiskFileStore implements FileStore {
     }
 
     private Path resolve(String key) {
-        if (key == null || !KEY.matcher(key).matches() || key.contains("..")) {
+        if (!FileKeys.valid(key)) {
             throw new StorageException("That file name is not allowed.");
         }
         Path path = root.resolve(key).normalize();
