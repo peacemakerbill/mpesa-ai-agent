@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:android_intent_plus/android_intent.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,6 +25,9 @@ enum OneAppResult { opened, openedStore, failed }
 /// Opens My OneApp, or its store page when it is not installed. Returns what happened.
 /// Only a launcher intent is used: nothing is sent to the app and nothing is read from it.
 Future<OneAppResult> openOneApp({List<String> packages = oneAppAndroidPackages}) async {
+  if (kIsWeb) {
+    return await launchUrl(oneAppPlaySearch, mode: LaunchMode.externalApplication) ? OneAppResult.openedStore : OneAppResult.failed;
+  }
   if (Platform.isAndroid) {
     for (final pkg in packages) {
       try {

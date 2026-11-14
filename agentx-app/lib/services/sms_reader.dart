@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -22,7 +23,7 @@ abstract class SmsReader {
 
 class DeviceSmsReader implements SmsReader {
   @override
-  bool get supported => Platform.isAndroid;
+  bool get supported => kIsWeb ? false : Platform.isAndroid;
 
   @override
   Future<bool> hasPermission() async => supported && await Permission.sms.status.isGranted;
