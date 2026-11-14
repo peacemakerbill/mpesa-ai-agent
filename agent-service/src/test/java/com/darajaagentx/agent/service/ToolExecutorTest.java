@@ -109,7 +109,12 @@ class ToolExecutorTest {
     }
 
     private static List<String> names(ToolCatalog catalog, Role role) {
-        return catalog.toolsFor(role).findValuesAsString("name");
+        // Only the tool's own name: the input schemas inside also have fields called "name"
+        List<String> names = new java.util.ArrayList<>();
+        for (JsonNode tool : catalog.toolsFor(role)) {
+            names.add(tool.path("name").asString());
+        }
+        return names;
     }
 
     // ---------------------------------------------------------------- payments

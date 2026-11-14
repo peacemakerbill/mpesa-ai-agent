@@ -59,10 +59,17 @@ public class InMemoryStateStore implements StateStore {
     @Override
     public Optional<String> get(String key) {
         Entry e = map.get(key);
-        if (e == null || e.expired(clock.get()) || !(e.value() instanceof String s)) {
+        if (e == null || e.expired(clock.get())) {
             return Optional.empty();
         }
-        return Optional.of(s);
+        // A counter is stored as a number but, like in Redis, it reads back as text
+        if (e.value() instanceof String s) {
+            return Optional.of(s);
+        }
+        if (e.value() instanceof Long n) {
+            return Optional.of(Long.toString(n));
+        }
+        return Optional.empty();
     }
 
     @Override

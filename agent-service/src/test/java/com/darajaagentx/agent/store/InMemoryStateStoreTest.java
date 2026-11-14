@@ -49,6 +49,7 @@ class InMemoryStateStoreTest {
     void incrementCountsAndRestartsAfterExpiry() {
         assertThat(store.increment("c", Duration.ofMinutes(1))).isEqualTo(1);
         assertThat(store.increment("c", Duration.ofMinutes(1))).isEqualTo(2);
+        assertThat(store.get("c")).contains("2");
         now.set(now.get().plusSeconds(61));
         assertThat(store.increment("c", Duration.ofMinutes(1))).isEqualTo(1);
     }
