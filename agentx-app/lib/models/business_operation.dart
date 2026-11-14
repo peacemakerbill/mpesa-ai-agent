@@ -18,7 +18,7 @@ String? parseBusinessLink(Uri uri, {String scheme = 'agentx'}) {
 /// Like [parseBusinessLink] for a link that sits inside other text, such as a message in the chat.
 String? businessIdIn(String text, {String scheme = 'agentx'}) {
   for (final word in text.split(RegExp(r'\s+'))) {
-    final uri = Uri.tryParse(word.replaceAll(RegExp(r'[).,;]+$'), ''));
+    final uri = Uri.tryParse(word.replaceAll(RegExp(r'''^[(\[<"']+|[).,;\]>"']+$'''), ''));
     if (uri == null || !uri.hasScheme) continue;
     final id = parseBusinessLink(uri, scheme: scheme);
     if (id != null) return id;

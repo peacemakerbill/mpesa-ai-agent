@@ -50,7 +50,10 @@ class MediaCache {
         await _write(id, file);
         return file;
       } finally {
-        unawaited(Future<void>.delayed(Duration.zero, () => _inFlight.remove(id)));
+        // A block body, so the removed (maybe failed) future is not handed back and its error is not raised a second time.
+        unawaited(Future<void>.delayed(Duration.zero, () {
+          _inFlight.remove(id);
+        }));
       }
     });
   }

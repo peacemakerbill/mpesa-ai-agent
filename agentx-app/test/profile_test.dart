@@ -102,6 +102,9 @@ Finder _field(String label) => find.widgetWithText(TextField, label);
 
 Finder _inDialog(Type type) => find.descendant(of: find.byType(AlertDialog), matching: find.byType(type));
 
+/// The title of the code dialog. The page behind it can have a button with the same words.
+Finder get _codeDialogTitle => find.descendant(of: find.byType(AlertDialog), matching: find.text('Enter the code'));
+
 void main() {
   group('models', () {
     test('a profile is read, and an older answer without the new fields still reads', () {
@@ -349,7 +352,7 @@ void main() {
       await tester.enterText(_inDialog(TextField), 'new@example.com');
       await tester.tap(find.text('Send me a code'));
       await tester.pumpAndSettle();
-      expect(find.text('Enter the code'), findsOneWidget);
+      expect(_codeDialogTitle, findsOneWidget);
       expect(jsonDecode(seen.firstWhere((r) => r.url.path == '/api/profile/email/request-code').body), {'email': 'new@example.com'});
 
       await tester.enterText(_inDialog(TextField), '123456');
@@ -376,7 +379,7 @@ void main() {
       await tester.tap(find.text('Verify'));
       await tester.pumpAndSettle();
       expect(find.textContaining('not right'), findsOneWidget);
-      expect(find.text('Enter the code'), findsOneWidget);
+      expect(_codeDialogTitle, findsOneWidget);
     });
 
     testWidgets('a server that cannot send email says so', (tester) async {

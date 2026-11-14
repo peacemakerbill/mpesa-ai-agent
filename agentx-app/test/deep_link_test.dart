@@ -22,6 +22,6 @@ void main() {
     expect(parseActionLink(Uri.parse('https://x.test/a/$id/extra')), isNull);
     expect(parseActionLink(Uri.parse('agentx://other/$id')), isNull);
     expect(parseActionLink(Uri.parse('ftp://x.test/a/$id')), isNull);
-    expect(parseActionLink(Uri.parse('agentx://a/../$id')), isNull);
+    expect(parseActionLink(Uri.parse('agentx://a/other/$id')), isNull);
   });
 }

@@ -16,8 +16,9 @@ import 'chat_device.dart';
 /// The real phone behind [ChatDevice]. Needs the permissions listed in docs/PLATFORM_SETUP.md.
 class PlatformChatDevice implements ChatDevice {
   final ImagePicker _images = ImagePicker();
-  final AudioRecorder _recorder = AudioRecorder();
-  final AudioPlayer _player = AudioPlayer();
+  // Created on first use, so building the app state does not need the audio plugins (and tests need no phone).
+  late final AudioRecorder _recorder = AudioRecorder();
+  late final AudioPlayer _player = AudioPlayer();
   DateTime? _recordingStarted;
   String? _recordingPath;
   Completer<void>? _playing;
