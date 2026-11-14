@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "717433f7-7e8f-4461-ab12-693b85384bf0",
     "name": "M-Pesa chat assistant",
-    "description": "# Chat assistant for your own M-Pesa: every HTTP endpoint\n\nThree services. Import this collection and the environment, then set the values in the environment.\n\n**Ports:** agent 8082, payment 8083 (optional), agentx 8084.\n\n**Quick start (wallet flow, no Daraja needed):** open `2. agentx-api / A. Walkthrough` and run it in order with the collection runner.\nStep 1 asks for a sign-in code (start agentx-api with `CODE_DELIVERY=dev` so the answer carries it, never do that on a shared server), step 2 signs the \"phone\" in,\nstep 3 prepares a request, steps 6 to 8 approve, hand off and report. Then try `C2. Chat`, and `C3` and `C4` for business accounts and the requests the assistant prepares for them.\n\n**Auth:** internal endpoints send `X-Internal-Key` ({{internalKey}}, the same value in every service `.env`). App endpoints send the device token\n(saved automatically by the sign-in request). Callbacks have no key, the secret token is in the path.\n\n**Notes:** requests that need Daraja or real media ids will only fully work against real credentials. Do not put real secrets in a shared collection.\nThe environment holds addresses, keys and phone numbers. Ids, tokens and codes are filled in by test scripts and live in the collection variables (edit actionId, paymentId, operationId or originatorConversationId there by hand when you want to use a real one). Nothing here was run against the services when it was written.",
+    "description": "# Chat assistant for your own M-Pesa: every HTTP endpoint\n\nTwo services. Import this collection and the environment, then set the values in the environment.\n\n**Ports:** agent 8082, agentx 8084. Business payments (STK Push, withdrawals, reversals and so on) run inside agentx-api, see `C3` and `C4`.\n\n**Quick start (wallet flow, no Daraja needed):** open `2. agentx-api / A. Walkthrough` and run it in order with the collection runner.\nStep 1 asks for a sign-in code (start agentx-api with `CODE_DELIVERY=dev` so the answer carries it, never do that on a shared server), step 2 signs the \"phone\" in,\nstep 3 prepares a request, steps 6 to 8 approve, hand off and report. Then try `C2. Chat`, and `C3` and `C4` for business accounts and the requests the assistant prepares for them.\n\n**Auth:** internal endpoints send `X-Internal-Key` ({{internalKey}}, the same value in every service `.env`). App endpoints send the device token\n(saved automatically by the sign-in request). Callbacks have no key, the secret token is in the path.\n\n**Notes:** requests that need Daraja or real media ids will only fully work against real credentials. Do not put real secrets in a shared collection.\nThe environment holds addresses, keys and phone numbers. Ids, tokens and codes are filled in by test scripts and live in the collection variables (edit actionId, bizAccountId or bizOperationId there by hand when you want to use a real one). Nothing here was run against the services when it was written.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -5639,18 +5639,6 @@
       "value": "254700000001"
     },
     {
-      "key": "staffPhone",
-      "value": "254700000002"
-    },
-    {
-      "key": "approverPhone",
-      "value": "254700000003"
-    },
-    {
-      "key": "adminPhone",
-      "value": "254700000004"
-    },
-    {
       "key": "deviceId",
       "value": "postman-device-0001"
     },
@@ -5664,18 +5652,6 @@
     },
     {
       "key": "actionId",
-      "value": "00000000-0000-0000-0000-000000000000"
-    },
-    {
-      "key": "operationId",
-      "value": "00000000-0000-0000-0000-000000000000"
-    },
-    {
-      "key": "checkoutRequestId",
-      "value": "ws_CO_000000000000000000"
-    },
-    {
-      "key": "originatorConversationId",
       "value": "00000000-0000-0000-0000-000000000000"
     },
     {

@@ -7,7 +7,7 @@
 
 <br/>
 
-<img src="../docs/assets/badges-postman.svg" alt="Postman collection with 137 requests, a local environment, and chaining by test scripts." width="880"/>
+<img src="../docs/assets/badges-postman.svg" alt="Postman collection with 126 requests, a local environment, and chaining by test scripts." width="880"/>
 
 <br/><br/>
 
@@ -23,13 +23,13 @@ A collection and an environment for every HTTP endpoint of the services, with a 
 
 | File | What it is |
 |---|---|
-| `daraja-agent-x.postman_collection.json` | 137 requests for every HTTP endpoint of the three services |
+| `daraja-agent-x.postman_collection.json` | 126 requests for every HTTP endpoint of the two services |
 | `daraja-agent-x-local.postman_environment.json` | Addresses, the internal key, test phone numbers and secrets for a local run |
 
 ## Use it
 
 1. In Postman choose **Import**, select both files, then pick the environment **daraja-agent-x local**.
-2. Set `internalKey` to the same value as `INTERNAL_KEY` in your `.env` files, and `callbackSecret` to your own value. Never put real production secrets in a file you share.
+2. Set `internalKey` to the same value as `INTERNAL_KEY` in your `.env` files,. Never put real production secrets in a file you share.
 3. Start the services with `docker compose up --build`. For the walkthrough, start agentx-api with `CODE_DELIVERY=dev` so asking for a sign-in code returns it (`devCode`).
 4. **No Daraja account needed for the wallet flow.** Run the folder `2. agentx-api / A. Walkthrough` with the collection runner, then try `C2. Chat`. For business accounts, run `C3. Business accounts` and `C4. Business requests`.
 

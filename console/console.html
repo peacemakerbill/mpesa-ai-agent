@@ -819,15 +819,14 @@ function highlight(value) {
 
 /* ------------------------------------------------------------------ settings and saved values */
 const DEFAULTS = {
-  agentUrl: 'http://localhost:8082', paymentUrl: 'http://localhost:8083', agentxUrl: 'http://localhost:8084',
+  agentUrl: 'http://localhost:8082', agentxUrl: 'http://localhost:8084',
   internalKey: 'change-me-to-a-long-random-string',
-  customerPhone: '254700000001', staffPhone: '254700000002', approverPhone: '254700000003', adminPhone: '254700000004',
-  callbackSecret: 'your-mpesa-callback-secret', deviceId: 'console-device-0001',
+  customerPhone: '254700000001', deviceId: 'console-device-0001',
   googleClientId: '', microsoftClientId: '',
 };
 const VAR_DEFAULTS = {
-  chatId: 'abc123abc123', actionId: '00000000-0000-0000-0000-000000000000', paymentId: '00000000-0000-0000-0000-000000000000', operationId: '00000000-0000-0000-0000-000000000000', bizAccountId: '00000000-0000-0000-0000-000000000000', bizOperationId: '00000000-0000-0000-0000-000000000000',
-  checkoutRequestId: 'ws_CO_000000000000000000', originatorConversationId: '00000000-0000-0000-0000-000000000000', linkCode: '', deviceToken: '', mediaId: '',
+  chatId: 'abc123abc123', actionId: '00000000-0000-0000-0000-000000000000', bizAccountId: '00000000-0000-0000-0000-000000000000', bizOperationId: '00000000-0000-0000-0000-000000000000',
+  linkCode: '', deviceToken: '', mediaId: '',
 };
 const cfg = Object.assign({}, DEFAULTS, store.get('cfg') || {});
 const vars = Object.assign({}, VAR_DEFAULTS, store.get('vars') || {});
@@ -836,7 +835,7 @@ const saveVars = () => store.set('vars', vars);
 
 const DYN = {
   uuid: () => crypto.randomUUID(),
-  idem: () => 'wa-' + hex(20), opkey: () => 'op-' + hex(20), paykey: () => 'pay-' + hex(20),
+  idem: () => 'wa-' + hex(20),
   msgid: () => 'msg-' + hex(12),
   now: () => String(Math.floor(Date.now() / 1000)), nowMs: () => String(Date.now()),
   tomorrow: () => new Date(Date.now() + 86400000 + 3 * 3600000).toISOString().slice(0, 10),
@@ -931,7 +930,6 @@ async function ping(svc) {
   const probe = {
     agent: { method: 'GET', path: '/actuator/health', auth: 'none' },
     agentx: { method: 'GET', path: '/api/config', auth: 'none' },
-    payment: { method: 'GET', path: '/internal/staff/' + cfg.customerPhone, auth: 'internal' },
   }[svc];
   const r = await http(Object.assign({ svc, silent: true, timeout: 3500 }, probe));
   if (!r.error) return { state: 'up', ms: r.ms, status: r.status };
@@ -944,11 +942,11 @@ async function ping(svc) {
   } catch (e) { return { state: 'down', ms: Math.round(performance.now() - t0) }; }
 }
 
-/* ------------------------------------------------------------------ every endpoint of the three services */
+/* ------------------------------------------------------------------ every endpoint of the two services */
 const CATALOG = [];
 const E = (id, svc, group, name, method, path, o = {}) => CATALOG.push(Object.assign({ id, svc, group, name, method, path, auth: 'none' }, o));
-const SVC_NAME = { agent: 'AI agent', agentx: 'Daraja Agent-X API', payment: 'Payments (optional)' };
-const SVC_PORT = { agent: 8082, agentx: 8084, payment: 8083 };
+const SVC_NAME = { agent: 'AI agent', agentx: 'Daraja Agent-X API' };
+const SVC_PORT = { agent: 8082, agentx: 8084 };
 
 const inbound = (fields) => Object.assign({ messageId: '{{msgid}}', from: '{{customerPhone}}', senderName: 'Test Customer', timestamp: 0, kind: 'TEXT' }, fields);
 const action = (type, amount, details, extra = {}) => Object.assign({ idempotencyKey: '{{idem}}', phone: '{{customerPhone}}', type, amount, source: 'TEXT', details }, extra);
@@ -1080,39 +1078,11 @@ E('co.p.landing', 'agentx', 'Public pages', 'Link landing page', 'GET', '/a/' + 
 E('co.p.android', 'agentx', 'Public pages', 'Android app links file', 'GET', '/.well-known/assetlinks.json', { note: '404 until the Android package and fingerprint are set.' });
 E('co.p.ios', 'agentx', 'Public pages', 'iOS app links file', 'GET', '/.well-known/apple-app-site-association', { note: '404 until the iOS app id is set.' });
 
-// 3 Payments (optional Daraja module)
-E('py.create', 'payment', 'Payments (STK Push)', 'Create a payment', 'POST', '/internal/payments', { auth: 'internal', body: { idempotencyKey: '{{paykey}}', phone: '{{customerPhone}}', amount: 10, accountReference: 'ORD-1' }, save: { paymentId: 'id', checkoutRequestId: 'checkoutRequestId' }, note: 'Sends an M-Pesa prompt. Needs Daraja credentials.' });
-E('py.get', 'payment', 'Payments (STK Push)', 'Get a payment', 'GET', '/internal/payments/{{paymentId}}', { auth: 'internal', query: { phone: '{{customerPhone}}' } });
-E('py.latest', 'payment', 'Payments (STK Push)', 'Latest payment of a phone', 'GET', '/internal/payments/latest', { auth: 'internal', query: { phone: '{{customerPhone}}' } });
-E('py.list', 'payment', 'Payments (STK Push)', 'List payments of a phone', 'GET', '/internal/payments', { auth: 'internal', query: { phone: '{{customerPhone}}', limit: '5' } });
-E('py.receipt', 'payment', 'Payments (STK Push)', 'Receipt (PDF)', 'GET', '/internal/payments/{{paymentId}}/receipt', { auth: 'internal', query: { phone: '{{customerPhone}}' } });
-const op = (id, name, type, extra, actor) => E(id, 'payment', 'Operations and approvals', name, 'POST', '/internal/operations', { auth: 'internal', body: Object.assign({ idempotencyKey: '{{opkey}}', type, actorPhone: actor || '{{staffPhone}}' }, extra), save: { operationId: 'id' } });
-op('py.op.status', 'Request: transaction status', 'TRANSACTION_STATUS', { targetReceipt: 'SGL1234567' });
-op('py.op.balance', 'Request: account balance', 'ACCOUNT_BALANCE', {}, '{{adminPhone}}');
-op('py.op.refund', 'Request: refund', 'REFUND', { amount: 10, relatedPaymentId: '{{paymentId}}', reason: 'Customer asked' });
-op('py.op.withdraw', 'Request: withdrawal', 'WITHDRAWAL', { amount: 100, recipientPhone: '0722000111', reason: 'Float' });
-op('py.op.disburse', 'Request: disbursement', 'DISBURSEMENT', { amount: 100, recipientPhone: '0722000111', reason: 'Supplier' });
-op('py.op.reverse', 'Request: reversal', 'REVERSAL', { amount: 10, targetReceipt: 'SGL1234567', reason: 'Wrong payment' }, '{{adminPhone}}');
-E('py.op.get', 'payment', 'Operations and approvals', 'Get an operation', 'GET', '/internal/operations/{{operationId}}', { auth: 'internal', query: { actorPhone: '{{staffPhone}}' } });
-E('py.op.mine', 'payment', 'Operations and approvals', 'My operations', 'GET', '/internal/operations', { auth: 'internal', query: { actorPhone: '{{staffPhone}}' } });
-E('py.op.pending', 'payment', 'Operations and approvals', 'Waiting for my approval', 'GET', '/internal/operations/pending', { auth: 'internal', query: { actorPhone: '{{approverPhone}}' } });
-E('py.op.approve', 'payment', 'Operations and approvals', 'Approve (a different person)', 'POST', '/internal/operations/{{operationId}}/approve', { auth: 'internal', body: { actorPhone: '{{approverPhone}}' }, note: 'Nobody can approve their own request unless that is switched on.' });
-E('py.op.reject', 'payment', 'Operations and approvals', 'Reject', 'POST', '/internal/operations/{{operationId}}/reject', { auth: 'internal', body: { actorPhone: '{{approverPhone}}', reason: 'Not needed' } });
-E('py.qr', 'payment', 'QR, C2B and staff', 'Generate a pay QR code', 'POST', '/internal/qr', { auth: 'internal', body: { amount: 100, accountReference: 'ORD-1' } });
-E('py.c2b', 'payment', 'QR, C2B and staff', 'Register C2B URLs (once)', 'POST', '/internal/c2b/register', { auth: 'internal' });
-E('py.staff', 'payment', 'QR, C2B and staff', 'Look up a role', 'GET', '/internal/staff/{{staffPhone}}', { auth: 'internal', note: 'Unknown numbers are CUSTOMER.' });
-const cb = (id, name, path, body, note) => E(id, 'payment', 'Daraja callbacks (Safaricom calls these)', name, 'POST', path + '/{{callbackSecret}}', { body, note });
-cb('py.cb.stk', 'STK result: success', '/api/callbacks/stk', { Body: { stkCallback: { MerchantRequestID: '29115-34620561-1', CheckoutRequestID: '{{checkoutRequestId}}', ResultCode: 0, ResultDesc: 'The service request is processed successfully.', CallbackMetadata: { Item: [{ Name: 'Amount', Value: 10 }, { Name: 'MpesaReceiptNumber', Value: 'SGL1234567' }, { Name: 'TransactionDate', Value: 20261029201500 }, { Name: 'PhoneNumber', Value: 254700000001 }] } } } }, 'Needs the checkout id of a real payment.');
-cb('py.cb.stk.cancel', 'STK result: cancelled (1032)', '/api/callbacks/stk', { Body: { stkCallback: { MerchantRequestID: '29115-34620561-2', CheckoutRequestID: '{{checkoutRequestId}}', ResultCode: 1032, ResultDesc: 'Request cancelled by user' } } });
-cb('py.cb.ops', 'Operation result: success', '/api/callbacks/ops/result', { Result: { ResultType: 0, ResultCode: 0, ResultDesc: 'The service request is processed successfully.', OriginatorConversationID: '{{originatorConversationId}}', ConversationID: 'AG_20261029_0001', TransactionID: 'SGL7654321', ResultParameters: { ResultParameter: [{ Key: 'TransactionAmount', Value: 100 }, { Key: 'TransactionReceipt', Value: 'SGL7654321' }] } } }, 'Set originatorConversationId (Settings, saved values) to the one Daraja returned for a real operation.');
-cb('py.cb.timeout', 'Operation timeout', '/api/callbacks/ops/timeout', { Result: { ResultType: 1, ResultCode: 1, ResultDesc: 'The service request timed out.', OriginatorConversationID: '{{originatorConversationId}}', ConversationID: 'AG_20261029_0001' } });
-cb('py.cb.c2bv', 'C2B validation', '/api/callbacks/c2b/validation', { TransactionType: 'Pay Bill', TransID: 'SGL1111111', TransTime: '20261029201500', TransAmount: '100.00', BusinessShortCode: '600000', BillRefNumber: 'ORD-1', MSISDN: '254700000001', FirstName: 'Test' });
-cb('py.cb.c2bc', 'C2B confirmation', '/api/callbacks/c2b/confirmation', { TransactionType: 'Pay Bill', TransID: 'SGL1111112', TransTime: '20261029201500', TransAmount: '100.00', BusinessShortCode: '600000', BillRefNumber: 'ORD-1', OrgAccountBalance: '5000.00', MSISDN: '254700000001', FirstName: 'Test', LastName: 'Customer' });
 
 const send = (id, extra = {}) => { const e = CATALOG.find((x) => x.id === id); return http(Object.assign({}, e, extra)); };
 
 /* ------------------------------------------------------------------ small shared pieces */
-const SERVICES = ['agent', 'agentx', 'payment'];
+const SERVICES = ['agent', 'agentx'];
 const fmtKes = (n) => Number(n).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const tone = (s) => (s >= 200 && s < 300 ? 'good' : s >= 400 && s < 500 ? 'warn' : s >= 500 || s === 0 ? 'bad' : 'info');
 const errText = (r) => r.error || (r.json && (r.json.message || r.json.error)) || r.text || ('Status ' + r.status);
@@ -1209,7 +1179,7 @@ function initNav() {
 /* ------------------------------------------------------------------ service status */
 const STATE = {};
 const STATE_TEXT = { up: 'Reachable', blocked: 'Running, but this page is not allowed to call it (CORS)', down: 'Not reachable', unknown: 'Checking' };
-const SHORT = { agent: 'Agent', agentx: 'AgentX', payment: 'Payments' };
+const SHORT = { agent: 'Agent', agentx: 'AgentX' };
 function renderPills() {
   $('#pills').innerHTML = SERVICES.map((s) => `<button type="button" class="svc-chip" data-svc="${s}" title="${esc(SVC_NAME[s])}: ${STATE_TEXT[(STATE[s] || {}).state || 'unknown']}. Press to check again."><i class="dot ${(STATE[s] || {}).state || ''}"></i><b>${SHORT[s]}</b></button>`).join('');
   $$('.svc-state').forEach((el) => {
@@ -1259,10 +1229,10 @@ $$('dialog').forEach((d) => {
 
 /* ------------------------------------------------------------------ settings */
 const CFG_FIELDS = [
-  ['Services', [['agentUrl', 'AI agent address'], ['agentxUrl', 'Daraja Agent-X API address'], ['paymentUrl', 'Payments address (optional)']]],
-  ['Keys and secrets', [['internalKey', 'Internal key (X-Internal-Key)', 1], ['callbackSecret', 'M-Pesa callback secret in the URL', 1]]],
+  ['Services', [['agentUrl', 'AI agent address'], ['agentxUrl', 'Daraja Agent-X API address']]],
+  ['Keys and secrets', [['internalKey', 'Internal key (X-Internal-Key)', 1]]],
   ['Contact search (optional)', [['googleClientId', 'Google OAuth client ID (web application)'], ['microsoftClientId', 'Microsoft app (client) ID, single page app']]],
-  ['People', [['customerPhone', 'Customer phone (the number you sign in with)'], ['staffPhone', 'Staff phone (payments)'], ['approverPhone', 'Approver phone (payments)'], ['adminPhone', 'Admin phone (payments)'], ['deviceId', 'Device id the phone app uses']]],
+  ['People', [['customerPhone', 'Customer phone (the number you sign in with)'], ['deviceId', 'Device id the phone app uses']]],
 ];
 function openSettings() {
   const f = ([k, label, secret]) => `<div class="field"><label for="cfg-${k}">${label}</label><input id="cfg-${k}" data-cfg="${k}" type="${secret ? 'password' : 'text'}" autocomplete="off" spellcheck="false" value="${esc(cfg[k])}"></div>`;
@@ -1417,7 +1387,7 @@ function drawEndpoint() {
         ${hasBody ? `<div class="field"><label for="exBody">Body (JSON). Values like <code>{{actionId}}</code> are filled in when you send.</label><textarea id="exBody" style="min-height:220px" spellcheck="false">${esc(typeof e.body === 'string' ? e.body : JSON.stringify(e.body, null, 2))}</textarea></div>` : ''}
         ${e.sign ? `<div class="callout">This body is signed with the Meta app secret from Settings before it is sent.</div>` : ''}
         <div class="urlline" id="exUrl"></div>
-        <div class="muted small">Saved values: ${['actionId', 'deviceToken', 'linkCode', 'paymentId', 'operationId'].map((k) => `<code>${k}</code> ${vars[k] && vars[k] !== VAR_DEFAULTS[k] ? '<span class="tag good">set</span>' : '<span class="tag warn">empty</span>'}`).join(' ')}</div>
+        <div class="muted small">Saved values: ${['actionId', 'deviceToken', 'linkCode'].map((k) => `<code>${k}</code> ${vars[k] && vars[k] !== VAR_DEFAULTS[k] ? '<span class="tag good">set</span>' : '<span class="tag warn">empty</span>'}`).join(' ')}</div>
       </div>
     </section>
     <section class="panel" id="exResp" aria-live="polite"><div class="empty">Press Send to see the answer here.</div></section>`;

@@ -244,7 +244,7 @@ Not included, because they belonged to the removed payment-service: staff roles 
 
 **[`postman/`](postman/README.md)**
 
-A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 137 requests, and a walkthrough you can run with the collection runner.
+A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 126 requests, and a walkthrough you can run with the collection runner.
 
 </td>
 <td width="50%" valign="top">
