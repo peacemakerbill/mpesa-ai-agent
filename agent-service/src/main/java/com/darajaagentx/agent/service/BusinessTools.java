@@ -130,6 +130,15 @@ public class BusinessTools {
                 params.put(key, value.length() > 120 ? value.substring(0, 120) : value);
             }
         }
+        // The model only sees the customer's own number masked, so "use my number" is filled in here. A masked number copied from
+        // somewhere else is refused instead of guessed, because it could be somebody else's.
+        String given = params.get("phone");
+        if (input.path("use_my_number").asBoolean(false) || (given != null && WalletTools.isOwnNumberWords(given))) {
+            params.put("phone", ctx.phone());
+        } else if (given != null && given.contains("*")) {
+            throw new ToolException("That number is only partly shown, so it cannot be used. Ask the customer to type the full number, "
+                    + "or set use_my_number to true if they mean their own phone.");
+        }
         String source = WalletTools.riskier(ctx.source(), ToolExecutor.text(input, "details_from", 12));
 
         Map<String, Object> body = new LinkedHashMap<>();
@@ -316,6 +325,8 @@ public class BusinessTools {
                 + "B2C pays money to a phone number. B2POCHI pays a Pochi la Biashara. B2B pays a Paybill or Till. REVERSAL reverses a customer payment.", TYPES));
         prepareProps.put("amount", integer("Amount in whole Kenyan shillings"));
         prepareProps.put("phone", string("Kenyan phone number: who to charge for STK_PUSH, who to pay for B2C and B2POCHI"));
+        prepareProps.put("use_my_number", Map.of("type", "boolean", "description", "STK_PUSH, B2C and B2POCHI: true when the customer means their own phone "
+                + "number (\"my phone\", \"send an STK push to me\"). You cannot see their full number, so never ask them to type it. Leave out when they gave a number."));
         prepareProps.put("reference", string("STK_PUSH and DYNAMIC_QR: reference shown to the payer. Letters and digits, at most 12. Optional."));
         prepareProps.put("description", string("STK_PUSH: what it is for, at most 13 characters. Optional."));
         prepareProps.put("remarks", string("B2C, B2POCHI, B2B, REVERSAL: short note. Optional."));

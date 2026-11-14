@@ -94,6 +94,40 @@ class BusinessToolsTest {
     }
 
     @Test
+    void stkPushToTheCustomersOwnPhoneUsesTheRealNumberTheModelCannotSee() {
+        api.next = Map.of("id", ID, "status", "SUBMITTED", "summary", "STK Push of KES 2 to 254712345678", "resultText", "Prompt sent.");
+
+        Result r = tools.execute(ctx("TEXT"), "prepare_business_request",
+                json("{\"account\":\"Daraja STK\",\"type\":\"STK_PUSH\",\"amount\":2,\"use_my_number\":true}"));
+
+        assertThat(r.error()).isFalse();
+        assertThat(((Map<?, ?>) api.lastBody.get("params")).get("phone")).isEqualTo(PHONE);
+        assertThat(((Map<?, ?>) api.lastBody.get("params")).get("amount")).isEqualTo("2");
+        assertThat(api.lastBody.get("account")).isEqualTo("Daraja STK");
+    }
+
+    @Test
+    void wordsLikeMyPhoneInThePhoneFieldAreTheSameAsUseMyNumber() {
+        api.next = Map.of("id", ID, "status", "SUBMITTED", "summary", "STK Push", "resultText", "Prompt sent.");
+
+        tools.execute(ctx("TEXT"), "prepare_business_request", json("{\"type\":\"STK_PUSH\",\"amount\":2,\"phone\":\"my phone number\"}"));
+
+        assertThat(((Map<?, ?>) api.lastBody.get("params")).get("phone")).isEqualTo(PHONE);
+    }
+
+    @Test
+    void aMaskedNumberIsRefusedInsteadOfGuessedAndAFullOneIsKept() {
+        Result masked = tools.execute(ctx("TEXT"), "prepare_business_request", json("{\"type\":\"B2C\",\"amount\":50,\"phone\":\"254723***340\"}"));
+        assertThat(masked.error()).isTrue();
+        assertThat(masked.content()).contains("only partly shown");
+        assertThat(api.lastBody).isNull();
+
+        api.next = Map.of("id", ID, "status", "PENDING_APPROVAL", "summary", "Pay KES 50");
+        tools.execute(ctx("TEXT"), "prepare_business_request", json("{\"type\":\"B2C\",\"amount\":50,\"phone\":\"0723079340\"}"));
+        assertThat(((Map<?, ?>) api.lastBody.get("params")).get("phone")).isEqualTo("0723079340");
+    }
+
+    @Test
     void theToolsAreDefinedAndRecognised() {
         assertThat(BusinessTools.definitions()).extracting(d -> d.get("name"))
                 .containsExactly("list_business_accounts", "prepare_business_request", "list_business_requests", "cancel_business_request");

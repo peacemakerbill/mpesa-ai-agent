@@ -308,6 +308,30 @@ class WalletToolsTest {
         assertThat((Map<String, String>) sentBody().get("details")).containsEntry("account", "STK01");
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    void theWordsMyPhoneNumberInTheAccountAreReplacedByTheRealNumber() {
+        when(agentx.createAction(any())).thenReturn(view("CREATED", "Pay KES 2 to Paybill 174379, account 0700000001", false, null, 2));
+
+        executor.execute(ctx("TEXT"), ToolCatalog.PREPARE_PAY_BILL, json("{\"amount\":2,\"paybill\":\"174379\",\"account\":\"my phone number\"}"));
+
+        assertThat((Map<String, String>) sentBody().get("details")).containsEntry("account", "0700000001");
+    }
+
+    @Test
+    void onlyRealWordsAboutTheOwnNumberCountAsOwnNumber() {
+        assertThat(WalletTools.isOwnNumberWords("my phone number")).isTrue();
+        assertThat(WalletTools.isOwnNumberWords("My Number.")).isTrue();
+        assertThat(WalletTools.isOwnNumberWords("own number")).isTrue();
+        assertThat(WalletTools.isOwnNumberWords("namba yangu")).isTrue();
+        assertThat(WalletTools.isOwnNumberWords("same number")).isTrue();
+        assertThat(WalletTools.isOwnNumberWords("0712345678")).isFalse();
+        assertThat(WalletTools.isOwnNumberWords("STK01")).isFalse();
+        assertThat(WalletTools.isOwnNumberWords("meter number 4421")).isFalse();
+        assertThat(WalletTools.isOwnNumberWords("school fees")).isFalse();
+        assertThat(WalletTools.isOwnNumberWords(null)).isFalse();
+    }
+
     @Test
     void ownNumberIsWrittenTheWayPeopleTypeItForAnAccount() {
         assertThat(WalletTools.ownNumber("254700000001")).isEqualTo("0700000001");

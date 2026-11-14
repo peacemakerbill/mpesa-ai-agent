@@ -90,9 +90,13 @@ public class WalletTools {
                 details.put(apiName, value);
             }
         });
-        // "Use my number as the account number": the model only sees the masked number, so the real one is put in here.
-        if (input.path("use_my_number").asBoolean(false) && fields.containsKey("account") && !details.containsKey("account")) {
-            details.put("account", ownNumber(ctx.phone()));
+        // "Use my number as the account number": the model only sees the masked number, so the real one is put in here. The model
+        // sometimes writes the words ("my phone number") into the account instead of setting use_my_number, so those count too.
+        if (fields.containsKey("account")) {
+            String account = details.get("account");
+            if ((account == null && input.path("use_my_number").asBoolean(false)) || (account != null && isOwnNumberWords(account))) {
+                details.put("account", ownNumber(ctx.phone()));
+            }
         }
         String source = riskier(ctx.source(), ToolExecutor.text(input, "details_from", 12));
         String note = ToolExecutor.text(input, "note", 80);
@@ -130,6 +134,20 @@ public class WalletTools {
     static String ownNumber(String phone) {
         String digits = phone == null ? "" : phone.replaceAll("[^0-9]", "");
         return digits.startsWith("254") && digits.length() == 12 ? "0" + digits.substring(3) : digits;
+    }
+
+    /**
+     * True when the text is the customer pointing at their own number in words ("my phone number", "own number", "namba yangu")
+     * and not a number or a reference. Anything with a digit in it is never treated this way.
+     */
+    static boolean isOwnNumberWords(String text) {
+        if (text == null || text.length() > 40 || text.chars().anyMatch(Character::isDigit)) {
+            return false;
+        }
+        String t = text.toLowerCase(Locale.ENGLISH).replaceAll("[^a-z ]", " ").replaceAll("\\s+", " ").strip();
+        boolean mine = t.matches(".*\\b(my|own|mine|yangu|this|same)\\b.*");
+        boolean number = t.matches(".*\\b(number|phone|mobile|line|msisdn|namba|nambari|simu)\\b.*");
+        return mine && number;
     }
 
     static String riskier(String a, String b) {
