@@ -42,6 +42,7 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _busy = false;
   String? _error;
   String? _devCode;
+  String? _devNote;
   DateTime? _expires;
 
   @override
@@ -148,6 +149,7 @@ class _SignupScreenState extends State<SignupScreen> {
       if (!mounted) return;
       setState(() {
         _devCode = r.devCode;
+        _devNote = r.shownCodeNote;
         _expires = r.expiresAt;
         _code.clear();
       });
@@ -404,7 +406,7 @@ class _SignupScreenState extends State<SignupScreen> {
       ),
       if (_devCode != null) ...[
         const SizedBox(height: 14),
-        Callout('This server shows the code instead of sending an SMS, for testing: $_devCode', tone: Tone.warn),
+        Callout(_devNote ?? 'This test server shows the code: $_devCode', tone: Tone.warn),
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton(

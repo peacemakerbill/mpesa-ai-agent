@@ -87,6 +87,10 @@ agentx:
   # How sign-in codes reach people: log (written to this service's log, for a developer), dev (also returned to the
   # app, for a test console only, never on a real system) or sms (sent through Africa's Talking, see the sms block).
   code-delivery: ${CODE_DELIVERY:log}
+  # Whether the app also shows the sign-in code on screen, so a tester needs no text message: auto (shown in development
+  # and staging, never in production), true (the same, and production refuses to start) or false (never shown).
+  # Set false once code-delivery is sms. Production never shows a code, whatever is set.
+  show-code-in-app: ${CODE_SHOW_IN_APP:auto}
   # Name shown in the sign-in SMS
   app-name: ${AGENTX_APP_NAME:Daraja Agent-X}
   # Details in the footer of every email. All optional, a blank one is left out.

@@ -33,12 +33,32 @@ class LinkResult {
   final DateTime expiresAt;
 }
 
-/// What asking for a sign-in code returns. [devCode] is only filled when the server runs in test mode.
+/// What asking for a sign-in code returns. [devCode] is only filled when the test or staging server shows codes on
+/// screen. [smsSent] says whether a text message with the code was sent as well.
 class CodeRequest {
-  const CodeRequest(this.expiresAt, this.devCode);
+  const CodeRequest(this.expiresAt, this.devCode, {this.smsSent = false});
+
+  factory CodeRequest.fromJson(Map<String, dynamic> json) {
+    final devCode = json['devCode'];
+    return CodeRequest(
+      DateTime.parse(json['expiresAt'] as String),
+      devCode is String && devCode.isNotEmpty ? devCode : null,
+      smsSent: json['smsSent'] == true,
+    );
+  }
 
   final DateTime expiresAt;
   final String? devCode;
+  final bool smsSent;
+
+  /// What to tell the person when the server shows the code, or null when it does not.
+  String? get shownCodeNote {
+    final code = devCode;
+    if (code == null) return null;
+    return smsSent
+        ? 'An SMS is on its way. This test server also shows the code here: $code'
+        : 'This test server shows the code instead of sending an SMS: $code';
+  }
 }
 
 /// A file from the chat, with the type the server stored it under.
@@ -63,8 +83,7 @@ class ApiClient {
   /// Asks for a 6 digit code to be sent to [phone] by SMS.
   Future<CodeRequest> requestCode(String phone) async {
     final json = await _send('POST', '/api/auth/request-code', body: {'phone': phone}, auth: false);
-    final devCode = json['devCode'];
-    return CodeRequest(DateTime.parse(json['expiresAt'] as String), devCode is String && devCode.isNotEmpty ? devCode : null);
+    return CodeRequest.fromJson(json);
   }
 
   Future<LinkResult> verify({
@@ -243,8 +262,7 @@ class ApiClient {
       if (middleName != null && middleName.isNotEmpty) 'middleName': middleName,
       if (email != null && email.isNotEmpty) 'email': email,
     });
-    final devCode = json['devCode'];
-    return CodeRequest(DateTime.parse(json['expiresAt'] as String), devCode is String && devCode.isNotEmpty ? devCode : null);
+    return CodeRequest.fromJson(json);
   }
 
   /// Checks the SMS code. The answer is the same as signing in: a token for this device.

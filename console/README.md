@@ -54,7 +54,7 @@ Open **Settings** (the sliders icon, top right) to set the service addresses, th
 The dock at the bottom lists every call made, with its full request and answer. Press **Ctrl+K** (or Cmd+K) for the command palette: jump to a view, run the journey, switch theme or open any of the 121 endpoints by name.
 
 > [!NOTE]
-> For the console to receive the sign-in code, start agentx-api with `CODE_DELIVERY=dev`. Otherwise read it from the agentx-api log or your SMS.
+> For the console to receive the sign-in code, run agentx-api in development or staging with `CODE_SHOW_IN_APP` on `auto` or `true`. Otherwise read it from the agentx-api log or your SMS.
 
 ## Ten looks
 
@@ -89,7 +89,7 @@ Files you attach are uploaded to agentx-api (`POST /api/chat/media`) and then na
 ## Be careful
 
 > [!CAUTION]
-> This page holds the internal key and secrets in the browser. Use it on your own machine with test values, never with production keys. Do not turn on `CORS_ALLOWED_ORIGINS` or `CODE_DELIVERY=dev` on a server other people can reach.
+> This page holds the internal key and secrets in the browser. Use it on your own machine with test values, never with production keys. Do not turn on `CORS_ALLOWED_ORIGINS` or `CODE_SHOW_IN_APP` on a server other people can reach.
 
 - A matched message here is the simulator matching a message it made itself. It shows how the checks behave, not that money moved.
 - The Daraja callbacks only work when agentx-api has a public HTTPS address (`AGENTX_PUBLIC_BASE_URL`) and, for real payments, a business account with Daraja credentials saved in the app.

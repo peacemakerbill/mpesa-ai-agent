@@ -49,6 +49,7 @@ These stop agentx-api when `APP_ENV=production`. In staging they are warnings.
 | Setting | Why it is refused |
 |---|---|
 | `CODE_DELIVERY=dev` | Hands every sign-in code back to whoever asks, so anyone could sign in as any phone number |
+| `CODE_SHOW_IN_APP=true` | Shows every sign-in code on screen, with the same risk. Leave it on `auto` or set `false` |
 | `CORS_ALLOWED_ORIGINS` set | Opens the API to a web page. It is only for the test console |
 | `INTERNAL_KEY` or `AGENTX_TOKEN_SECRET` empty, short or still an example value | A guessable key defeats the checks between services and on sign-in |
 | `AGENTX_PUBLIC_BASE_URL` not https, or pointing at localhost | Links in the chat and Safaricom's callbacks could not work |
@@ -78,7 +79,7 @@ Use the same value for agentx-api and agent-service. The console shows it as a s
 
 Staging has its own service names (`agentx-api-staging`, `agent-service-staging`, `agentx-redis-staging`), its own variable group and its own generated keys. Never reuse the live database, the live `INTERNAL_KEY` or the live vault key. A staging vault key that differs from production is what stops a copied production credential from being opened in staging.
 
-For a closed UAT with no SMS account you may set `CODE_DELIVERY=dev` on staging, which returns the code to the app. Only do that while the staging address is not shared outside the test team. Production will not start with it.
+Sign-in codes on staging: `CODE_SHOW_IN_APP` decides whether the app shows the code on its own screen. It is on in development and staging by default, so a closed UAT needs no SMS account. Anyone who knows a phone number could sign in as it, so only keep it while the staging address stays inside the test team. When SMS works, set `CODE_DELIVERY=sms` and `CODE_SHOW_IN_APP=false`. Production never shows a code and will not start with `CODE_SHOW_IN_APP=true`.
 
 ## The phone app
 

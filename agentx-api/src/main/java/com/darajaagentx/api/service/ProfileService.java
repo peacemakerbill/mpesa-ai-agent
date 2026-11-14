@@ -68,7 +68,7 @@ public class ProfileService {
                           CustomerMailer mailer, MailOutbox outbox, SlidingWindowLimiter limiter, AgentXProperties agentx,
                           CodeDelivery delivery, Clock clock) {
         this(profiles, files, storage.maxPictureBytes(), mail, mailer, limiter, agentx.tokenSecret(),
-                delivery.mode() == CodeDelivery.Mode.DEV, outbox.delivers(), clock);
+                delivery.showsCodes(), outbox.delivers(), clock);
     }
 
     ProfileService(UserProfileRepository profiles, FileStore files, int maxPictureBytes, MailProperties mail, CustomerMailer mailer,
@@ -175,7 +175,7 @@ public class ProfileService {
 
     /**
      * Sends a code to [rawEmail]. Until it is typed back the address only waits. The answer carries the code itself
-     * only when this server runs in dev mode with the log mail transport, so a test console can finish without an inbox.
+     * only when this server shows codes on screen (development and staging) and uses the log mail transport, so a test console can finish without an inbox.
      */
     @Transactional
     public CodeRequestResponse requestEmailCode(String phone, String rawEmail) {

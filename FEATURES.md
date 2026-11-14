@@ -161,7 +161,7 @@ Request states: `CREATED`, `APPROVED`, `HANDED_OFF`, `DONE_REPORTED`, `NOT_DONE`
 **Limits and plumbing**
 
 - **Limits:** max open requests per customer, request expiry (30 minutes before approval), rate limiting per customer, duplicate message handling, per-customer locking so messages are handled in order.
-- **Internal calls** between services carry a shared internal key. The sign-in code mode (`CODE_DELIVERY`) defaults to log only.
+- **Internal calls** between services carry a shared internal key. The sign-in code is delivered by `CODE_DELIVERY` (log or sms), and `CODE_SHOW_IN_APP` also shows it on screen in development and staging, never in production.
 - **Environments:** one switch, `APP_ENV` (development, staging or production). Production refuses to start with development only settings, live Daraja is refused outside production, test emails are tagged, and the console and the app show a label. See `docs/ENVIRONMENTS.md`.
 - **Failing well:** database and broker problems time out quickly and produce one clear answer, not a hang. See below.
 

@@ -86,9 +86,12 @@ services:
       - key: AGENTX_VAULT_KEY
         sync: false
 
-      # How sign-in codes reach people. Never dev on a real system.
+      # How sign-in codes reach people. Use sms for customers. Production never shows a code on screen, and refuses to start
+      # if CODE_SHOW_IN_APP is true.
       - key: CODE_DELIVERY
         value: log
+      - key: CODE_SHOW_IN_APP
+        value: "false"
       - key: CORS_ALLOWED_ORIGINS
         value: ""
 

@@ -18,8 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/** With code-delivery set to dev (a test console), the code comes back in the answer and signs the phone in. */
-@SpringBootTest(properties = "agentx.code-delivery=dev")
+/** With codes shown on screen (a test console or the app on staging), the code comes back in the answer and signs the phone in. */
+@SpringBootTest(properties = {"agentx.code-delivery=log", "agentx.show-code-in-app=true"})
 @AutoConfigureMockMvc
 class DevCodeIntegrationTest {
 
@@ -35,6 +35,7 @@ class DevCodeIntegrationTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
         String code = issued.read("$.devCode", String.class);
         assertThat(code).matches("\\d{6}");
+        assertThat(issued.read("$.smsSent", Boolean.class)).isFalse();
 
         mvc.perform(post("/api/auth/verify").contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(Map.of("phone", phone, "code", code, "deviceId", "console-device-1"))))

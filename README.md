@@ -198,7 +198,7 @@ cd agentx-api       && mvn clean verify
 cd agentx_app && flutter pub get && flutter analyze && flutter test
 ```
 
-**6. Try it without a phone.** Start agentx-api with `CODE_DELIVERY=dev`, then open the console.
+**6. Try it without a phone.** On your own machine agentx-api shows the sign-in code on screen by default (`CODE_SHOW_IN_APP=auto`), so just open the console.
 
 ```bash
 cd console && python3 -m http.server 8000     # then open http://localhost:8000/console.html
@@ -224,16 +224,24 @@ docker compose exec postgres createdb -U app agentx
 
 <br/>
 
-`CODE_DELIVERY` decides how the sign-in code reaches the customer.
+`CODE_DELIVERY` decides how the sign-in code reaches the customer, and `CODE_SHOW_IN_APP` decides whether the app also shows it on screen. They are separate switches.
 
 | Value | Behaviour | Use it |
 |---|---|---|
 | `log` | Writes the code to the agentx-api log. This is the default | Developer machine |
-| `dev` | Also returns the code to the app and console so a test can sign in alone | Local testing only |
+| `dev` | The old name for `log` with the code shown on screen. Still works | Local testing only |
 | `sms` | Sends a text through Africa's Talking (`SMS_USERNAME`, `SMS_API_KEY`, `SMS_SENDER_ID`) | Real use |
 
+| `CODE_SHOW_IN_APP` | Behaviour | Use it |
+|---|---|---|
+| `auto` | Shows the code in the app in development and staging, never in production. This is the default | Testing |
+| `false` | Never shows the code. Turn it off once `sms` works | Real use |
+| `true` | Like `auto`, and production refuses to start | Rarely needed |
+
+With `sms` and the code shown, a tester gets the text and can also read the code on screen. If the text fails, the code on screen still lets them in.
+
 > [!CAUTION]
-> Never use `dev` on a system other people can reach. Anyone could sign in as any phone number.
+> While a code is shown, anyone who can reach the system and knows a phone number could sign in as it. Production never shows a code. Set `CODE_SHOW_IN_APP=false` on staging once SMS works.
 
 </details>
 
@@ -280,7 +288,8 @@ The Flutter app and the browser console share the same ten looks. Seven are ever
 | `AGENTX_TOKEN_SECRET` | agentx-api | 32 or more random characters, signs phone sessions |
 | `AGENTX_PUBLIC_BASE_URL` | agent-service, agentx-api | Public HTTPS address of agentx-api |
 | `APP_ENV` | agentx-api, agent-service | `development` (default), `staging` or `production`. Production refuses to start with development only settings, and live Daraja is refused outside production. See [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md) |
-| `CODE_DELIVERY` | agentx-api | `log`, `dev` or `sms` |
+| `CODE_DELIVERY` | agentx-api | `log` or `sms` |
+| `CODE_SHOW_IN_APP` | agentx-api | `auto` (default: shown in development and staging, never in production), `true` or `false` |
 | `DATABASE_TYPE` | services with a database | `mongodb`, `postgresql` or `mysql` |
 | `MONGODB_URI` | when using MongoDB | Include `serverSelectionTimeoutMS=5000` so a missing database fails fast |
 | `CORS_ALLOWED_ORIGINS` | any service the console calls | Leave empty in production. A wildcard is ignored on purpose |

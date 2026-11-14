@@ -28,6 +28,7 @@ class _LinkScreenState extends State<LinkScreen> {
   bool _sent = false;
   String? _error;
   String? _devCode;
+  String? _devNote;
   DateTime? _expires;
 
   @override
@@ -54,6 +55,7 @@ class _LinkScreenState extends State<LinkScreen> {
       setState(() {
         _sent = true;
         _devCode = r.devCode;
+        _devNote = r.shownCodeNote;
         _expires = r.expiresAt;
         _code.clear();
       });
@@ -169,7 +171,7 @@ class _LinkScreenState extends State<LinkScreen> {
       ],
       if (_devCode != null) ...[
         const SizedBox(height: 12),
-        Callout('This server shows the code instead of sending an SMS, for testing: $_devCode', tone: Tone.warn),
+        Callout(_devNote ?? 'This test server shows the code: $_devCode', tone: Tone.warn),
         const SizedBox(height: 8),
         Align(
           alignment: Alignment.centerLeft,
@@ -195,6 +197,7 @@ class _LinkScreenState extends State<LinkScreen> {
                 : () => setState(() {
                       _sent = false;
                       _devCode = null;
+                      _devNote = null;
                       _error = null;
                     }),
             child: const Text('Change number'),

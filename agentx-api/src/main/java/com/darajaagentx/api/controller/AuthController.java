@@ -57,7 +57,7 @@ public class AuthController {
         }
         LinkCodeResponse issued = links.issue(phone);
         CodeDelivery.Result result = delivery.deliver(phone, issued.code(), props.linkCodeTtl());
-        return new CodeRequestResponse(issued.expiresAt(), result.devCode());
+        return new CodeRequestResponse(issued.expiresAt(), result.devCode(), result.smsSent());
     }
 
     @PostMapping("/auth/verify")

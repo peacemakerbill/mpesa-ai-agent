@@ -37,6 +37,7 @@ agentx:
   max-amount: 250000
   min-airtime: 5
   public-base-url: https://app.example.test
+  show-code-in-app: false
   business:
     reconcile:
       enabled: false

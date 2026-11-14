@@ -89,7 +89,7 @@ public class SignupService {
         p.setSignupExpiresAt(now.plus(props.signupTtl()));
         profiles.save(p);
         CodeDelivery.Result sent = delivery.deliver(phone, issued.code(), codeTtl);
-        return new CodeRequestResponse(issued.expiresAt(), sent.devCode());
+        return new CodeRequestResponse(issued.expiresAt(), sent.devCode(), sent.smsSent());
     }
 
     @Transactional

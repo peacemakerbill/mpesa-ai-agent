@@ -96,10 +96,13 @@ services:
       - key: AGENTX_VAULT_KEY
         sync: false
 
-      # How sign-in codes reach people. log writes the code to the service log (Render, Logs). For a closed test with no SMS
-      # account you may use dev, which returns the code to the app. Never dev where strangers can reach the address.
+      # How sign-in codes reach people. CODE_SHOW_IN_APP=true shows the code on the app's own screen, so a tester needs no SMS
+      # account. Anyone who knows a phone number can sign in as it, so keep this to a closed test. When SMS works, change these
+      # two lines to CODE_DELIVERY sms and CODE_SHOW_IN_APP false, and push.
       - key: CODE_DELIVERY
         value: log
+      - key: CODE_SHOW_IN_APP
+        value: "true"
       - key: CORS_ALLOWED_ORIGINS
         value: ""
 

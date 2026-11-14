@@ -19,7 +19,8 @@ class EnvironmentGuardTest {
 
     private static EnvironmentGuard.Settings with(String codeDelivery, String cors, String internalKey, String tokenSecret, String url,
                                                   String mail, String vault, String storage, boolean live) {
-        return new EnvironmentGuard.Settings(codeDelivery, cors, internalKey, tokenSecret, url, mail, vault, storage, live);
+        // The on-screen code setting is off here, so these tests only see the problem they are about. The tests for it set it themselves.
+        return new EnvironmentGuard.Settings(codeDelivery, cors, internalKey, tokenSecret, url, mail, vault, storage, live, "false");
     }
 
     @Test
@@ -50,6 +51,33 @@ class EnvironmentGuardTest {
                 .hasMessageContaining("APP_ENV=production")
                 .hasMessageContaining("CODE_DELIVERY=dev")
                 .hasMessageContaining("CORS_ALLOWED_ORIGINS");
+    }
+
+    @Test
+    void showingCodesOnScreenStopsProductionButOnlyWarnsStaging() {
+        EnvironmentGuard.Settings on = new EnvironmentGuard.Settings("sms", "", KEY, SECRET, "https://api.agentx.co.ke", "smtp", "x", "database", false, "true");
+
+        EnvironmentGuard.Findings prod = EnvironmentGuard.check(AppEnvironment.PRODUCTION, on);
+        assertThat(prod.blockers()).singleElement().asString().contains("CODE_SHOW_IN_APP");
+        assertThatThrownBy(() -> EnvironmentGuard.enforce(AppEnvironment.PRODUCTION, prod))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("CODE_SHOW_IN_APP");
+
+        // Staging is told, and keeps starting
+        EnvironmentGuard.Findings staging = EnvironmentGuard.check(AppEnvironment.STAGING, on);
+        assertThat(staging.blockers()).singleElement().asString().contains("CODE_SHOW_IN_APP");
+        EnvironmentGuard.enforce(AppEnvironment.STAGING, staging);
+    }
+
+    @Test
+    void onAutoProductionHidesCodesQuietlyAndStagingNotesThatTheyAreShown() {
+        EnvironmentGuard.Settings auto = new EnvironmentGuard.Settings("sms", "", KEY, SECRET, "https://api.agentx.co.ke", "smtp", "x", "database", false, "auto");
+        EnvironmentGuard.Settings off = new EnvironmentGuard.Settings("sms", "", KEY, SECRET, "https://api.agentx.co.ke", "smtp", "x", "database", false, "false");
+
+        assertThat(EnvironmentGuard.check(AppEnvironment.PRODUCTION, auto).blockers()).isEmpty();
+        assertThat(EnvironmentGuard.check(AppEnvironment.PRODUCTION, auto).notes()).isEmpty();
+        assertThat(EnvironmentGuard.check(AppEnvironment.STAGING, auto).notes()).singleElement().asString().contains("CODE_SHOW_IN_APP=false");
+        assertThat(EnvironmentGuard.check(AppEnvironment.STAGING, off).notes()).isEmpty();
+        assertThat(EnvironmentGuard.check(AppEnvironment.PRODUCTION, off).blockers()).isEmpty();
     }
 
     @Test

@@ -30,11 +30,11 @@ A collection and an environment for every HTTP endpoint of the services, with a 
 
 1. In Postman choose **Import**, select both files, then pick the environment **daraja-agent-x local**.
 2. Set `internalKey` to the same value as `INTERNAL_KEY` in your `.env` files,. Never put real production secrets in a file you share.
-3. Start the services with `docker compose up --build`. For the walkthrough, start agentx-api with `CODE_DELIVERY=dev` so asking for a sign-in code returns it (`devCode`).
+3. Start the services with `docker compose up --build`. For the walkthrough, run agentx-api in development or staging, where asking for a sign-in code returns it (`devCode`, from `CODE_SHOW_IN_APP`).
 4. **No Daraja account needed for the wallet flow.** Run the folder `2. agentx-api / A. Walkthrough` with the collection runner, then try `C2. Chat`. For business accounts, run `C3. Business accounts` and `C4. Business requests`.
 
 > [!CAUTION]
-> Never use `CODE_DELIVERY=dev` on a server other people can reach. Anyone could sign in as any number.
+> Set `CODE_SHOW_IN_APP=false` on any server other people can reach. While it is on, anyone could sign in as any number.
 
 ## The walkthrough
 

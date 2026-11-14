@@ -132,7 +132,7 @@ No screen hard-codes a colour. Everything reads the palette through `context.tk`
 - **USSD codes and M-Pesa app identifiers are not hard-coded.** They come from the server (`/api/config`) and start empty, so the app shows guided steps until you set verified values.
 - **Contacts** are searched on the phone. The Google and Microsoft sign-ins give the app a short-lived token that stays in memory, and nothing from the address book goes to your servers. Only a contact the customer chooses to share is sent, in the chat. You need your own OAuth client ids, see [`docs/CONTACTS.md`](docs/CONTACTS.md).
 - **Voice notes** are recorded as AAC in an `.m4a` file (`audio/mp4`). Check that your speech to text service accepts it.
-- **Sign-in codes** arrive by SMS only when the server has `CODE_DELIVERY=sms`. In `dev` mode the server returns the code to the app, for testing only.
+- **Sign-in codes** arrive by SMS only when the server has `CODE_DELIVERY=sms`. On development and staging servers (`CODE_SHOW_IN_APP`) the server also returns the code, and the app shows it under the code box with a Fill in the code button. A production server never does.
 - **Device lock is not M-Pesa authentication.** It protects our approval step. M-Pesa still asks for its own PIN.
 - **Terms.** Check Safaricom's terms and any app store rules about a third party app that hands over to M-Pesa before you publish.
 

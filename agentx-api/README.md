@@ -62,7 +62,7 @@ cp .env.example .env                       # then edit it
 mvn spring-boot:run
 ```
 
-Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS account. Run the tests with `mvn clean verify`.
+Locally the code is shown on screen by default (`CODE_SHOW_IN_APP=auto`), so you can sign in from the console without an SMS account. Run the tests with `mvn clean verify`.
 
 ## Endpoints
 
@@ -116,7 +116,8 @@ Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS accoun
 | `AGENTX_PUBLIC_BASE_URL` | Public HTTPS address, used in links and the link files |
 | `APP_ENV` | `development` (default), `staging` (or `uat`) or `production`. Production refuses to start with development only settings, and outside production a business account on Safaricom's production Daraja is refused. See [`docs/ENVIRONMENTS.md`](../docs/ENVIRONMENTS.md) |
 | `AGENTX_ALLOW_LIVE_DARAJA` | `false` (default). `true` lets a copy that is not production call live Daraja |
-| `CODE_DELIVERY` | `log` (default), `dev` or `sms` |
+| `CODE_DELIVERY` | `log` (default) or `sms` |
+| `CODE_SHOW_IN_APP` | `auto` (default: the app also shows the code in development and staging, never in production), `true` or `false` |
 | `SMS_USERNAME`, `SMS_API_KEY`, `SMS_SENDER_ID` | Africa's Talking, for `sms` |
 | `DATABASE_TYPE` | `mongodb`, `postgresql` or `mysql`. See [`docs/DATABASES.md`](../docs/DATABASES.md) |
 | `MONGODB_URI` | Add `serverSelectionTimeoutMS=5000` so a missing database fails fast |
@@ -137,7 +138,7 @@ Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS accoun
 | `CORS_ALLOWED_ORIGINS` | For the browser console only |
 
 > [!CAUTION]
-> `CODE_DELIVERY=dev` returns the sign-in code in the response. Anyone could sign in as any number. Never use it on a server other people can reach.
+> While `CODE_SHOW_IN_APP` is on, the sign-in code is returned in the response, so anyone who knows a phone number could sign in as it. Production never returns it and refuses to start with `CODE_SHOW_IN_APP=true`. Set it to `false` once `CODE_DELIVERY=sms` works. The old `CODE_DELIVERY=dev` still works and means the same as `log` with the code shown.
 
 ## Failing well
 

@@ -89,11 +89,13 @@ services:
       - key: AGENTX_VAULT_KEY
         sync: false
 
-      # How sign-in codes reach people. Never dev on a real system.
-      # log writes the code to the service log. For a closed UAT with no SMS you may use dev, which returns the code to the
-      # app. Only do that while the staging address is not shared outside the test team.
+      # How sign-in codes reach people. CODE_SHOW_IN_APP=true shows the code on the app's own screen, so testers need no SMS
+      # account. Only keep it while the staging address is not shared outside the test team. When SMS works, change these two
+      # lines to CODE_DELIVERY sms and CODE_SHOW_IN_APP false, and push.
       - key: CODE_DELIVERY
         value: log
+      - key: CODE_SHOW_IN_APP
+        value: "true"
       - key: CORS_ALLOWED_ORIGINS
         value: ""
 

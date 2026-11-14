@@ -140,6 +140,27 @@ void main() {
       expect((await api.requestCode('0712345678')).devCode, isNull);
     });
 
+    test('a test server that also sends an SMS says so next to the code', () async {
+      final client = MockClient((req) async => http.Response(jsonEncode({'expiresAt': '2026-10-30T10:00:00Z', 'devCode': '654321', 'smsSent': true}), 200));
+      final api = ApiClient(baseUrl: 'http://x.test', client: client);
+
+      final r = await api.requestCode('0712345678');
+
+      expect(r.smsSent, isTrue);
+      expect(r.shownCodeNote, contains('An SMS is on its way'));
+      expect(r.shownCodeNote, contains('654321'));
+    });
+
+    test('a test server with no SMS says the code replaces it, and a real one says nothing', () async {
+      final shown = CodeRequest.fromJson({'expiresAt': '2026-10-30T10:00:00Z', 'devCode': '111222'});
+      expect(shown.smsSent, isFalse);
+      expect(shown.shownCodeNote, contains('instead of sending an SMS'));
+
+      final hidden = CodeRequest.fromJson({'expiresAt': '2026-10-30T10:00:00Z', 'smsSent': true});
+      expect(hidden.devCode, isNull);
+      expect(hidden.shownCodeNote, isNull);
+    });
+
     test('too many tries gets a plain message', () async {
       final client = MockClient((req) async => http.Response('', 429));
       final api = ApiClient(baseUrl: 'http://x.test', client: client);

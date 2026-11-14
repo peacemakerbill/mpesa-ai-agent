@@ -24,7 +24,15 @@ public class EnvironmentGuard implements InitializingBean {
     /** The few settings the checks look at, taken from the real configuration. */
     public record Settings(String codeDelivery, String corsOrigins, String internalKey, String tokenSecret,
                            String publicBaseUrl, String mailTransport, String vaultKey, String storageType,
-                           boolean allowLiveDaraja) {
+                           boolean allowLiveDaraja, String showCodeInApp) {
+
+        /** The same settings with no opinion on whether codes are shown on screen (auto). */
+        public Settings(String codeDelivery, String corsOrigins, String internalKey, String tokenSecret,
+                        String publicBaseUrl, String mailTransport, String vaultKey, String storageType,
+                        boolean allowLiveDaraja) {
+            this(codeDelivery, corsOrigins, internalKey, tokenSecret, publicBaseUrl, mailTransport, vaultKey, storageType,
+                    allowLiveDaraja, "auto");
+        }
     }
 
     /**
@@ -43,10 +51,11 @@ public class EnvironmentGuard implements InitializingBean {
 
     public EnvironmentGuard(EnvironmentPolicy policy, AgentXProperties agentx, InternalProperties internal,
                             MailProperties mail, VaultProperties vault, StorageProperties storage,
-                            @Value("${cors.allowed-origins:}") String cors) {
+                            @Value("${cors.allowed-origins:}") String cors,
+                            @Value("${agentx.show-code-in-app:auto}") String showCodeInApp) {
         this.policy = policy;
         this.settings = new Settings(agentx.codeDelivery(), cors, internal.key(), agentx.tokenSecret(), agentx.publicBaseUrl(),
-                mail.transport(), vault.key(), storage.type(), policy.allowLiveDaraja());
+                mail.transport(), vault.key(), storage.type(), policy.allowLiveDaraja(), showCodeInApp);
     }
 
     @Override
@@ -82,10 +91,18 @@ public class EnvironmentGuard implements InitializingBean {
             return new Findings(blockers, notes);
         }
 
+        CodeVisibility visibility = CodeVisibility.parse(s.showCodeInApp());
         if ("dev".equalsIgnoreCase(trim(s.codeDelivery()))) {
             blockers.add("CODE_DELIVERY=dev hands every sign-in code back to whoever asks. Use sms.");
         } else if ("log".equalsIgnoreCase(trim(s.codeDelivery())) || trim(s.codeDelivery()).isEmpty()) {
             notes.add("CODE_DELIVERY=log writes sign-in codes to the log, so customers do not receive them. Use sms.");
+        }
+        if (visibility == CodeVisibility.ON) {
+            blockers.add("CODE_SHOW_IN_APP=true shows every sign-in code on screen, so anyone who knows a phone number can sign in as it. "
+                    + "Set it to false (or leave it as auto) and use sms. Production never shows a code even then.");
+        } else if (env == AppEnvironment.STAGING && visibility == CodeVisibility.AUTO) {
+            notes.add("Sign-in codes are shown in the app, because CODE_SHOW_IN_APP is on auto. Anyone who knows a phone number can sign in as it. "
+                    + "Set CODE_SHOW_IN_APP=false once CODE_DELIVERY=sms works.");
         }
         if (!trim(s.corsOrigins()).isEmpty()) {
             blockers.add("CORS_ALLOWED_ORIGINS is set. It opens the API to a web page and is only for the test console. Leave it blank.");

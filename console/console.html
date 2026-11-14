@@ -1002,7 +1002,7 @@ E('co.i.list', 'agentx', 'Agent side: read and change', 'List requests', 'GET', 
 E('co.i.get', 'agentx', 'Agent side: read and change', 'Get one request', 'GET', '/internal/actions/' + ID, { auth: 'internal', query: { phone: '{{customerPhone}}' }, note: 'Another customer\'s request answers 404.' });
 E('co.i.cancel', 'agentx', 'Agent side: read and change', 'Cancel a waiting request', 'POST', `/internal/actions/${ID}/cancel`, { auth: 'internal', body: { phone: '{{customerPhone}}' } });
 E('co.i.receipt', 'agentx', 'Agent side: read and change', 'Attach an M-Pesa code', 'POST', `/internal/actions/${ID}/receipt`, { auth: 'internal', body: { phone: '{{customerPhone}}', receipt: 'SGL1234567' }, note: 'A different code on a request that already has one answers 409.' });
-E('co.a.code', 'agentx', 'Sign in', 'Ask for a sign-in code', 'POST', '/api/auth/request-code', { body: { phone: '{{customerPhone}}' }, save: { linkCode: 'devCode' }, note: 'Sends a 6 digit code by SMS. With CODE_DELIVERY=dev the answer also holds the code as devCode (tests only). With CODE_DELIVERY=log the code is in the Daraja Agent-X API log.' });
+E('co.a.code', 'agentx', 'Sign in', 'Ask for a sign-in code', 'POST', '/api/auth/request-code', { body: { phone: '{{customerPhone}}' }, save: { linkCode: 'devCode' }, note: 'Sends a 6 digit code by SMS. In development and staging the answer also holds the code as devCode (CODE_SHOW_IN_APP, never in production), and smsSent says whether a text went out. With the code hidden and CODE_DELIVERY=log the code is in the Daraja Agent-X API log.' });
 E('co.i.link', 'agentx', 'Sign in', 'Make a code without sending it', 'POST', '/internal/link-codes', { auth: 'internal', body: { phone: '{{customerPhone}}' }, save: { linkCode: 'code' }, note: 'For tests and support. Needs the internal key.' });
 E('co.a.verify', 'agentx', 'Sign in', 'Sign in with the code', 'POST', '/api/auth/verify', { body: { phone: '{{customerPhone}}', code: '{{linkCode}}', deviceId: '{{deviceId}}', deviceName: 'Console' }, save: { deviceToken: 'token' }, note: 'Saves the device token for the app calls below.' });
 E('co.a.signout', 'agentx', 'Sign in', 'Sign out this phone', 'DELETE', '/api/devices/me', { auth: 'bearer' });
@@ -1048,7 +1048,7 @@ E('co.o.get', 'agentx', BO, 'Open a business request', 'GET', '/api/business-ope
 E('co.o.approve', 'agentx', BO, 'Approve a business request', 'POST', '/api/business-operations/{{bizOperationId}}/approve', { auth: 'bearer', body: { method: 'BIOMETRIC' }, timeout: 60000, note: 'This is where money going out is sent to Safaricom, once. method is BIOMETRIC or DEVICE_CREDENTIAL and is only recorded.' });
 E('co.o.decline', 'agentx', BO, 'Decline a business request', 'POST', '/api/business-operations/{{bizOperationId}}/decline', { auth: 'bearer' });
 const SU = 'Sign up';
-E('co.s.request', 'agentx', SU, 'Create an account: ask for the SMS code', 'POST', '/api/auth/signup/request', { body: { phone: '{{customerPhone}}', firstName: 'Bill', middleName: '', lastName: 'Graham', email: 'bill@example.com' }, save: { linkCode: 'devCode' }, note: 'Public. Saves the names in a pending profile and sends a 6 digit code to the phone by SMS. Nothing is active until the code is entered. The email is optional. With CODE_DELIVERY=dev the answer also holds the code.' });
+E('co.s.request', 'agentx', SU, 'Create an account: ask for the SMS code', 'POST', '/api/auth/signup/request', { body: { phone: '{{customerPhone}}', firstName: 'Bill', middleName: '', lastName: 'Graham', email: 'bill@example.com' }, save: { linkCode: 'devCode' }, note: 'Public. Saves the names in a pending profile and sends a 6 digit code to the phone by SMS. Nothing is active until the code is entered. The email is optional. In development and staging the answer also holds the code (CODE_SHOW_IN_APP).' });
 E('co.s.verify', 'agentx', SU, 'Create an account: enter the SMS code', 'POST', '/api/auth/signup/verify', { body: { phone: '{{customerPhone}}', code: '{{linkCode}}', deviceId: '{{deviceId}}', deviceName: 'Console' }, save: { deviceToken: 'token' }, note: 'Public. Activates the profile and signs this device in, so the answer is the same as signing in. When an email was given, a second code is emailed to verify it.' });
 const PF = 'Profile (app side)';
 E('co.pf.get', 'agentx', PF, 'Get my profile', 'GET', '/api/profile', { auth: 'bearer', note: 'An older account gets an empty profile the first time. The answer says whether the email is verified, whether a picture exists (and its version) and whether this server can send email at all (emailDelivers).' });
@@ -1612,7 +1612,7 @@ async function authRun(kind, box) {
   if (kind === 'request') {
     const r = await send('co.a.code', { body: { phone } });
     if (!r.ok) AU.err = errText(r);
-    else AU.info = r.json && r.json.devCode ? `The code ${r.json.devCode} is filled in below (the Daraja Agent-X API runs with CODE_DELIVERY=dev, for tests only).` : 'A code is on its way by SMS. If the Daraja Agent-X API runs with CODE_DELIVERY=log, read the code in its log.';
+    else AU.info = r.json && r.json.devCode ? `The code ${r.json.devCode} is filled in below (this server shows codes on screen, CODE_SHOW_IN_APP, development and staging only).` : 'A code is on its way by SMS. If the Daraja Agent-X API runs with CODE_DELIVERY=log, read the code in its log.';
   } else {
     if (!/^\d{6}$/.test(code)) { AU.busy = false; AU.err = 'The code has 6 digits.'; return redrawAuth(); }
     vars.linkCode = code; saveVars();
@@ -3103,7 +3103,7 @@ async function prSignupRequest() {
   const r = await send('co.s.request', { body });
   s.busy = false;
   if (!r.ok) s.err = errText(r);
-  else { s.sent = true; s.info = r.json && r.json.devCode ? `The code ${r.json.devCode} is filled in below (the Daraja Agent-X API runs with CODE_DELIVERY=dev, for tests only).` : 'A code is on its way by SMS.'; if (r.json && r.json.devCode) s.code = r.json.devCode; cfg.customerPhone = s.phone.trim(); saveCfg(); }
+  else { s.sent = true; s.info = r.json && r.json.devCode ? `The code ${r.json.devCode} is filled in below (this server shows codes on screen, CODE_SHOW_IN_APP, development and staging only).` : 'A code is on its way by SMS.'; if (r.json && r.json.devCode) s.code = r.json.devCode; cfg.customerPhone = s.phone.trim(); saveCfg(); }
   drawPrSign();
 }
 async function prSignupVerify() {
