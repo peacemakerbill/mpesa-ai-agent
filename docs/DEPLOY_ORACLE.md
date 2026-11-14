@@ -1,3 +1,25 @@
+<div align="center">
+
+<img src="assets/banner-deploy-oracle.svg" alt="" width="100%"/>
+
+<br/>
+
+<img src="assets/badges-deploy-oracle.svg" alt="Oracle Cloud Always Free, Docker with one Compose file, Ubuntu 24.04 on Arm, Caddy with automatic https, MongoDB Atlas, RabbitMQ on the server." width="880"/>
+
+<br/><br/>
+
+Run the whole system on one free Oracle Cloud server that stays awake around the clock.
+
+<sub><a href="../README.md">Back to the project overview</a> &nbsp;|&nbsp; <a href="DEPLOY_RENDER.md">Deploy on Render instead</a> &nbsp;|&nbsp; <a href="ENVIRONMENTS.md">Environments</a></sub>
+
+<img src="assets/divider.svg" alt="" width="100%"/>
+
+</div>
+
+<div align="center">
+<img src="assets/oracle-steps.svg" alt="The eight steps: Oracle account, MongoDB Atlas, the server, a fixed address, a domain name, prepare the server, settings, start and check." width="100%"/>
+</div>
+
 # Deploying on Oracle Cloud (Always Free)
 
 This guide runs Daraja Agent-X on one free virtual machine in Oracle Cloud. Everything stays awake around the clock, so Safaricom callbacks and chat messages are never lost to a sleeping service.
@@ -276,3 +298,7 @@ Copy the file in `~/backups` to your own computer. To make it automatic, put the
 - `APP_ENV` is `production`, and `CODE_DELIVERY` is `sms`, never `dev`, before customers use it.
 - Keep the server updated now and then: `sudo apt-get update && sudo apt-get upgrade -y`, then `sudo reboot` when it asks.
 - Test business accounts on the sandbox first. Production Daraja credentials belong only on the live server.
+
+<div align="center">
+<img src="assets/divider.svg" alt="" width="100%"/>
+</div>

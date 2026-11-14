@@ -1,0 +1,45 @@
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/environments.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="880" height="138" viewBox="0 0 880 138" role="img" aria-label="Three environments: development checks nothing, staging warns and still starts, production refuses unsafe settings.">
+<title>Three environments: development checks nothing, staging warns and still starts, production refuses unsafe settings.</title>
+<defs></defs>
+<style>
+:root { --bg:#F6F7F4; --pn:#FFFFFF; --ink:#14211A; --mut:#5B6A62; --rule:#D8DDD6; --grn:#17803D; --amb:#A8650A; --red:#B3261E; --blu:#1F5FBF; --dot:#C9D0C8; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0F1512; --pn:#151D19; --ink:#E7EDE9; --mut:#8D9C94; --rule:#2A352F; --grn:#47C27A; --amb:#E0A84A; --red:#FF7B72; --blu:#6EA8FF; --dot:#26312B; } }
+text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+:where(text:not([fill])) { fill: var(--ink); }
+.m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+.mut { fill: var(--mut); }
+.bg { fill: var(--bg); stroke: var(--rule); }
+.pn { fill: var(--pn); stroke: var(--rule); }
+.hl { stroke: var(--rule); fill: none; }
+.hf { fill: var(--rule); }
+.g { fill: var(--grn); } .gs { stroke: var(--grn); fill: none; }
+.ms { stroke: var(--mut); fill: none; }
+.wt { fill: #fff; } .w8 { fill: #fff; fill-opacity: .82; } .w6 { fill: #fff; fill-opacity: .6; }
+.halo { paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.fu { opacity: 0; animation: fu .8s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes fu { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+.lf { animation: lf .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lf { from { fill-opacity: 0; fill: #47C27A } to { fill-opacity: 1; fill: #fff } }
+.wipe { animation: wipe 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes wipe { from { clip-path: inset(-12% 100% -12% 0) } to { clip-path: inset(-12% -3% -12% 0) } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } .fu { opacity: 1 !important; } }
+
+.tl { animation: tl .5s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes tl { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
+.tt { animation: tt .6s steps(var(--n), end) both; clip-path: inset(-30% -2% -30% 0); }
+@keyframes tt { from { clip-path: inset(-30% 100% -30% 0) } to { clip-path: inset(-30% -2% -30% 0) } }
+.tb { transform-box: fill-box; transform-origin: left center; animation: ac .8s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes ac { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+.ti * { stroke-dasharray: 1; animation: dr 1s ease-in-out both; animation-delay: inherit; }
+@keyframes dr { from { stroke-dashoffset: 1; opacity: 0 } 6% { opacity: 1 } to { stroke-dashoffset: 0; opacity: 1 } }
+.hc { opacity: 0; animation: hc 19.2s ease-in-out infinite; }
+@keyframes hc { 0% { opacity: 0 } 2%,11% { opacity: 1 } 13%,100% { opacity: 0 } }
+@media (prefers-reduced-motion: reduce) { .tt,.tb,.ti *,.tl { animation: none !important; } .hc { display: none; } .tt { clip-path: none; } }
+</style>
+<g transform="translate(1.0,2)"><g class="tl" style="animation-delay:0.20s"><rect class="pn" x=".5" y=".5" width="281.0" height="133" rx="8"/><rect class="tb" style="animation-delay:0.35s;fill:var(--grn)" x="1" y="1" width="280.0" height="3" /><g transform="translate(18,20) scale(1.25)"><g class="ti" fill="none" style="stroke:var(--grn);animation-delay:0.40s" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2z" />
+  <path pathLength="1" d="M20.054 15.987H3.946" /></g></g><text class="tt" style="--n:11;animation-delay:0.70s;animation-duration:0.50s" x="18" y="82" font-size="14.5" font-weight="700">development</text><text class="mut" x="18" y="103" font-size="12">Your own machine.</text><text class="mut" x="18" y="120" font-size="12">Nothing is checked.</text><rect class="hc" style="animation-delay:3.0s;stroke:var(--grn)" fill="none" stroke-width="2" x="1" y="1" width="280.0" height="132" rx="7.5"/></g></g><g transform="translate(299.0,2)"><g class="tl" style="animation-delay:0.34s"><rect class="pn" x=".5" y=".5" width="281.0" height="133" rx="8"/><rect class="tb" style="animation-delay:0.49s;fill:var(--grn)" x="1" y="1" width="280.0" height="3" /><g transform="translate(18,20) scale(1.25)"><g class="ti" fill="none" style="stroke:var(--grn);animation-delay:0.54s" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2" />
+  <path pathLength="1" d="M6.453 15h11.094" />
+  <path pathLength="1" d="M8.5 2h7" /></g></g><text class="tt" style="--n:7;animation-delay:0.84s;animation-duration:0.50s" x="18" y="82" font-size="14.5" font-weight="700">staging</text><text class="mut" x="18" y="103" font-size="12">The shared test copy.</text><text class="mut" x="18" y="120" font-size="12">Warns, still starts.</text><rect class="hc" style="animation-delay:5.4s;stroke:var(--grn)" fill="none" stroke-width="2" x="1" y="1" width="280.0" height="132" rx="7.5"/></g></g><g transform="translate(597.0,2)"><g class="tl" style="animation-delay:0.48s"><rect class="pn" x=".5" y=".5" width="281.0" height="133" rx="8"/><rect class="tb" style="animation-delay:0.63s;fill:var(--grn)" x="1" y="1" width="280.0" height="3" /><g transform="translate(18,20) scale(1.25)"><g class="ti" fill="none" style="stroke:var(--grn);animation-delay:0.68s" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  <path pathLength="1" d="m9 12 2 2 4-4" /></g></g><text class="tt" style="--n:10;animation-delay:0.98s;animation-duration:0.50s" x="18" y="82" font-size="14.5" font-weight="700">production</text><text class="mut" x="18" y="103" font-size="12">The live system. Refuses</text><text class="mut" x="18" y="120" font-size="12">unsafe settings.</text><rect class="hc" style="animation-delay:7.8s;stroke:var(--grn)" fill="none" stroke-width="2" x="1" y="1" width="280.0" height="132" rx="7.5"/></g></g>
+</svg>
