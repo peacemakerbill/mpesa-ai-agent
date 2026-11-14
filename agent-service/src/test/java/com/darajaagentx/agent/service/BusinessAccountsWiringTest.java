@@ -45,7 +45,8 @@ class BusinessAccountsWiringTest {
         api.accounts = List.of(Map.of("label", "Daraja STK", "environment", "SANDBOX", "shortcodeType", "PAYBILL", "shortcode", "174379",
                 "accountReference", "STK01", "capabilities", List.of()));
         ToolExecutor executor = new ToolExecutor(mock(PaymentClient.class), null, mock(ReplySender.class), TestSupport.walletProps(),
-                TestSupport.business(), new WalletTools(mock(AgentXClient.class)), new BusinessTools(api));
+                TestSupport.business(), new WalletTools(mock(AgentXClient.class)), new BusinessTools(api), new ProfileTools(null));
+
 
         Result r = executor.execute(new ToolContext(new Identity(PHONE, Role.CUSTOMER, null), "wamid.1", "TEXT"), "list_business_accounts", json("{}"));
 
@@ -59,5 +60,30 @@ class BusinessAccountsWiringTest {
 
         assertThat(rules).contains("list_business_accounts").contains("prepare_pay_bill").contains("Daraja STK")
                 .contains("Never say you cannot see their saved details");
+    }
+
+    @Test
+    void theProfileToolsAreOfferedAndReadTheSignedInCustomersProfile() {
+        for (AgentProperties props : List.of(TestSupport.walletProps(), TestSupport.props())) {
+            List<String> names = new ArrayList<>();
+            new ToolCatalog(TestSupport.mapper(), props).toolsFor(Role.CUSTOMER).forEach(t -> names.add(t.path("name").asString()));
+            assertThat(names).contains("get_my_profile", "update_my_profile", "send_report_email");
+            assertThat(names).doesNotHaveDuplicates();
+        }
+
+        ToolExecutor executor = new ToolExecutor(mock(PaymentClient.class), null, mock(ReplySender.class), TestSupport.walletProps(),
+                TestSupport.business(), new WalletTools(mock(AgentXClient.class)), new BusinessTools(null), new ProfileTools(new ProfileToolsTest.FakeApi()));
+
+        Result r = executor.execute(new ToolContext(new Identity(PHONE, Role.CUSTOMER, null), "wamid.1", "TEXT"), "get_my_profile", json("{}"));
+
+        assertThat(r.error()).isFalse();
+        assertThat(r.content()).contains("Bill Graham").contains("bill@example.com");
+    }
+
+    @Test
+    void thePromptSaysToReadTheProfileAndToUseMyNumberForAnAccount() {
+        String rules = new SystemPrompt(TestSupport.business(), TestSupport.walletProps()).rules();
+
+        assertThat(rules).contains("get_my_profile").contains("never say you cannot see their profile").contains("use_my_number");
     }
 }

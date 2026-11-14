@@ -90,6 +90,10 @@ public class WalletTools {
                 details.put(apiName, value);
             }
         });
+        // "Use my number as the account number": the model only sees the masked number, so the real one is put in here.
+        if (input.path("use_my_number").asBoolean(false) && fields.containsKey("account") && !details.containsKey("account")) {
+            details.put("account", ownNumber(ctx.phone()));
+        }
         String source = riskier(ctx.source(), ToolExecutor.text(input, "details_from", 12));
         String note = ToolExecutor.text(input, "note", 80);
 
@@ -120,6 +124,12 @@ public class WalletTools {
                 + "and approve in the app. Do not say that any money was sent or that the payment is done."
                 + ("TEXT".equals(source) ? "" : " The details came from " + source.toLowerCase(Locale.ENGLISH)
                 + ", so remind them to check every number in the app."));
+    }
+
+    /** The customer's own number as people write it for a Paybill account: 254712345678 becomes 0712345678. */
+    static String ownNumber(String phone) {
+        String digits = phone == null ? "" : phone.replaceAll("[^0-9]", "");
+        return digits.startsWith("254") && digits.length() == 12 ? "0" + digits.substring(3) : digits;
     }
 
     static String riskier(String a, String b) {

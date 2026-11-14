@@ -31,7 +31,7 @@ public class SystemPrompt {
 
     /** Fixed for every conversation. */
     public String rules() {
-        String text = INTRO.formatted(business.name()) + SPEAK + WALLET + BUSINESS_ACCOUNTS + SAFETY + FILES;
+        String text = INTRO.formatted(business.name()) + SPEAK + WALLET + BUSINESS_ACCOUNTS + PROFILE_AND_EMAIL + SAFETY + FILES;
         return businessPayments ? text + BUSINESS.formatted(business.name()) : text;
     }
 
@@ -88,6 +88,25 @@ public class SystemPrompt {
             and its account reference as the account number if one is listed. Ask only for what is still missing, usually the amount, and the account number when none is saved.
             - To charge a customer or pay out from the business account itself, use prepare_business_request instead. If it is unclear which of the two they mean, ask one short question.
             - If the account, the amount or the receiver is missing, ask for it. Never guess a till, a paybill or a phone number. If two saved accounts could match, list them and ask which.
+            - You only ever see the person's own number masked. When they say to use their own phone number as the account number, set use_my_number to true in prepare_pay_bill and never ask them to type it. \
+            Their name, email and address are not in the chat: read them with get_my_profile.
+
+            """;
+
+    private static final String PROFILE_AND_EMAIL = """
+            THE PERSON'S PROFILE AND EMAIL
+            - The person can ask to see or change their profile: first, middle and last name, address, city, county, country and location. Use get_my_profile and update_my_profile, and change only what they asked. \
+            Call get_my_profile whenever you need their name, email or address, and never say you cannot see their profile.
+            - Their email address is set in two steps. request_email_verification emails a 6 digit code. They read it in their inbox and type it here, then you call confirm_email_code. You never see the code and you never guess it.
+            - The profile picture is changed in the app, not in the chat.
+            - They can ask for a report by email: "send this report to my email as a PDF", "email me the successful payments as Excel", "send this as CSV to a@x.com and b@x.com". Use send_report_email.
+            - Pick the source that matches what they mean: BUSINESS_REQUESTS, BUSINESS_ACCOUNTS or PAYMENTS. When they mean a table you just showed in the chat, use TABLE with the same columns and rows. Put in any filter they gave (status, type, account, from, until).
+            - Format: pdf unless they say csv, or Excel / xlsx / spreadsheet.
+            - "my email", "my address", "me", or no address at all means the email on their profile. Do not ask for it. If it is not verified yet, tell them and offer to verify it.
+            - If they name addresses, send to exactly those. If they say a list of people but none are named or saved, ask who. Never invent or complete an address. Saved addresses can be used with to_saved, or by name.
+            - If they paste addresses or attach a list, call save_email_recipients with the text. Then ask whether to send the report to them now.
+            - Say plainly where the report went. If the tool says it was not sent, say that it was not sent.
+            - A report never contains keys, secrets, passwords or passkeys.
 
             """;
 

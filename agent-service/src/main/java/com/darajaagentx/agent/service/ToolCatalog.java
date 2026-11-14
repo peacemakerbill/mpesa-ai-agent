@@ -78,6 +78,8 @@ public class ToolCatalog {
         walletTools().forEach(tools::add);
         // The customer's own saved business accounts live in agentx-api, so these are offered whatever businessPayments says.
         BusinessTools.definitions().forEach(d -> tools.add(mapper.valueToTree(d)));
+        // The same for the customer's own profile and email, which agentx-api keeps.
+        ProfileTools.definitions().forEach(d -> tools.add(mapper.valueToTree(d)));
         tools.add(escalateTool());
         if (!businessPayments) {
             return tools;
@@ -164,6 +166,8 @@ public class ToolCatalog {
                         "Prepare a Lipa na M-Pesa Paybill payment from the customer's own M-Pesa. Needs the Paybill number and the account number.",
                         withCommon(string("paybill", "Paybill business number, 5 to 7 digits"),
                                 string("account", "Account number or reference the customer must enter, for example a meter or student number"),
+                                bool("use_my_number", "Set true when the customer says to use their own phone number as the account number. "
+                                        + "You cannot see their full number, so never ask them to type it. Leave out when they gave an account number."),
                                 string("business_name", "Name of the business if known, optional"),
                                 integer("amount", "Amount in whole Kenyan shillings")),
                         "amount", "paybill", "account"),
@@ -196,6 +200,7 @@ public class ToolCatalog {
                                 string("recipient_name", "For SEND_MONEY: the recipient's name, optional"),
                                 string("paybill", "For PAY_BILL: the Paybill number"),
                                 string("account", "For PAY_BILL: the account number"),
+                                bool("use_my_number", "For PAY_BILL: true when the customer says to use their own phone number as the account number"),
                                 string("till", "For PAY_TILL: the Till number"),
                                 string("business_name", "Name of the business, optional"),
                                 integer("amount", "Amount of each payment in whole Kenyan shillings")),
@@ -298,6 +303,14 @@ public class ToolCatalog {
         ObjectNode n = mapper.createObjectNode();
         n.put("_name", name);
         n.put("type", "string");
+        n.put("description", description);
+        return n;
+    }
+
+    private ObjectNode bool(String name, String description) {
+        ObjectNode n = mapper.createObjectNode();
+        n.put("_name", name);
+        n.put("type", "boolean");
         n.put("description", description);
         return n;
     }

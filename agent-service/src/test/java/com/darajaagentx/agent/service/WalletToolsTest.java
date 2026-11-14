@@ -46,7 +46,7 @@ class WalletToolsTest {
     @BeforeEach
     void setUp() {
         WalletTools wallet = new WalletTools(agentx);
-        executor = new ToolExecutor(null, null, sender, TestSupport.walletProps(), TestSupport.business(), wallet, new BusinessTools(null));
+        executor = new ToolExecutor(null, null, sender, TestSupport.walletProps(), TestSupport.business(), wallet, new BusinessTools(null), new ProfileTools(null));
     }
 
     private static ToolContext ctx(String source) {
@@ -283,6 +283,49 @@ class WalletToolsTest {
         assertThat(result.error()).isTrue();
         assertThat(result.content()).contains("not available");
         verifyNoInteractions(agentx);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void useMyNumberFillsInTheCustomersOwnNumberAsTheAccountWithoutTheModelSeeingIt() {
+        when(agentx.createAction(any())).thenReturn(view("CREATED", "Pay KES 10 to Paybill 174379, account 0700000001", false, null, 10));
+
+        ToolExecutor.Result result = executor.execute(ctx("TEXT"), ToolCatalog.PREPARE_PAY_BILL,
+                json("{\"amount\":10,\"paybill\":\"174379\",\"use_my_number\":true}"));
+
+        assertThat(result.error()).isFalse();
+        assertThat((Map<String, String>) sentBody().get("details")).containsEntry("paybill", "174379").containsEntry("account", "0700000001");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void anAccountNumberTheCustomerGaveIsKeptWhateverUseMyNumberSays() {
+        when(agentx.createAction(any())).thenReturn(view("CREATED", "Pay KES 10 to Paybill 174379, account STK01", false, null, 10));
+
+        executor.execute(ctx("TEXT"), ToolCatalog.PREPARE_PAY_BILL,
+                json("{\"amount\":10,\"paybill\":\"174379\",\"account\":\"STK01\",\"use_my_number\":true}"));
+
+        assertThat((Map<String, String>) sentBody().get("details")).containsEntry("account", "STK01");
+    }
+
+    @Test
+    void ownNumberIsWrittenTheWayPeopleTypeItForAnAccount() {
+        assertThat(WalletTools.ownNumber("254700000001")).isEqualTo("0700000001");
+        assertThat(WalletTools.ownNumber("+254 700 000 001")).isEqualTo("0700000001");
+        assertThat(WalletTools.ownNumber("0700000001")).isEqualTo("0700000001");
+        assertThat(WalletTools.ownNumber(null)).isEmpty();
+    }
+
+    @Test
+    void thePayBillToolOffersUseMyNumberAsAYesOrNo() {
+        var catalog = new ToolCatalog(TestSupport.mapper(), TestSupport.walletProps());
+        for (var tool : catalog.toolsFor(Role.CUSTOMER)) {
+            if (ToolCatalog.PREPARE_PAY_BILL.equals(tool.path("name").asString())) {
+                assertThat(tool.path("input_schema").path("properties").path("use_my_number").path("type").asString()).isEqualTo("boolean");
+                return;
+            }
+        }
+        throw new AssertionError("prepare_pay_bill is not offered");
     }
 
     @Test
