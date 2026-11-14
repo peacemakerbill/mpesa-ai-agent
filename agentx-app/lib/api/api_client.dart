@@ -243,6 +243,14 @@ class ApiClient {
       'POST', '/api/business-operations/${Uri.encodeComponent(id)}/approve',
       body: {'method': biometric ? 'BIOMETRIC' : 'DEVICE_CREDENTIAL'}));
 
+  Future<ApprovalCodeSent> sendBusinessApprovalCode(String id) async =>
+      ApprovalCodeSent.fromJson(await _send('POST', '/api/business-operations/${Uri.encodeComponent(id)}/approval-code'));
+
+  /// Approves with the code from the text message. As with any approval, the request is sent to Safaricom in this call.
+  Future<BusinessOperation> approveBusinessOperationWithCode(String id, String code) async => BusinessOperation.fromJson(await _send(
+      'POST', '/api/business-operations/${Uri.encodeComponent(id)}/approve',
+      body: {'method': 'OTP', 'code': code}));
+
   Future<BusinessOperation> declineBusinessOperation(String id) async =>
       BusinessOperation.fromJson(await _send('POST', '/api/business-operations/${Uri.encodeComponent(id)}/decline'));
 
@@ -394,6 +402,14 @@ class ApiClient {
   Future<WalletAction> approve(String id, {required bool biometric}) async => _action(await _send(
       'POST', '/api/actions/$id/approve',
       body: {'method': biometric ? 'BIOMETRIC' : 'DEVICE_CREDENTIAL'}));
+
+  /// Asks for a code by text message to the customer's own number. It names the request and works for that request only.
+  Future<ApprovalCodeSent> sendApprovalCode(String id) async => ApprovalCodeSent.fromJson(await _send('POST', '/api/actions/$id/approval-code'));
+
+  /// Approves with the code from the text message instead of the phone's own check.
+  Future<WalletAction> approveWithCode(String id, String code) async => _action(await _send(
+      'POST', '/api/actions/$id/approve',
+      body: {'method': 'OTP', 'code': code}));
 
   Future<WalletAction> handOff(String id) async => _action(await _send('POST', '/api/actions/$id/handoff'));
 

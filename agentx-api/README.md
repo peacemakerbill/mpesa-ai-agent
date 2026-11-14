@@ -82,7 +82,8 @@ Locally the code is shown on screen by default (`CODE_SHOW_IN_APP=auto`), so you
 | `DELETE /api/devices/me` | Sign this phone out |
 | `GET /api/config` | Hand-off settings (dial codes, M-Pesa app ids) |
 | `GET /api/actions`, `GET /api/actions/{id}` | List and read requests |
-| `POST /api/actions/{id}/approve` | Approve after the phone check |
+| `POST /api/actions/{id}/approve` | Approve after the phone check (`method` BIOMETRIC or DEVICE_CREDENTIAL), or with a text message code (`method` OTP and `code`) |
+| `POST /api/actions/{id}/approval-code` | Send a 6 digit approval code by text message to the signed in number. Valid 5 minutes for this request only, 30 seconds between codes, 6 per hour, 5 wrong tries per code. Table `approval_codes` (migration V8) |
 | `POST /api/actions/{id}/handoff` | Record that the dialler or M-Pesa was opened |
 | `POST /api/actions/{id}/report` | Customer says it is done, or not done |
 | `POST /api/actions/{id}/sms-evidence` | Send the parsed message fields for matching |

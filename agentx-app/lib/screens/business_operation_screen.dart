@@ -8,6 +8,7 @@ import '../layout/responsive.dart';
 import '../models/business_operation.dart';
 import '../services/approval.dart';
 import '../theme/app_theme.dart';
+import '../widgets/otp_approval.dart';
 import '../widgets/ui.dart';
 
 Tone toneForOperation(OperationStage stage) {
@@ -126,7 +127,7 @@ class _BusinessOperationScreenState extends State<BusinessOperationScreen> {
         setState(() => _error = 'Not approved. Nothing was sent.');
         return;
       case ApprovalResult.notAvailable:
-        setState(() => _error = 'This phone has no fingerprint, face or screen lock set up. Set one in your phone settings, then try again.');
+        setState(() => _error = 'This phone has no fingerprint, face or screen lock set up. Use Approve with OTP, or set one in your phone settings and try again.');
         return;
       case ApprovalResult.approvedBiometric:
       case ApprovalResult.approvedDeviceLock:
@@ -144,6 +145,33 @@ class _BusinessOperationScreenState extends State<BusinessOperationScreen> {
       setState(() => _error = 'No answer yet. It may have been sent. Check the status below before doing anything else.');
       await _refresh();
     }
+  }
+
+  /// Approves with a code sent by text message instead of the phone's own check. The request is sent to Safaricom in that call.
+  Future<void> _approveWithOtp() async {
+    final op = _op!;
+    setState(() => _error = null);
+    await showOtpApproval(
+      context,
+      state: s,
+      summary: op.summary,
+      moneyOut: op.movesMoneyOut,
+      send: () => s.api.sendBusinessApprovalCode(op.id),
+      approve: (code) async {
+        try {
+          final updated = await s.api.approveBusinessOperationWithCode(op.id, code);
+          if (mounted) {
+            setState(() => _op = updated);
+            _polls = 0;
+            _watch();
+          }
+        } on ApiException catch (e) {
+          // No answer at all: the request may still have gone out, so show its real state before anything is tried again.
+          if (e.status == 0 && mounted) await _refresh();
+          rethrow;
+        }
+      },
+    );
   }
 
   Future<void> _refresh() async {
@@ -244,9 +272,12 @@ class _BusinessOperationScreenState extends State<BusinessOperationScreen> {
           label: const Text('Approve'),
         ),
         const SizedBox(height: 8),
+        OutlinedButton.icon(onPressed: _busy ? null : _approveWithOtp, icon: const Icon(Icons.sms_outlined), label: const Text('Approve with OTP')),
+        const SizedBox(height: 8),
         OutlinedButton(onPressed: _busy ? null : _decline, child: const Text('Decline')),
         const SizedBox(height: 12),
-        Text('You approve with your fingerprint, face or phone lock. This app never sees your M-Pesa PIN or your keys.', style: text.bodySmall?.copyWith(color: t.p.ink2)),
+        Text('You approve with your fingerprint, face or phone lock, or with a code sent to you by text message. This app never sees your M-Pesa PIN or your keys.',
+            style: text.bodySmall?.copyWith(color: t.p.ink2)),
       ],
       if (op.createdAt != null) ...[
         const SizedBox(height: 16),

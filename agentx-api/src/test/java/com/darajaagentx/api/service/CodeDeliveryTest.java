@@ -240,4 +240,35 @@ class CodeDeliveryTest {
         }
         throw new AssertionError("no field " + name + " in " + form);
     }
+    @Test
+    void anApprovalTextNamesWhatItApprovesAndFitsOneMessage() {
+        String text = CodeDelivery.approvalSmsText("Daraja Agent-X", "482913", Duration.ofMinutes(5), "Pay KES 10 to Pochi la Biashara 254723***173");
+
+        assertThat(text).contains("482913").contains("Pay KES 10 to Pochi la Biashara 254723***173").contains("Valid 5 min").contains("Never share it");
+        assertThat(text.length()).isLessThanOrEqualTo(160);
+    }
+
+    @Test
+    void aLongDescriptionIsCutShortButTheCodeStays() {
+        String text = CodeDelivery.approvalSmsText("Daraja Agent-X", "482913", Duration.ofMinutes(5), "Pay KES 250,000 to Paybill 888880, account " + "ABCDEFGHIJ".repeat(12));
+
+        assertThat(text).contains("482913").contains("...").contains("Never share it");
+        assertThat(text.length()).isLessThanOrEqualTo(160);
+    }
+
+    @Test
+    void anApprovalCodeIsHandedBackWhereCodesAreShown() {
+        CodeDelivery d = delivery("log", "auto", AppEnvironment.DEVELOPMENT, NO_KEY);
+
+        assertThat(d.deliverApproval("254712345678", "123456", Duration.ofMinutes(5), "Pay KES 10").devCode()).isEqualTo("123456");
+        assertThat(delivery("log", "false", AppEnvironment.DEVELOPMENT, NO_KEY).deliverApproval("254712345678", "123456", Duration.ofMinutes(5), "x").devCode()).isNull();
+    }
+
+    @Test
+    void anApprovalCodeThatCannotBeTextedIsAnErrorWhenNothingShowsIt() {
+        CodeDelivery d = delivery("sms", "false", AppEnvironment.PRODUCTION, NO_KEY);
+
+        assertThatThrownBy(() -> d.deliverApproval("254712345678", "123456", Duration.ofMinutes(5), "Pay KES 10"))
+                .isInstanceOf(CodeDeliveryException.class);
+    }
 }

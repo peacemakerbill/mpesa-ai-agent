@@ -17,6 +17,7 @@ class BubbleActions {
     required this.onFindContact,
     required this.onOpenRequest,
     required this.onOpenBusiness,
+    required this.onApproveWithOtp,
     required this.onLink,
     required this.onError,
     required this.loadFile,
@@ -28,6 +29,9 @@ class BubbleActions {
   final void Function(String query) onFindContact;
   final void Function(String requestId) onOpenRequest;
   final void Function(String operationId) onOpenBusiness;
+
+  /// Approve with a code sent by text message. [business] is true for a request on a business account.
+  final void Function(String id, {required bool business}) onApproveWithOtp;
   final void Function(String url) onLink;
   final void Function(String message) onError;
   final Future<ChatFile> Function(String mediaId) loadFile;
@@ -163,10 +167,19 @@ class MessageBubble extends StatelessWidget {
     if (id == null && businessId == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 8),
-      child: SizedBox(
-        width: double.infinity,
-        child: FilledButton.icon(onPressed: () => id != null ? actions.onOpenRequest(id) : actions.onOpenBusiness(businessId!), icon: const Icon(Icons.fact_check_outlined), label: const Text('Open request')),
-      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        FilledButton.icon(
+          onPressed: () => id != null ? actions.onOpenRequest(id) : actions.onOpenBusiness(businessId!),
+          icon: const Icon(Icons.fact_check_outlined),
+          label: const Text('Open request'),
+        ),
+        const SizedBox(height: 6),
+        OutlinedButton.icon(
+          onPressed: () => actions.onApproveWithOtp(id ?? businessId!, business: id == null),
+          icon: const Icon(Icons.sms_outlined),
+          label: const Text('Approve with OTP'),
+        ),
+      ]),
     );
   }
 

@@ -18,6 +18,7 @@ import '../profile/profile_avatar.dart';
 import '../theme/app_theme.dart';
 import '../widgets/chat_bubbles.dart';
 import '../widgets/mention_panel.dart';
+import '../widgets/otp_approval.dart';
 import '../widgets/ui.dart';
 import 'action_screen.dart';
 import 'business_operation_screen.dart';
@@ -165,6 +166,70 @@ class _ChatScreenState extends State<ChatScreen> {
     if (!await widget.state.launcher.openUrl(url)) _toast('That link could not be opened.');
   }
 
+  /// Approve from the chat with a code sent by text message. Looks at the request first, so one that is no longer waiting,
+  /// or one that still needs a contact chosen, opens instead of asking for a code that could not be used.
+  Future<void> _approveWithOtp(String id, {required bool business}) async {
+    final s = widget.state;
+    var summary = '';
+    var moneyOut = false;
+    try {
+      if (business) {
+        final op = await s.api.businessOperation(id);
+        if (!mounted) return;
+        if (!op.canDecide(DateTime.now())) {
+          _toast('This request is no longer waiting for approval.');
+          _openBusiness(id);
+          return;
+        }
+        summary = op.summary;
+        moneyOut = op.movesMoneyOut;
+      } else {
+        final a = await s.api.action(id);
+        if (!mounted) return;
+        if (!a.awaitingApproval) {
+          _toast('This request is no longer waiting for approval.');
+          _openRequest(id);
+          return;
+        }
+        if (a.needsContact) {
+          _toast('Choose the contact first, then approve.');
+          _openRequest(id);
+          return;
+        }
+        summary = a.summary;
+      }
+    } on ApiException catch (e) {
+      if (e.unauthorized) {
+        await s.sessionExpired();
+        return;
+      }
+      _toast(e.message);
+      return;
+    }
+    if (!mounted) return;
+    final approved = await showOtpApproval(
+      context,
+      state: s,
+      summary: summary,
+      moneyOut: moneyOut,
+      send: () => business ? s.api.sendBusinessApprovalCode(id) : s.api.sendApprovalCode(id),
+      approve: (code) async {
+        if (business) {
+          await s.api.approveBusinessOperationWithCode(id, code);
+        } else {
+          await s.api.approveWithCode(id, code);
+        }
+      },
+    );
+    if (!approved || !mounted) return;
+    // The next step (finishing in M-Pesa, or watching Safaricom's answer) is on the request's own screen.
+    if (business) {
+      _openBusiness(id);
+    } else {
+      _openRequest(id);
+    }
+  }
+
   void _openBusiness(String id) {
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => BusinessOperationScreen(state: widget.state, operationId: id)));
   }
@@ -192,6 +257,7 @@ class _ChatScreenState extends State<ChatScreen> {
     onFindContact: _findContact,
     onOpenRequest: _openRequest,
     onOpenBusiness: _openBusiness,
+    onApproveWithOtp: _approveWithOtp,
     onLink: _openLink,
     onError: _toast,
     loadFile: _loadFile,

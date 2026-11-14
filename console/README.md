@@ -7,7 +7,7 @@
 
 <br/>
 
-<img src="../docs/assets/badges-console.svg" alt="A single HTML file with no build step, ten looks, 114 endpoints, and a Ctrl+K palette." width="880"/>
+<img src="../docs/assets/badges-console.svg" alt="A single HTML file with no build step, ten looks, 118 endpoints, and a Ctrl+K palette." width="880"/>
 
 <br/><br/>
 
@@ -57,9 +57,9 @@ Open **Settings** (the sliders icon, top right) to set the service addresses, th
 | **Phone** | The Daraja Agent-X app on a phone: sign in, list, approve with a fingerprint, open M-Pesa, report, and check an M-Pesa message. Messages from M-Pesa are simulated and kept in this browser |
 | **Business** | Business accounts as in the app's Settings: add a shortcode with its consumer key and secret, STK passkey and initiator, add tills, store numbers or child shortcodes under it (each with the head office's credentials or its own), **Check with Safaricom**, and upload many accounts from a CSV file (download the template, check the file, then save). Below that, the requests the assistant prepared from the chat, with Approve and Decline. Secrets are sent to the server and never shown again, only whether each one is saved. Needs `AGENTX_VAULT_KEY` on agentx-api and the same sign-in as Chat |
 | **Profile** | Sign up (phone, names, the SMS code) or sign in, then the profile: names, address, location, picture upload, email with its code, saved addresses (add, paste or upload a CSV or text file), email a report as PDF, CSV or Excel, and the emails sent. Uses the same token as Chat |
-| **Explorer** | Every endpoint (114 of them) with an editable path, query and body, a send button, and the answer as body, headers, request and curl. Saved values such as the request id and phone token are filled in for you |
+| **Explorer** | Every endpoint (118 of them) with an editable path, query and body, a send button, and the answer as body, headers, request and curl. Saved values such as the request id and phone token are filled in for you |
 
-The dock at the bottom lists every call made, with its full request and answer. Press **Ctrl+K** (or Cmd+K) for the command palette: jump to a view, run the journey, switch theme or open any of the 114 endpoints by name.
+The dock at the bottom lists every call made, with its full request and answer. Press **Ctrl+K** (or Cmd+K) for the command palette: jump to a view, run the journey, switch theme or open any of the 118 endpoints by name.
 
 > [!NOTE]
 > For the console to receive the sign-in code, run agentx-api in development or staging with `CODE_SHOW_IN_APP` on `auto` or `true`. Otherwise read it from the agentx-api log or your SMS.

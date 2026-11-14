@@ -143,7 +143,7 @@ attach menu, as a shared contact, and its name replaces the `@`. The assistant n
 |---|---|
 | Balance, transaction status, pull transactions, Dynamic QR, STK Push query | Sent at once. Balance and status answer in the chat a few seconds later. |
 | STK Push | Sent at once by default. Set `AGENTX_BUSINESS_APPROVE_COLLECTIONS=true` to make it wait for approval too. At most 20 an hour (`AGENTX_BUSINESS_STK_PER_HOUR`). |
-| B2C, Pochi la Biashara, B2B, reversal | Never sent until you approve. The chat sends a message with an Open request button. You tap it, check the details and approve with fingerprint, face or phone lock. The request stays open for 30 minutes (`AGENTX_BUSINESS_APPROVAL_TTL`). |
+| B2C, Pochi la Biashara, B2B, reversal | Never sent until you approve. The chat sends a message with an Open request button. You tap it, check the details and approve with fingerprint, face or phone lock. The same message has an **Approve with OTP** button: a 6 digit code is sent by text message to your own number and you type it in, which works on a phone with no lock. The request stays open for 30 minutes (`AGENTX_BUSINESS_APPROVAL_TTL`). |
 
 Every request is capped at `AGENTX_BUSINESS_MAX_AMOUNT` (150,000 by default). A request is sent to Safaricom at most once. If Safaricom does not answer
 clearly, the request is marked *Not sure* and the chat tells you to check your M-Pesa statement. It is never tried again by itself.

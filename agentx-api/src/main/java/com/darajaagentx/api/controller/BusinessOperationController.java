@@ -2,9 +2,11 @@ package com.darajaagentx.api.controller;
 
 import com.darajaagentx.api.config.DeviceAuthFilter;
 import com.darajaagentx.api.config.DevicePrincipal;
+import com.darajaagentx.api.dto.ApprovalCodeResponse;
 import com.darajaagentx.api.dto.ApproveRequest;
 import com.darajaagentx.api.dto.BusinessOperationView;
 import com.darajaagentx.api.model.BusinessOperation;
+import com.darajaagentx.api.service.ApprovalCodeService;
 import com.darajaagentx.api.service.BusinessOperationService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,9 +29,11 @@ import java.util.UUID;
 public class BusinessOperationController {
 
     private final BusinessOperationService service;
+    private final ApprovalCodeService approvalCodes;
 
-    public BusinessOperationController(BusinessOperationService service) {
+    public BusinessOperationController(BusinessOperationService service, ApprovalCodeService approvalCodes) {
         this.service = service;
+        this.approvalCodes = approvalCodes;
     }
 
     @GetMapping
@@ -42,10 +46,19 @@ public class BusinessOperationController {
         return view(service.get(who.phone(), id));
     }
 
+    /** Sends a code by text message to the owner's own number, for approving this request with OTP. */
+    @PostMapping("/{id}/approval-code")
+    public ApprovalCodeResponse approvalCode(@PathVariable UUID id, @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
+        return approvalCodes.sendForBusiness(who.phone(), id);
+    }
+
     /** The money request leaves for Safaricom here, once. */
     @PostMapping("/{id}/approve")
     public BusinessOperationView approve(@PathVariable UUID id, @Valid @RequestBody ApproveRequest request,
                                          @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
+        if (request.method() == ApproveRequest.Method.OTP) {
+            approvalCodes.check(who.phone(), ApprovalCodeService.Kind.BUSINESS, id, request.code());
+        }
         return view(service.approve(who.phone(), id, request.method().name()));
     }
 

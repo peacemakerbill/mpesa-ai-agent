@@ -7,6 +7,7 @@ import com.darajaagentx.api.model.EmailRecipient;
 import com.darajaagentx.api.model.UserProfile;
 import com.darajaagentx.api.model.WalletAction;
 import com.darajaagentx.api.model.Device;
+import com.darajaagentx.api.model.ApprovalCode;
 import com.darajaagentx.api.model.LinkCode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,6 +54,14 @@ public class MongoStoreConfig {
 
     @Bean
     BeforeConvertCallback<LinkCode> linkCodeBeforeConvert() {
+        return (entity, collection) -> {
+            entity.prepareForMongo(Instant.now());
+            return entity;
+        };
+    }
+
+    @Bean
+    BeforeConvertCallback<ApprovalCode> approvalCodeBeforeConvert() {
         return (entity, collection) -> {
             entity.prepareForMongo(Instant.now());
             return entity;

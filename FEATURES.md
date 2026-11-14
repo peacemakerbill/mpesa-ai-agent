@@ -66,7 +66,7 @@ Customers chat with an AI assistant, in the app or on the web, in English or Swa
 
 1. The assistant prepares the request and sends a message with an Open request button, plus a Cancel button, in the chat. No web address is written into the message.
 2. Tapping Open request shows the request in the app, in plain words with warnings.
-3. The customer approves with fingerprint, face or phone lock (the phone's own check).
+3. The customer approves with fingerprint, face or phone lock (the phone's own check), or with a 6 digit code sent to their own number by text message.
 4. The app opens the dialler (code typed in, customer presses call) or the M-Pesa app, and shows numbered steps with copy buttons.
 5. The customer types the M-Pesa PIN inside M-Pesa.
 6. On Android, **Check my M-Pesa message** finds the confirmation SMS and matches it. Or they tap "I completed it".
@@ -83,7 +83,7 @@ Flutter, for Android, iOS, macOS, Linux and Windows. More in [`agentx-app/README
 - **Sign in** with the phone number and a 6 digit code sent by SMS. Sign out at any time.
 - **Chat tab** with the assistant: message bubbles, buttons and menus the assistant sends, photos, videos, documents, voice notes (record and play), shared locations and contacts, typing indicator, and a **Requests tab** beside it.
 - Request list and request detail, with warnings (details read from a voice note, photo or file are flagged).
-- Approval with biometrics or device lock. Decline with one tap.
+- Approval with biometrics or device lock, or with an OTP sent by text message. Decline with one tap.
 - Hand-off to M-Pesa: dialler, optional M-Pesa app launch, guided steps, copy buttons. Values come from the server, so they can be corrected without a new release.
 - **Contact search** across this phone (with permission, or its own chooser without one), Google contacts, Outlook contacts, a vCard or CSV file, or a typed number. Searching happens on the phone. See [`agentx-app/docs/CONTACTS.md`](agentx-app/docs/CONTACTS.md).
 - **M-Pesa message check (Android only):** reads only messages from the sender `MPESA`, only on request, matches on the phone, and sends the code, kind, amount and payee, never the text. See [`agentx-app/docs/SMS.md`](agentx-app/docs/SMS.md).
@@ -115,6 +115,8 @@ Picked from the palette button in the app bar. The browser console offers the sa
 > None of these is a Safaricom confirmation. A message can also correct a request wrongly marked "not done", and one M-Pesa code can back only one request.
 
 Request states: `CREATED`, `APPROVED`, `HANDED_OFF`, `DONE_REPORTED`, `NOT_DONE`, `DECLINED`, `CANCELLED`, `EXPIRED`.
+
+**Approve with OTP.** Beside the fingerprint or phone lock check, a request that is waiting (personal or on a business account) can be approved with a code. The chat message that carries the **Open request** button also carries **Approve with OTP**, and so do the request screen and the business request screen. The server sends a 6 digit code by text message to the customer's own number, the customer types it into a small sheet in the app, and a right code approves the request exactly as the phone check does (a business request is then sent to Safaricom once). The code works for 5 minutes, for that one request only, and once. The text names the request, so a code asked for something else is easy to spot. A new code can be asked for after 30 seconds, 6 per hour at most; 5 wrong tries use a code up. Codes are stored only as a keyed hash. In production this needs real SMS (`CODE_DELIVERY=sms` with Africa's Talking) and `CODE_SHOW_IN_APP` off. The code proves the customer holds the SIM, not the phone, so on the same phone it is not stronger than the phone lock; it helps phones with no lock and desktop use.
 
 **Clearing requests.** A finished request (done, not done, declined, cancelled or expired) can be cleared from the customer's list: one at a time with the small close button on its card, several at once with Select requests, or all of them with Clear finished requests. Clearing hides the request from the customer only. The record stays on the server, so reports, receipt matching and disputes still see it, and opening it by its id still works. A request that is still open (`CREATED`, `APPROVED`, `HANDED_OFF`) is never cleared: one request answers 409, and a bulk clear skips it and says how many were left.
 
@@ -247,7 +249,7 @@ Not included, because they belonged to the removed payment-service: staff roles 
 
 **[`postman/`](postman/README.md)**
 
-A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 129 requests, and a walkthrough you can run with the collection runner.
+A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 133 requests, and a walkthrough you can run with the collection runner.
 
 </td>
 <td width="50%" valign="top">

@@ -7,7 +7,7 @@
 
 <br/>
 
-<img src="docs/assets/badges-root.svg" alt="Spring Boot 4.1.2, Java 21, Flutter 3.22 or later, Claude with tool use, status reference build. Databases MongoDB, PostgreSQL and MySQL, Redis, RabbitMQ, Flyway 12, Docker compose, Postman with 129 requests." width="880"/>
+<img src="docs/assets/badges-root.svg" alt="Spring Boot 4.1.2, Java 21, Flutter 3.22 or later, Claude with tool use, status reference build. Databases MongoDB, PostgreSQL and MySQL, Redis, RabbitMQ, Flyway 12, Docker compose, Postman with 133 requests." width="880"/>
 
 <br/><br/>
 
@@ -381,6 +381,7 @@ upload a list. Mail is written to the log until you set `agentx.mail.transport: 
 - SIM swap is a risk for any SMS sign-in.
 - The Google and Microsoft contact sign-ins need your own OAuth client ids and were not run against real accounts. See [`agentx-app/docs/CONTACTS.md`](agentx-app/docs/CONTACTS.md).
 - The phone check protects our approval step only. Whether a biometric or the device lock was used is a best guess recorded for the audit trail.
+- Approve with OTP proves the customer holds the SIM, not the phone. On the same phone it is not stronger than the phone lock, and a SIM swap defeats it, as it does the SMS sign-in. It needs real SMS delivery in production.
 - The M-Pesa SMS patterns in `agentx-app/lib/models/mpesa_sms.dart` were written from memory. Test them with real messages.
 - agent-service and agentx-api do not answer **503 Service Unavailable** for a database, query or RabbitMQ failure yet. Add a handler to each `GlobalExceptionHandler`.
 - No admin dashboard, offline mode or Swahili text in the app screens yet. The assistant itself replies in the customer's language.

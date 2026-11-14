@@ -180,3 +180,22 @@ class ClearResult {
     return skipped == 0 ? done : '$done. $skipped still open, so left in the list.';
   }
 }
+
+/// The answer to "send me a code to approve this". [devCode] is filled only where the server may show codes (a test system).
+class ApprovalCodeSent {
+  const ApprovalCodeSent({this.expiresAt, this.resendAfterSeconds = 30, this.devCode});
+
+  final DateTime? expiresAt;
+  final int resendAfterSeconds;
+  final String? devCode;
+
+  factory ApprovalCodeSent.fromJson(Map<String, dynamic> json) {
+    final code = json['devCode'];
+    final at = json['expiresAt'];
+    return ApprovalCodeSent(
+      expiresAt: at is String ? DateTime.tryParse(at)?.toLocal() : null,
+      resendAfterSeconds: (json['resendAfterSeconds'] as num?)?.toInt() ?? 30,
+      devCode: code is String && code.isNotEmpty ? code : null,
+    );
+  }
+}

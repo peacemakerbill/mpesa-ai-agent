@@ -3141,7 +3141,7 @@
                     "approve"
                   ]
                 },
-                "description": "",
+                "description": "method is BIOMETRIC or DEVICE_CREDENTIAL. To approve with a text message code use the next two requests.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"method\": \"DEVICE_CREDENTIAL\"\n}",
@@ -3159,6 +3159,82 @@
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('Status is 200 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 409]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Send an approval code",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/actions/{{actionId}}/approval-code",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "approval-code"
+                  ]
+                },
+                "description": "Sends a 6 digit code by text message to the signed in number, for a request that is still waiting for approval. The code works for 5 minutes and for this request only. Wait 30 seconds before asking for another, 6 per hour at most. On a test system (CODE_SHOW_IN_APP on) the answer includes devCode."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 429', function () { pm.expect(pm.response.code).to.be.oneOf([200, 429]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Approve with the code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/actions/{{actionId}}/approve",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "actions",
+                    "{{actionId}}",
+                    "approve"
+                  ]
+                },
+                "description": "Approve with the code from the text message. A wrong code is refused with 400 and the request stays waiting. Five wrong tries use the code up. Use the code from the previous request (devCode on a test system).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"method\": \"OTP\",\n  \"code\": \"123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 400 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 400, 409]); });"
                     ]
                   }
                 }
@@ -4744,7 +4820,7 @@
                     "approve"
                   ]
                 },
-                "description": "This is where money going out is sent to Safaricom, once. method is BIOMETRIC or DEVICE_CREDENTIAL and is only recorded.",
+                "description": "This is where money going out is sent to Safaricom, once. method is BIOMETRIC or DEVICE_CREDENTIAL and is only recorded. To approve with a text message code use the next two requests.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"method\": \"BIOMETRIC\"\n}",
@@ -4762,6 +4838,82 @@
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Send an approval code for a business request",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-operations/{{bizOperationId}}/approval-code",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-operations",
+                    "{{bizOperationId}}",
+                    "approval-code"
+                  ]
+                },
+                "description": "Sends a 6 digit code by text message to the signed in number, for a business request that is waiting for approval. Same limits as for a personal request. On a test system the answer includes devCode."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 429', function () { pm.expect(pm.response.code).to.be.oneOf([200, 429]); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Approve a business request with the code",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-operations/{{bizOperationId}}/approve",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-operations",
+                    "{{bizOperationId}}",
+                    "approve"
+                  ]
+                },
+                "description": "Money going out is sent to Safaricom once, as soon as the code is right, exactly as with the other approval. A wrong code is refused with 400 and nothing is sent.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"method\": \"OTP\",\n  \"code\": \"123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200 or 400 or 409', function () { pm.expect(pm.response.code).to.be.oneOf([200, 400, 409]); });"
                     ]
                   }
                 }

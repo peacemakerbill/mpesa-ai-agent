@@ -5,12 +5,14 @@ import com.darajaagentx.api.config.DeviceAuthFilter;
 import com.darajaagentx.api.config.DevicePrincipal;
 import com.darajaagentx.api.config.EnvironmentPolicy;
 import com.darajaagentx.api.dto.ActionResponse;
+import com.darajaagentx.api.dto.ApprovalCodeResponse;
 import com.darajaagentx.api.dto.AppConfigResponse;
 import com.darajaagentx.api.dto.ApproveRequest;
 import com.darajaagentx.api.dto.ClearRequest;
 import com.darajaagentx.api.dto.ReportRequest;
 import com.darajaagentx.api.dto.SmsEvidenceRequest;
 import com.darajaagentx.api.service.ActionService;
+import com.darajaagentx.api.service.ApprovalCodeService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,11 +32,13 @@ import java.util.UUID;
 public class AppActionController {
 
     private final ActionService actions;
+    private final ApprovalCodeService approvalCodes;
     private final AgentXProperties props;
     private final EnvironmentPolicy environment;
 
-    public AppActionController(ActionService actions, AgentXProperties props, EnvironmentPolicy environment) {
+    public AppActionController(ActionService actions, ApprovalCodeService approvalCodes, AgentXProperties props, EnvironmentPolicy environment) {
         this.actions = actions;
+        this.approvalCodes = approvalCodes;
         this.props = props;
         this.environment = environment;
     }
@@ -55,9 +59,18 @@ public class AppActionController {
         return ActionResponse.from(actions.get(id, who.phone()));
     }
 
+    /** Sends a code by text message to the customer's own number, for approving this request with OTP. */
+    @PostMapping("/actions/{id}/approval-code")
+    public ApprovalCodeResponse approvalCode(@PathVariable UUID id, @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
+        return approvalCodes.sendForAction(who.phone(), id);
+    }
+
     @PostMapping("/actions/{id}/approve")
     public ActionResponse approve(@PathVariable UUID id, @Valid @RequestBody ApproveRequest request,
                                   @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
+        if (request.method() == ApproveRequest.Method.OTP) {
+            approvalCodes.check(who.phone(), ApprovalCodeService.Kind.ACTION, id, request.code());
+        }
         return ActionResponse.from(actions.approve(id, who.phone(), who.deviceId(), request.method()));
     }
 

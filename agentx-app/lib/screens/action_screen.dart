@@ -10,6 +10,7 @@ import '../models/sms_match.dart';
 import '../models/wallet_action.dart';
 import '../services/approval.dart';
 import '../theme/app_theme.dart';
+import '../widgets/otp_approval.dart';
 import '../widgets/ui.dart';
 import 'contact_finder_screen.dart';
 
@@ -109,12 +110,25 @@ class _ActionScreenState extends State<ActionScreen> with WidgetsBindingObserver
         setState(() => _error = 'Not approved. Nothing was sent.');
         return;
       case ApprovalResult.notAvailable:
-        setState(() => _error = 'This phone has no fingerprint, face or screen lock set up. Set one in your phone settings, then try again.');
+        setState(() => _error = 'This phone has no fingerprint, face or screen lock set up. Use Approve with OTP, or set one in your phone settings and try again.');
         return;
       case ApprovalResult.approvedBiometric:
       case ApprovalResult.approvedDeviceLock:
         _set(await _guard(() => s.api.approve(a.id, biometric: result == ApprovalResult.approvedBiometric)));
     }
+  }
+
+  /// Approves with a code sent by text message instead of the phone's own check.
+  Future<void> _approveWithOtp() async {
+    final a = _action!;
+    setState(() => _error = null);
+    await showOtpApproval(
+      context,
+      state: s,
+      summary: a.summary,
+      send: () => s.api.sendApprovalCode(a.id),
+      approve: (code) async => _set(await s.api.approveWithCode(a.id, code)),
+    );
   }
 
   Future<void> _decline() async {
@@ -352,9 +366,16 @@ class _ActionScreenState extends State<ActionScreen> with WidgetsBindingObserver
           icon: const Icon(Icons.fingerprint),
           label: const Text('Approve on this phone'),
         ))
+        ..add(const SizedBox(height: 8))
+        ..add(OutlinedButton.icon(
+          onPressed: _busy || (a.needsContact && _contact == null) ? null : _approveWithOtp,
+          icon: const Icon(Icons.sms_outlined),
+          label: const Text('Approve with OTP'),
+        ))
         ..add(Padding(
           padding: const EdgeInsets.only(top: 6, bottom: 4),
-          child: Text('You confirm with your fingerprint, face or phone lock. Nothing is sent before that.', style: text.bodySmall, textAlign: TextAlign.center),
+          child: Text('You confirm with your fingerprint, face or phone lock, or with a code sent to you by text message. Nothing is sent before that.',
+              style: text.bodySmall, textAlign: TextAlign.center),
         ))
         ..add(const SizedBox(height: 8))
         ..add(OutlinedButton(onPressed: _busy ? null : _decline, child: const Text('Decline')));

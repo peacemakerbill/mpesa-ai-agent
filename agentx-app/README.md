@@ -30,7 +30,7 @@ The customer's side. Chat with the assistant, approve with the phone's own lock,
 The customer signs in with a code sent by SMS, then talks to the assistant by text, voice note, photo, document, video, shared contact or shared location. When the assistant prepares a request, this app does three things:
 
 1. Shows the request in plain words with warnings. Numbers read from a voice note or a photo are flagged.
-2. Asks the phone to confirm the owner: fingerprint, face, or the phone lock. The operating system does the check.
+2. Asks the phone to confirm the owner: fingerprint, face, or the phone lock. The operating system does the check. Beside it the customer can tap **Approve with OTP** (on the chat message, the request screen and the business request screen): a 6 digit code is sent by text message to their own number and typed into a small sheet. It helps on a phone with no lock.
 3. Hands over to M-Pesa: opens the dialler with the code typed in, or shows copyable steps. **The M-Pesa PIN is typed only inside M-Pesa.** This app, the assistant and the servers never see it or store it.
 
 On Android the customer can then tap **Check my M-Pesa message**. The app finds the matching confirmation SMS (only from sender `MPESA`, only on request) and sends the server the code, amount and payee, never the text. The customer can also tap "I completed it", with the M-Pesa code if they like. A match is recorded as *matched with the message on the customer's phone*, otherwise as *reported by the customer*. Nothing here can confirm with Safaricom that money moved. See [`docs/SMS.md`](docs/SMS.md).
@@ -124,7 +124,7 @@ No screen hard-codes a colour. Everything reads the palette through `context.tk`
 | Dialler with the code filled in | Customer presses call | Same, with a system confirmation | No dialler. Use the copyable steps |
 | Open the M-Pesa app | Possible by package name (not verified) | Only with a URL scheme (not verified) | Not possible |
 | Matching the M-Pesa SMS | On request, with permission | Not possible. Send the message in the chat | Not possible. Send the message in the chat |
-| Approval | Fingerprint, face or phone lock | Face ID, Touch ID or passcode | Not available. The approval step is not guarded yet |
+| Approval | Fingerprint, face or phone lock, or OTP | Face ID, Touch ID or passcode, or OTP | OTP only. The phone check is not available |
 
 ## Things to know before relying on it
 

@@ -119,32 +119,63 @@ public class CodeDelivery {
     }
 
     public Result deliver(String phone, String code, Duration validFor, String appHash) {
+        return dispatch(phone, code, "sign-in", smsText(serviceName, code, validFor, cleanHash(appHash)));
+    }
+
+    /**
+     * A code that approves one request. The text says what it approves, so a customer who did not ask for it
+     * can see that something is wrong. It is delivered the same ways as a sign-in code.
+     */
+    public Result deliverApproval(String phone, String code, Duration validFor, String what) {
+        return dispatch(phone, code, "approval", approvalSmsText(serviceName, code, validFor, what));
+    }
+
+    private Result dispatch(String phone, String code, String label, String smsMessage) {
         String shown = showInApp ? code : null;
         switch (mode) {
             case SMS -> {
                 try {
-                    sendSms(phone, smsText(serviceName, code, validFor, cleanHash(appHash)));
+                    sendSms(phone, smsMessage);
                     return new Result(shown, true);
                 } catch (CodeDeliveryException e) {
                     if (shown == null) {
                         throw e;
                     }
-                    log.warn("The sign-in SMS to {} was not sent ({}). The code is shown in the app instead.", Phones.mask(phone), e.getMessage());
+                    log.warn("The {} SMS to {} was not sent ({}). The code is shown in the app instead.", label, Phones.mask(phone), e.getMessage());
                     return new Result(shown, false);
                 }
             }
             default -> {
                 // log (and the old name dev). The log holds the code only when nothing else shows it.
                 if (showInApp) {
-                    log.info("A sign-in code for {} was issued and is shown in the app (code-delivery is {})", Phones.mask(phone),
+                    log.info("A {} code for {} was issued and is shown in the app (code-delivery is {})", label, Phones.mask(phone),
                             mode == Mode.DEV ? "dev" : "log");
                 } else {
-                    log.warn("Sign-in code for {} is {} (code-delivery is {}, so it is only written here)", Phones.mask(phone), code,
+                    log.warn("{} code for {} is {} (code-delivery is {}, so it is only written here)", capitalise(label), Phones.mask(phone), code,
                             mode == Mode.DEV ? "dev" : "log");
                 }
                 return new Result(shown, false);
             }
         }
+    }
+
+    private static String capitalise(String s) {
+        return Character.toUpperCase(s.charAt(0)) + s.substring(1);
+    }
+
+    /** One text message of at most 160 characters. The description of the request is cut short first if it has to be. */
+    static String approvalSmsText(String appName, String code, Duration validFor, String what) {
+        String tail = ". Valid " + Math.max(1, validFor.toMinutes()) + " min. Never share it.";
+        String head = appName + " approval code " + code + " for: ";
+        String w = what == null ? "" : what.strip();
+        int room = 160 - head.length() - tail.length();
+        if (room < 12) {
+            return appName + " approval code " + code + tail;
+        }
+        if (w.length() > room) {
+            w = w.substring(0, Math.max(0, room - 3)).stripTrailing() + "...";
+        }
+        return head + w + tail;
     }
 
     /**
