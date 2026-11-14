@@ -118,6 +118,7 @@ Locally the code is shown on screen by default (`CODE_SHOW_IN_APP=auto`), so you
 | `INTERNAL_KEY` | Shared secret for calls between services |
 | `AGENTX_TOKEN_SECRET` | 32 or more random characters. Signs sessions |
 | `AGENTX_PUBLIC_BASE_URL` | Public HTTPS address, used in links and the link files |
+| `AGENTX_STK_CALLBACK_URL` | Optional. Public HTTPS address Safaricom posts STK Push answers to. Blank uses `AGENTX_PUBLIC_BASE_URL` |
 | `APP_ENV` | `development` (default), `staging` (or `uat`) or `production`. Production refuses to start with development only settings, and outside production a business account on Safaricom's production Daraja is refused. See [`docs/ENVIRONMENTS.md`](../docs/ENVIRONMENTS.md) |
 | `AGENTX_ALLOW_LIVE_DARAJA` | `false` (default). `true` lets a copy that is not production call live Daraja |
 | `CODE_DELIVERY` | `log` (default) or `sms` |

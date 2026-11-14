@@ -122,6 +122,10 @@ agentx:
     # Optional. A folder on the server holding sandbox/ and production/ sub folders with Safaricom's public
     # certificates. Blank uses the ones inside the application, in src/main/resources/certs.
     certs-directory: ${DARAJA_CERTS_DIR:}
+  # Where Safaricom posts the answer to an STK Push (paid, cancelled, no answer). Blank uses public-base-url. Set it when the
+  # callbacks must go to a different public https address, for example a tunnel to your laptop while testing. Address only.
+  stk:
+    callback-url: ${AGENTX_STK_CALLBACK_URL:}
   # Requests made on business accounts from the chat. Safaricom posts its answers to PUBLIC_BASE_URL/daraja/business/...,
   # so public-base-url above must be an HTTPS address that Safaricom can reach.
   business:

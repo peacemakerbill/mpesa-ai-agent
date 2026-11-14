@@ -343,7 +343,26 @@ class BusinessOperationServiceTest {
         BusinessOperation cancelled = prepare("Counter two", "STK_PUSH", params("amount", "5", "phone", "0712345678"), "p2").operation();
         service.onCallback(cancelled.getId(), cancelled.getCallbackToken(), "callback", Map.of("Body", Map.of("stkCallback", Map.of("ResultCode", 1032, "ResultDesc", "Request cancelled by user"))));
         assertThat(cancelled.getStatus()).isEqualTo(BusinessOperationStatus.FAILED);
-        assertThat(chat.last()).contains("Request cancelled by user");
+        assertThat(chat.last()).contains("cancelled the request on their phone").contains("code 1032");
+    }
+
+    @Test
+    void stkAnswersCanGoToTheirOwnAddressWhileEverythingElseKeepsThePublicOne() {
+        service.setStkCallbackBase("https://tunnel.example.org/ ");
+        BusinessOperation push = prepare("Counter two", "STK_PUSH", params("amount", "5", "phone", "0712345678"), "tunnel").operation();
+        assertThat(String.valueOf(daraja.lastBody().get("CallBackURL")))
+                .isEqualTo("https://tunnel.example.org/daraja/business/" + push.getId() + "/" + push.getCallbackToken() + "/callback");
+
+        BusinessOperationService.Prepared balance = prepare("Main shop", "BALANCE", params(), "bal-tunnel");
+        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).startsWith("https://api.example.com/daraja/business/" + balance.operation().getId() + "/");
+    }
+
+    @Test
+    void withoutAnStkAddressTheAnswerGoesToThePublicAddress() {
+        service.setStkCallbackBase("");
+        BusinessOperation push = prepare("Counter two", "STK_PUSH", params("amount", "5", "phone", "0712345678"), "plain").operation();
+        assertThat(String.valueOf(daraja.lastBody().get("CallBackURL")))
+                .isEqualTo("https://api.example.com/daraja/business/" + push.getId() + "/" + push.getCallbackToken() + "/callback");
     }
 
     @Test
@@ -396,7 +415,7 @@ class BusinessOperationServiceTest {
         daraja.answer = Map.of("ResponseCode", "0", "ResultCode", "1032", "ResultDesc", "Request cancelled by user");
         assertThat(service.reconcileStalledPushes(MIN_AGE, GIVE_UP)).isEqualTo(1);
         assertThat(push.getStatus()).isEqualTo(BusinessOperationStatus.FAILED);
-        assertThat(chat.last()).contains("Request cancelled by user");
+        assertThat(chat.last()).contains("cancelled the request on their phone");
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.darajaagentx.api.service;
 
 import com.darajaagentx.api.config.BusinessOpsProperties;
+import com.darajaagentx.api.config.StkCallbackProperties;
 import com.darajaagentx.api.config.AgentXProperties;
 import com.darajaagentx.api.dto.BusinessAccountView;
 import com.darajaagentx.api.exception.ActionNotFoundException;
@@ -82,6 +83,8 @@ public class BusinessOperationService {
     private final ChatNotifier notifier;
     private final BusinessOpsProperties props;
     private final String publicBaseUrl;
+    /** Where Safaricom answers an STK Push when that differs from publicBaseUrl (AGENTX_STK_CALLBACK_URL). Empty means the same address. */
+    private String stkCallbackBase = "";
     private final SlidingWindowLimiter limiter;
     private final Clock clock;
     private final ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
@@ -106,6 +109,24 @@ public class BusinessOperationService {
         this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
         this.limiter = limiter;
         this.clock = clock;
+    }
+
+    @Autowired
+    void configureStkCallback(StkCallbackProperties stk) {
+        setStkCallbackBase(stk.callbackUrl());
+    }
+
+    /** Sends the answers to STK Pushes to this address instead of the public address of the service. Blank goes back to the public address. */
+    void setStkCallbackBase(String url) {
+        this.stkCallbackBase = StkCallback.normalize(url);
+        String where = stkCallbackBase.isEmpty() ? publicBaseUrl : stkCallbackBase;
+        String problem = StkCallback.problem(where);
+        if (problem == null) {
+            log.info("Safaricom's answers to STK Pushes go to {}/daraja/business/...", where);
+        } else {
+            log.warn("Safaricom's answers to STK Pushes would go to {}, but {}. The prompt still reaches the phone, and the result is then fetched "
+                    + "from Safaricom about every minute instead. Set AGENTX_STK_CALLBACK_URL to a public https address to get it at once.", where, problem);
+        }
     }
 
     @Autowired(required = false)
@@ -261,12 +282,13 @@ public class BusinessOperationService {
         String base = publicBaseUrl + "/daraja/business/" + op.getId() + "/" + op.getCallbackToken();
         String result = base + "/result";
         String timeout = base + "/timeout";
+        String stkBase = stkCallbackBase.isEmpty() ? base : stkCallbackBase + "/daraja/business/" + op.getId() + "/" + op.getCallbackToken();
         return switch (op.getType()) {
             case STK_PUSH -> {
                 if (c.passkey() == null) {
                     throw new InvalidActionRequestException("This business account has no STK passkey saved.");
                 }
-                yield DarajaRequests.stkPush(c, p.get("phone"), op.getAmount(), p.get("reference"), p.get("description"), base + "/callback", clock.instant());
+                yield DarajaRequests.stkPush(c, p.get("phone"), op.getAmount(), p.get("reference"), p.get("description"), stkBase + "/callback", clock.instant());
             }
             case STK_QUERY -> {
                 if (c.passkey() == null) {
@@ -403,7 +425,7 @@ public class BusinessOperationService {
             return;
         }
         if (!"0".equals(code)) {
-            finish(op, BusinessOperationStatus.FAILED, firstNonBlank(str(callback.get("ResultDesc")), "The customer did not complete the payment."), null, true);
+            finish(op, BusinessOperationStatus.FAILED, StkCallback.failureText(code, str(callback.get("ResultDesc"))), null, true);
             return;
         }
         String receipt = null;
@@ -494,7 +516,7 @@ public class BusinessOperationService {
                         if (resultCode != null) {
                             boolean paid = "0".equals(resultCode);
                             String text = paid ? "The customer paid. Safaricom confirmed it when we checked, the M-Pesa code is in your statement."
-                                    : "Not paid: " + firstNonBlank(str(answer.get("ResultDesc")), "the customer did not complete it") + ".";
+                                    : StkCallback.failureText(resultCode, str(answer.get("ResultDesc")));
                             finish(op, paid ? BusinessOperationStatus.SUCCEEDED : BusinessOperationStatus.FAILED, text, null, true);
                             return true;
                         }

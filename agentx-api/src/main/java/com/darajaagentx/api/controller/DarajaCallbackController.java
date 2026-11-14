@@ -47,6 +47,8 @@ public class DarajaCallbackController {
     }
 
     private Map<String, Object> handle(UUID id, String token, String kind, Map<String, Object> body) {
+        // Only the kind and the id are logged: the body holds the customer's phone number and the token is a secret
+        log.info("Safaricom posted a {} for business operation {}", kind, id);
         try {
             service.onCallback(id, token, kind, body);
         } catch (RuntimeException e) {
