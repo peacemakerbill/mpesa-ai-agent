@@ -220,6 +220,10 @@ kbd { border: var(--bw) solid var(--line-strong); border-bottom-width: 2px; bord
 .bar .sp { flex: 1; }
 .chips { display: flex; gap: 6px; }
 .svc-chip { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 10px; border-radius: 999px; border: var(--bw) solid color-mix(in srgb, currentColor 22%, transparent); background: transparent; color: inherit; cursor: pointer; font-size: .8rem; }
+.env-chip { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 999px; border: var(--bw) solid currentColor; font-size: .8rem; font-weight: 600; opacity: .8; }
+.env-chip.env-staging { color: #b54708; opacity: 1; background: color-mix(in srgb, #b54708 10%, transparent); }
+.env-chip.env-production { color: #b42318; opacity: 1; background: color-mix(in srgb, #b42318 10%, transparent); }
+[data-theme="mono"] .env-chip { border-radius: 0; color: #000; }
 .svc-chip:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
 [data-theme="mono"] .svc-chip { border-radius: 0; border-color: #000; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); flex: none; display: inline-block; }
@@ -593,6 +597,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; max-height: 74vh; overflow
 @media (max-width: 760px) {
   .bar { padding: 0 12px; gap: 8px; flex-wrap: wrap; height: auto; padding-top: 6px; }
   .brand span, .chips .svc-chip b, #themeName, #openCmd { display: none; }
+  .env-chip { padding: 0 8px; }
   .svc-chip { padding: 0 8px; }
   .tabs-nav { order: 9; width: 100%; margin: 0 -12px; padding: 0 12px; height: 42px; justify-content: space-between; }
   .tab { padding: 0 8px; }
@@ -932,7 +937,7 @@ async function ping(svc) {
     agentx: { method: 'GET', path: '/api/config', auth: 'none' },
   }[svc];
   const r = await http(Object.assign({ svc, silent: true, timeout: 3500 }, probe));
-  if (!r.error) return { state: 'up', ms: r.ms, status: r.status };
+  if (!r.error) return { state: 'up', ms: r.ms, status: r.status, env: svc === 'agentx' && r.json && typeof r.json.environment === 'string' ? r.json.environment : '' };
   // The service may be running but not allow this page. A no-cors request tells the two cases apart.
   try {
     const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 2500);
@@ -1002,6 +1007,7 @@ E('co.i.link', 'agentx', 'Sign in', 'Make a code without sending it', 'POST', '/
 E('co.a.verify', 'agentx', 'Sign in', 'Sign in with the code', 'POST', '/api/auth/verify', { body: { phone: '{{customerPhone}}', code: '{{linkCode}}', deviceId: '{{deviceId}}', deviceName: 'Console' }, save: { deviceToken: 'token' }, note: 'Saves the device token for the app calls below.' });
 E('co.a.signout', 'agentx', 'Sign in', 'Sign out this phone', 'DELETE', '/api/devices/me', { auth: 'bearer' });
 E('co.a.config', 'agentx', 'App side', 'Hand-off settings', 'GET', '/api/config', { note: 'Public. USSD codes and M-Pesa app ids.' });
+E('co.a.wake', 'agentx', 'App side', 'Wake the services', 'GET', '/api/wake', { note: 'Public. Starts a service that went to sleep and says when everything is ready. The phone app asks this when it opens.' });
 E('co.a.list', 'agentx', 'App side', 'List my requests', 'GET', '/api/actions', { auth: 'bearer' });
 E('co.a.get', 'agentx', 'App side', 'Open a request', 'GET', '/api/actions/' + ID, { auth: 'bearer' });
 E('co.a.approve', 'agentx', 'App side', 'Approve', 'POST', `/api/actions/${ID}/approve`, { auth: 'bearer', body: { method: 'BIOMETRIC' }, note: 'method is BIOMETRIC or DEVICE_CREDENTIAL.' });
@@ -1180,8 +1186,14 @@ function initNav() {
 const STATE = {};
 const STATE_TEXT = { up: 'Reachable', blocked: 'Running, but this page is not allowed to call it (CORS)', down: 'Not reachable', unknown: 'Checking' };
 const SHORT = { agent: 'Agent', agentx: 'AgentX' };
+function envChip() {
+  const env = (STATE.agentx || {}).env;
+  if (!env) return '';
+  const known = { development: 'development', staging: 'staging', production: 'production' }[env] || '';
+  return `<span class="env-chip env-${known || 'development'}" title="This service runs as ${esc(env)} (APP_ENV). ${known === 'production' ? 'These are the live system and real customers.' : known === 'staging' ? 'This is the shared test copy.' : 'This is a developer machine.'}">${esc(env)}</span>`;
+}
 function renderPills() {
-  $('#pills').innerHTML = SERVICES.map((s) => `<button type="button" class="svc-chip" data-svc="${s}" title="${esc(SVC_NAME[s])}: ${STATE_TEXT[(STATE[s] || {}).state || 'unknown']}. Press to check again."><i class="dot ${(STATE[s] || {}).state || ''}"></i><b>${SHORT[s]}</b></button>`).join('');
+  $('#pills').innerHTML = envChip() + SERVICES.map((s) => `<button type="button" class="svc-chip" data-svc="${s}" title="${esc(SVC_NAME[s])}: ${STATE_TEXT[(STATE[s] || {}).state || 'unknown']}. Press to check again."><i class="dot ${(STATE[s] || {}).state || ''}"></i><b>${SHORT[s]}</b></button>`).join('');
   $$('.svc-state').forEach((el) => {
     const s = el.dataset.svc, st = STATE[s] || { state: 'unknown' };
     el.innerHTML = `<i class="dot ${st.state}"></i><div><b>${SVC_NAME[s]}</b><small class="mono">${esc(cfg[s + 'Url'])}</small>${st.state === 'blocked' ? `<small class="mono">CORS_ALLOWED_ORIGINS=${esc(location.origin)}</small>` : ''}</div><span class="small muted">${st.state === 'up' ? st.ms + ' ms' : st.state === 'unknown' ? '...' : st.state === 'blocked' ? 'CORS' : 'down'}</span>`;

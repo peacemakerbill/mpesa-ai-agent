@@ -3,6 +3,7 @@ package com.darajaagentx.api.controller;
 import com.darajaagentx.api.config.AgentXProperties;
 import com.darajaagentx.api.config.DeviceAuthFilter;
 import com.darajaagentx.api.config.DevicePrincipal;
+import com.darajaagentx.api.config.EnvironmentPolicy;
 import com.darajaagentx.api.dto.ActionResponse;
 import com.darajaagentx.api.dto.AppConfigResponse;
 import com.darajaagentx.api.dto.ApproveRequest;
@@ -28,16 +29,18 @@ public class AppActionController {
 
     private final ActionService actions;
     private final AgentXProperties props;
+    private final EnvironmentPolicy environment;
 
-    public AppActionController(ActionService actions, AgentXProperties props) {
+    public AppActionController(ActionService actions, AgentXProperties props, EnvironmentPolicy environment) {
         this.actions = actions;
         this.props = props;
+        this.environment = environment;
     }
 
     @GetMapping("/config")
     public AppConfigResponse config() {
         AgentXProperties.HandOff h = props.handOff();
-        return new AppConfigResponse(h.ussdMain(), h.mpesaAndroidPackage(), h.mpesaIosUrl(), h.ussdTemplates());
+        return new AppConfigResponse(h.ussdMain(), h.mpesaAndroidPackage(), h.mpesaIosUrl(), h.ussdTemplates(), environment.env().label());
     }
 
     @GetMapping("/actions")

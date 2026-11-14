@@ -225,6 +225,8 @@ public class BusinessAccountService {
             case ERROR -> "Safaricom answered with an error" + (outcome.status() > 0 ? " (" + outcome.status() + ")" : "")
                     + ". Try again in a moment.";
             case UNREACHABLE -> "Could not reach Safaricom (" + env + "). Try again in a moment.";
+            case BLOCKED -> "Live Daraja is switched off in this environment (APP_ENV is not production), so nothing was sent. "
+                    + "Use a sandbox business account here.";
         };
 
         boolean credentialReady = false;

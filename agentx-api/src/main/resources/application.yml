@@ -57,6 +57,15 @@ internal:
   key: ${INTERNAL_KEY}
 
 agentx:
+  # Which copy of the system this is: development, staging (uat means the same) or production. Set APP_ENV.
+  # production refuses to start with a setting that is only meant for development (CODE_DELIVERY=dev, CORS_ALLOWED_ORIGINS,
+  # an example INTERNAL_KEY, an http or localhost public address). staging only warns about the same things.
+  # Outside production, calls to a business account set to Safaricom's production Daraja are refused, so a test copy
+  # cannot move real money. Email subjects start with [DEV] or [STAGING]. This is separate from a business account's own
+  # sandbox or production setting.
+  env: ${APP_ENV:development}
+  # Lets a copy that is not production call live Daraja anyway. Leave false unless you really mean it.
+  allow-live-daraja: ${AGENTX_ALLOW_LIVE_DARAJA:false}
   # Signs the phone app's login tokens and hashes link codes. At least 32 random characters.
   token-secret: ${AGENTX_TOKEN_SECRET}
   token-ttl: ${AGENTX_TOKEN_TTL:P30D}
@@ -69,7 +78,8 @@ agentx:
   max-amount: ${AGENTX_MAX_AMOUNT:250000}
   min-airtime: 5
   # Public HTTPS address of this service. Links shown in the chat look like PUBLIC_BASE_URL/a/ACTION_ID
-  public-base-url: ${AGENTX_PUBLIC_BASE_URL:http://localhost:8084}
+  # On Render, RENDER_EXTERNAL_URL is this service's own https address, so nothing needs setting there.
+  public-base-url: ${AGENTX_PUBLIC_BASE_URL:${RENDER_EXTERNAL_URL:http://localhost:8084}}
   # For app links that open the app directly. Leave blank until the app is published.
   android-package: ${AGENTX_ANDROID_PACKAGE:}
   android-sha256: ${AGENTX_ANDROID_SHA256:}

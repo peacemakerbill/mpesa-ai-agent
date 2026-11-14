@@ -1,5 +1,6 @@
 package com.darajaagentx.api.mail;
 
+import com.darajaagentx.api.config.EnvironmentPolicy;
 import com.darajaagentx.api.config.MailProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +20,17 @@ public class MailConfig {
     private static final Logger log = LoggerFactory.getLogger(MailConfig.class);
 
     @Bean
-    MailTransport mailTransport(MailProperties props) {
+    MailTransport mailTransport(MailProperties props, EnvironmentPolicy environment) {
         String type = props.transport() == null ? "log" : props.transport().trim().toLowerCase(Locale.ROOT);
         MailTransport transport = switch (type) {
             case "smtp" -> new SmtpMailTransport(props);
             case "log" -> new LogMailTransport();
             default -> throw new IllegalStateException("agentx.mail.transport must be smtp or log, not \"" + props.transport() + "\".");
         };
+        String tag = environment.env().mailTag();
+        if (!tag.isEmpty()) {
+            transport = new TaggedMailTransport(transport, tag);
+        }
         log.info("Email: {}", transport.describe());
         return transport;
     }

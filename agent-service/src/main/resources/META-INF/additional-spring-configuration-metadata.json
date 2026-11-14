@@ -131,6 +131,12 @@
       "defaultValue": ""
     },
     {
+      "name": "agentx.env",
+      "type": "java.lang.String",
+      "description": "Which copy of the system this is: development, staging (uat means the same) or production. Use the same value as agentx-api. production refuses to start with AGENT_STORE=memory, CORS_ALLOWED_ORIGINS set, an example INTERNAL_KEY or an http public address. Set with APP_ENV.",
+      "defaultValue": "development"
+    },
+    {
       "name": "agent.store",
       "type": "java.lang.String",
       "description": "Where chat state is kept: redis in production, or memory (this process only) for local development. Set with AGENT_STORE.",

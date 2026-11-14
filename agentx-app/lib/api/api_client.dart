@@ -10,6 +10,7 @@ import '../models/chat.dart';
 import '../models/chat_session.dart';
 import '../models/mpesa_sms.dart';
 import '../models/profile.dart';
+import '../models/wake.dart';
 import '../models/wallet_action.dart';
 
 class ApiException implements Exception {
@@ -345,6 +346,13 @@ class ApiClient {
     return HandoffConfig.fromJson(json);
   }
 
+  /// Wakes whatever is asleep on the server and says whether it is ready. Open to everyone, no sign-in. A sleeping host
+  /// answers only after it has woken, so one question may wait up to a minute and a half.
+  Future<WakeStatus> wake() async {
+    final json = await _send('GET', '/api/wake', auth: false, timeout: const Duration(seconds: 90));
+    return WakeStatus.fromJson(json);
+  }
+
   Future<List<WalletAction>> actions() async {
     final json = await _send('GET', '/api/actions');
     final list = json['_list'] as List;
@@ -379,8 +387,8 @@ class ApiClient {
 
   WalletAction _action(Map<String, dynamic> json) => WalletAction.fromJson(json);
 
-  Future<Map<String, dynamic>> _send(String method, String path, {Map<String, dynamic>? body, bool auth = true}) async {
-    final response = await _exec(method, path, jsonBody: body, auth: auth);
+  Future<Map<String, dynamic>> _send(String method, String path, {Map<String, dynamic>? body, bool auth = true, Duration? timeout}) async {
+    final response = await _exec(method, path, jsonBody: body, auth: auth, timeout: timeout);
     final decoded = _decode(response);
     if (decoded is Map<String, dynamic>) return decoded;
     if (decoded is List) return {'_list': decoded};
@@ -406,6 +414,7 @@ class ApiClient {
         String? contentType,
         Map<String, String>? headers,
         bool auth = true,
+        Duration? timeout,
       }) async {
     final all = <String, String>{'Accept': '*/*'};
     if (jsonBody != null) all['Content-Type'] = 'application/json';
@@ -422,7 +431,7 @@ class ApiClient {
 
     final http.Response response;
     try {
-      response = await http.Response.fromStream(await _client.send(request).timeout(_timeout));
+      response = await http.Response.fromStream(await _client.send(request).timeout(timeout ?? _timeout));
     } on TimeoutException {
       throw ApiException(0, 'The service took too long to answer. Please try again.');
     } on Exception {

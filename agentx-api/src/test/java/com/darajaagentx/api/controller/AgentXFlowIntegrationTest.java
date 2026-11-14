@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -302,7 +303,22 @@ class AgentXFlowIntegrationTest {
         String token = link(newPhone(), "device-config-1234");
 
         app(token, "GET", "/api/config", null).andExpect(status().isOk())
-                .andExpect(jsonPath("$.ussdMain").value("*334#"));
+                .andExpect(jsonPath("$.ussdMain").value("*334#"))
+                .andExpect(jsonPath("$.environment").value("development"));
+    }
+
+    @Test
+    void theAppReadsItsSettingsAndWakesTheServicesBeforeSigningIn() throws Exception {
+        mvc.perform(get("/api/config")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.environment").value("development"));
+
+        mvc.perform(get("/api/wake")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.api").value("up"))
+                .andExpect(jsonPath("$.ready").isBoolean())
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")));
+
+        // The rest of the app still needs a sign-in
+        mvc.perform(get("/api/actions")).andExpect(status().isUnauthorized());
     }
 
     @Test

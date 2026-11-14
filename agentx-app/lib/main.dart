@@ -12,6 +12,8 @@ import 'screens/action_screen.dart';
 import 'screens/business_operation_screen.dart';
 import 'screens/home_shell.dart';
 import 'screens/link_screen.dart';
+import 'screens/starting_screen.dart';
+import 'services/waker.dart';
 import 'theme/app_theme.dart';
 import 'widgets/ui.dart';
 
@@ -27,7 +29,7 @@ class AgentXApp extends StatefulWidget {
   State<AgentXApp> createState() => _AgentXAppState();
 }
 
-class _AgentXAppState extends State<AgentXApp> {
+class _AgentXAppState extends State<AgentXApp> with WidgetsBindingObserver {
   final AppState state = AppState();
   final GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
   StreamSubscription<Uri>? _links;
@@ -38,12 +40,21 @@ class _AgentXAppState extends State<AgentXApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     state.addListener(_openPending);
     _init();
   }
 
+  /// After a long time in the background the server may have gone to sleep. This checks, and only shows something if it has.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycle) {
+    if (lifecycle == AppLifecycleState.resumed) unawaited(state.returned());
+  }
+
   Future<void> _init() async {
     await state.start();
+    // Wakes the server if it is asleep. The "Starting the services" screen shows only when that takes more than a moment.
+    unawaited(state.connect());
     final appLinks = AppLinks();
     final initial = await appLinks.getInitialLink();
     if (initial != null) _handle(initial);
@@ -77,6 +88,7 @@ class _AgentXAppState extends State<AgentXApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _links?.cancel();
     state.removeListener(_openPending);
     super.dispose();
@@ -94,11 +106,23 @@ class _AgentXAppState extends State<AgentXApp> {
         theme: AppTheme.build(state.theme),
         scrollBehavior: const _AppScrollBehavior(),
         // Text follows the phone's size setting, but is held to a range the screens are drawn for.
-        builder: (context, child) => MediaQuery.withClampedTextScaling(
-          minScaleFactor: 0.85,
-          maxScaleFactor: 1.4,
-          child: child ?? const SizedBox.shrink(),
-        ),
+        builder: (context, child) {
+          final app = MediaQuery.withClampedTextScaling(
+            minScaleFactor: 0.85,
+            maxScaleFactor: 1.4,
+            child: child ?? const SizedBox.shrink(),
+          );
+          // A test copy of the server (APP_ENV is staging or development) gets a corner label, so a tester never
+          // mistakes it for the live system. The live system shows nothing.
+          final env = state.config.environment;
+          if (!state.config.isTestSystem) return app;
+          return Banner(
+            message: env,
+            location: BannerLocation.topEnd,
+            color: env == 'staging' ? const Color(0xFFB54708) : const Color(0xFF475467),
+            child: app,
+          );
+        },
         home: _home(),
       ),
     );
@@ -106,6 +130,9 @@ class _AgentXAppState extends State<AgentXApp> {
 
   Widget _home() {
     if (!state.ready) return const _Splash();
+    // Until the server answers, nothing else can work. A quick answer never gets past the plain splash.
+    if (state.server == ServerPhase.checking) return const _Splash();
+    if (state.server != ServerPhase.ready) return StartingScreen(state: state);
     if (!state.linked) return LinkScreen(state: state);
     // A link that arrived before linking is opened right after, by _openPending via notifyListeners.
     WidgetsBinding.instance.addPostFrameCallback((_) => _openPending());

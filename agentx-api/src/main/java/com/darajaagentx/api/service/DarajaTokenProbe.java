@@ -1,7 +1,9 @@
 package com.darajaagentx.api.service;
 
 import com.darajaagentx.api.config.DarajaProperties;
+import com.darajaagentx.api.config.EnvironmentPolicy;
 import com.darajaagentx.api.model.DarajaEnvironment;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -15,13 +17,23 @@ import java.time.Duration;
 public class DarajaTokenProbe implements TokenProbe {
 
     private final DarajaProperties props;
+    private final EnvironmentPolicy policy;
+
+    @Autowired
+    public DarajaTokenProbe(DarajaProperties props, EnvironmentPolicy policy) {
+        this.props = props;
+        this.policy = policy;
+    }
 
     public DarajaTokenProbe(DarajaProperties props) {
-        this.props = props;
+        this(props, EnvironmentPolicy.production());
     }
 
     @Override
     public Outcome probe(DarajaEnvironment environment, String consumerKey, String consumerSecret) {
+        if (policy.liveDarajaBlocked(environment)) {
+            return new Outcome(Kind.BLOCKED, 0);
+        }
         String base = environment == DarajaEnvironment.PRODUCTION ? props.productionUrl() : props.sandboxUrl();
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(Duration.ofSeconds(5));

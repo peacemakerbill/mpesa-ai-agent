@@ -13,7 +13,9 @@ public interface TokenProbe {
         /** Safaricom answered with some other error, or with something that is not a token. */
         ERROR,
         /** Safaricom could not be reached. */
-        UNREACHABLE
+        UNREACHABLE,
+        /** Nothing was sent: this copy of the system is not production, so live Daraja is switched off here. */
+        BLOCKED
     }
 
     record Outcome(Kind kind, int status) {

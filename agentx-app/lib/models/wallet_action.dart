@@ -115,12 +115,20 @@ class HandoffConfig {
     required this.mpesaAndroidPackage,
     required this.mpesaIosUrl,
     required this.ussdTemplates,
+    this.environment = '',
   });
 
   final String ussdMain;
   final String mpesaAndroidPackage;
   final String mpesaIosUrl;
   final Map<String, String> ussdTemplates;
+
+  /// Which copy of the system the server is: development, staging or production. Blank until the server has answered.
+  /// It comes from the server, so the app always tells the truth about what it is connected to.
+  final String environment;
+
+  /// True for a developer machine or the shared test copy, where the app shows a corner label so nobody mistakes it for the live system.
+  bool get isTestSystem => environment == 'staging' || environment == 'development';
 
   static const HandoffConfig fallback = HandoffConfig(
     ussdMain: '*334#',
@@ -147,6 +155,7 @@ class HandoffConfig {
       mpesaAndroidPackage: text('mpesaAndroidPackage'),
       mpesaIosUrl: text('mpesaIosUrl'),
       ussdTemplates: templates,
+      environment: text('environment').toLowerCase(),
     );
   }
 }

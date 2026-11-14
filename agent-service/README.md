@@ -72,6 +72,7 @@ The service reads `.env` through `spring.config.import: optional:file:.env[.prop
 | `AGENTX_BASE_URL` | `http://localhost:8084` | Private address of agentx-api |
 | `AGENTX_PUBLIC_BASE_URL` | `http://localhost:8084` | Public address used in the links sent to customers |
 | `BUSINESS_NAME`, `BUSINESS_SUPPORT_PHONE` | `Our Business`, empty | Shown to customers |
+| `APP_ENV` | `development` | `development`, `staging` or `production`. Use the same value as agentx-api. Production refuses `AGENT_STORE=memory`, `CORS_ALLOWED_ORIGINS`, an example `INTERNAL_KEY` and an http public address |
 | `AGENT_STORE` | `redis` | Where conversation state lives |
 | `AGENT_RATE_LIMIT_PER_MINUTE` | `12` | Messages per customer per minute |
 | `AGENT_ESCALATION_PHONES` | empty | Comma separated numbers that receive hand-overs |

@@ -114,6 +114,8 @@ Start with `CODE_DELIVERY=dev` to sign in from the console without an SMS accoun
 | `INTERNAL_KEY` | Shared secret for calls between services |
 | `AGENTX_TOKEN_SECRET` | 32 or more random characters. Signs sessions |
 | `AGENTX_PUBLIC_BASE_URL` | Public HTTPS address, used in links and the link files |
+| `APP_ENV` | `development` (default), `staging` (or `uat`) or `production`. Production refuses to start with development only settings, and outside production a business account on Safaricom's production Daraja is refused. See [`docs/ENVIRONMENTS.md`](../docs/ENVIRONMENTS.md) |
+| `AGENTX_ALLOW_LIVE_DARAJA` | `false` (default). `true` lets a copy that is not production call live Daraja |
 | `CODE_DELIVERY` | `log` (default), `dev` or `sms` |
 | `SMS_USERNAME`, `SMS_API_KEY`, `SMS_SENDER_ID` | Africa's Talking, for `sms` |
 | `DATABASE_TYPE` | `mongodb`, `postgresql` or `mysql`. See [`docs/DATABASES.md`](../docs/DATABASES.md) |

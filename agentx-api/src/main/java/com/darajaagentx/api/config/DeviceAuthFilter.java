@@ -13,7 +13,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Optional;
 
-/** Every /api/** call except signing in needs a valid token from a device that has not been signed out. */
+/**
+ * Every /api/** call needs a valid token from a device that has not been signed out, except signing in, the app settings
+ * (/api/config) and the wake-up check (/api/wake). Those open ones are asked before anyone has signed in.
+ */
 @Component
 public class DeviceAuthFilter extends OncePerRequestFilter {
 
@@ -30,7 +33,8 @@ public class DeviceAuthFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return !path.startsWith("/api/") || path.equals("/api/auth/verify") || path.equals("/api/auth/request-code") || path.startsWith("/api/auth/signup/");
+        return !path.startsWith("/api/") || path.equals("/api/auth/verify") || path.equals("/api/auth/request-code") || path.startsWith("/api/auth/signup/")
+                || path.equals("/api/config") || path.equals("/api/wake");
     }
 
     @Override

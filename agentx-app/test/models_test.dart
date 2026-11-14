@@ -48,4 +48,13 @@ void main() {
     expect(c.ussdTemplates.keys, ['PAY_TILL']);
     expect(c.mpesaAndroidPackage, 'com.example.mpesa');
   });
+
+  test('the server says which system the app is connected to, and only a test copy gets a label', () {
+    expect(HandoffConfig.fromJson({'environment': ' Staging '}).environment, 'staging');
+    expect(HandoffConfig.fromJson({'environment': 'staging'}).isTestSystem, isTrue);
+    expect(HandoffConfig.fromJson({'environment': 'development'}).isTestSystem, isTrue);
+    expect(HandoffConfig.fromJson({'environment': 'production'}).isTestSystem, isFalse);
+    expect(HandoffConfig.fromJson({}).environment, '');
+    expect(HandoffConfig.fallback.isTestSystem, isFalse);
+  });
 }

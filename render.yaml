@@ -11,10 +11,19 @@
 #   RabbitMQ       Use a hosted one (CloudAMQP) and paste its address when the Blueprint asks.
 #
 # Every service must stay in the same region, or they cannot reach each other on the private network.
+#
+# This is the live system, so APP_ENV is production. In production the services refuse to start with development only
+# settings (an http or localhost AGENTX_PUBLIC_BASE_URL, an example INTERNAL_KEY, CORS_ALLOWED_ORIGINS set, AGENT_STORE=memory),
+# and the log tells you which one. Fill in AGENTX_PUBLIC_BASE_URL when the Blueprint asks: it is
+# https://<service name>.onrender.com unless you added your own domain.
+# The test copy lives in render.staging.yaml. See docs/ENVIRONMENTS.md.
 
 envVarGroups:
   - name: agentx-shared
     envVars:
+      # Which copy of the system this is. Both services read it.
+      - key: APP_ENV
+        value: production
       # The shared secret between your own services (X-Internal-Key header). Render makes a random one once.
       - key: INTERNAL_KEY
         generateValue: true

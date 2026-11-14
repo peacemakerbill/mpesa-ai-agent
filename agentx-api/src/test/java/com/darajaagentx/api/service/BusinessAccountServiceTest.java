@@ -444,6 +444,8 @@ class BusinessAccountServiceTest {
         assertThat(service.verify(OWNER, h.id()).message()).contains("did not accept");
         probeAnswer.set(new TokenProbe.Outcome(TokenProbe.Kind.UNREACHABLE, 0));
         assertThat(service.verify(OWNER, h.id()).message()).contains("Could not reach");
+        probeAnswer.set(new TokenProbe.Outcome(TokenProbe.Kind.BLOCKED, 0));
+        assertThat(service.verify(OWNER, h.id()).message()).contains("switched off").contains("nothing was sent");
         probeAnswer.set(new TokenProbe.Outcome(TokenProbe.Kind.ACCEPTED, 200));
         service.verify(OWNER, h.id());
         service.update(OWNER, h.id(), head("Main shop", "sandbox", "buy_goods", "174379", null, null, "an0therS3cret", null, null, null));

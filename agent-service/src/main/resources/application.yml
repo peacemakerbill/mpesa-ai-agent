@@ -53,6 +53,10 @@ payment:
 
 # Private address of agentx-api, and the public address customers' phones open from links in chat
 agentx:
+  # Which copy of the system this is: development, staging (uat means the same) or production. Use the same APP_ENV as
+  # agentx-api. production refuses to start with development only settings (AGENT_STORE=memory, CORS_ALLOWED_ORIGINS,
+  # an example INTERNAL_KEY, an http or localhost public address). staging only warns.
+  env: ${APP_ENV:development}
   base-url: ${AGENTX_BASE_URL:http://localhost:8084}
   public-url: ${AGENTX_PUBLIC_BASE_URL:http://localhost:8084}
 

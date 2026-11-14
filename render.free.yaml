@@ -1,0 +1,165 @@
+# Render Blueprint for Daraja Agent-X on the FREE plan, for testing and demos.
+# Put this file at the root of the repository and, when Render asks for the Blueprint file, choose render.free.yaml.
+# The step by step guide is docs/DEPLOY_RENDER_FREE.md.
+#
+# What it creates, all free:
+#   agentx-api-free     web service     the phone app, the console and the chat links talk to this one
+#   agent-service-free  web service     the chat and the model. Free services cannot be reached on Render's private network,
+#                                       so agentx-api calls it by its public https address and proves who it is with INTERNAL_KEY
+#   agentx-redis-free   Render Key Value  the chat history (in memory only)
+#
+# Not created here, because Render does not host them (both have free plans):
+#   MongoDB        MongoDB Atlas, the free M0 cluster. Paste its connection string when the Blueprint asks.
+#   RabbitMQ       CloudAMQP, the free Little Lemur plan. Paste its address when the Blueprint asks.
+#
+# What the free plan means:
+#   A service with no traffic for 15 minutes is stopped and starts again on the next request, which takes about a minute.
+#   The phone app copes with that: it wakes both services when it opens and shows "Starting the services" until they answer.
+#   RabbitMQ keeps the messages meanwhile, so nothing is lost while agent-service sleeps.
+#   A call from Safaricom that arrives while agentx-api sleeps can be lost. STK Push results are checked again by the service
+#   after it wakes up, but other results (B2C, C2B, reversals) are not. This is why the default below is APP_ENV=staging:
+#   a staging copy refuses live Safaricom, so no real money can depend on a lost call. See the guide before changing it.
+#
+# Names: Render builds the web address from the service name, and a name already taken gets random letters added. Put something
+# of your own in the three names (for example your initials) before you create the Blueprint, and use the same names in
+# AGENT_BASE_URL, AGENTX_BASE_URL and AGENTX_PUBLIC_BASE_URL below. If an address turns out different, correct it in the
+# Render dashboard (Environment) and the service restarts.
+#
+# Every service must stay in the same region, because agentx-api reaches the Key Value over the private network.
+
+envVarGroups:
+  - name: agentx-free-shared
+    envVars:
+      # staging: the services start with warnings instead of refusing, live Safaricom is refused, the app shows a "staging"
+      # corner label. Use production only when you accept the lost-call risk above. See docs/ENVIRONMENTS.md.
+      - key: APP_ENV
+        value: staging
+      # The shared secret between your own two services (X-Internal-Key header). They talk over the open internet on the free
+      # plan, so this must stay secret. Render makes a long random one once.
+      - key: INTERNAL_KEY
+        generateValue: true
+
+services:
+  - type: keyvalue
+    name: agentx-redis-free
+    region: frankfurt
+    plan: free               # in memory only: a restart clears the chat history, which is kept 24 hours anyway
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []          # private network only, which is all a free web service needs to send to it
+
+  - type: web
+    name: agentx-api-free
+    runtime: docker
+    region: frankfurt
+    plan: free
+    dockerfilePath: ./agentx-api/Dockerfile
+    dockerContext: ./agentx-api
+    healthCheckPath: /actuator/health/liveness
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - agentx-api/**
+    envVars:
+      - fromGroup: agentx-free-shared
+
+      # Render sends traffic to the port in PORT (10000). The service reads SERVER_PORT.
+      - key: SERVER_PORT
+        value: "10000"
+      # 512 MB of memory and a slow processor: a small heap, one compiler tier, small thread stacks. Starts faster too.
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=65 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k
+
+      # Database. Atlas connection string with the database name in it.
+      - key: DATABASE_TYPE
+        value: mongodb
+      - key: MONGODB_URI
+        sync: false
+
+      # Message broker (CloudAMQP). Looks like amqps://user:password@host/vhost
+      - key: SPRING_RABBITMQ_ADDRESSES
+        sync: false
+
+      # Render's disk is wiped on every deploy, so uploaded files are kept in the database (files up to 15 MB).
+      - key: STORAGE_TYPE
+        value: database
+
+      # The PUBLIC https address of agent-service, for example https://agent-service-free-ab.onrender.com. No slash at the end.
+      # agentx-api reaches it by this address, and that is also what wakes it up.
+      - key: AGENT_BASE_URL
+        sync: false
+
+      # This service's own public address is read from RENDER_EXTERNAL_URL, which Render sets by itself.
+      # Set AGENTX_PUBLIC_BASE_URL here only if you add your own domain.
+      - key: AGENTX_TOKEN_SECRET
+        generateValue: true
+      # Locks business credentials people save in the app. Create it once, keep a copy. Blank turns the feature off.
+      - key: AGENTX_VAULT_KEY
+        sync: false
+
+      # How sign-in codes reach people. log writes the code to the service log (Render, Logs). For a closed test with no SMS
+      # account you may use dev, which returns the code to the app. Never dev where strangers can reach the address.
+      - key: CODE_DELIVERY
+        value: log
+      - key: CORS_ALLOWED_ORIGINS
+        value: ""
+
+      # Email. Render blocks the usual SMTP ports on free services, so mail stays in the log unless you use an email API.
+      - key: MAIL_TRANSPORT
+        value: log
+      - key: AGENTX_WEBSITE
+        sync: false
+      - key: AGENTX_APP_URL
+        sync: false
+
+  - type: web
+    name: agent-service-free
+    runtime: docker
+    region: frankfurt
+    plan: free
+    dockerfilePath: ./agent-service/Dockerfile
+    dockerContext: ./agent-service
+    healthCheckPath: /actuator/health/liveness
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - agent-service/**
+    envVars:
+      - fromGroup: agentx-free-shared
+      - key: SERVER_PORT
+        value: "10000"
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=65 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k
+
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+      - key: AGENT_STORE
+        value: redis
+      - key: REDIS_HOST
+        fromService:
+          type: keyvalue
+          name: agentx-redis-free
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: keyvalue
+          name: agentx-redis-free
+          property: port
+
+      - key: SPRING_RABBITMQ_ADDRESSES
+        sync: false
+
+      # The PUBLIC https address of agentx-api, for example https://agentx-api-free-ab.onrender.com. Give the same value to both.
+      - key: AGENTX_BASE_URL
+        sync: false
+      - key: AGENTX_PUBLIC_BASE_URL
+        sync: false
+
+      # Chat files are sent to agentx-api, which keeps them in its database (STORAGE_TYPE above)
+      - key: CHAT_MEDIA_STORE
+        value: agentx
+
+      - key: BUSINESS_NAME
+        value: Daraja Agent-X
+      - key: CORS_ALLOWED_ORIGINS
+        value: ""

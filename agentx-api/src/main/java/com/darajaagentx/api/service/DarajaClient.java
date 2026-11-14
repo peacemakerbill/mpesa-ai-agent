@@ -1,12 +1,14 @@
 package com.darajaagentx.api.service;
 
 import com.darajaagentx.api.config.DarajaProperties;
+import com.darajaagentx.api.config.EnvironmentPolicy;
 import com.darajaagentx.api.exception.DarajaOutcomeUnknownException;
 import com.darajaagentx.api.exception.DarajaRefusedException;
 import com.darajaagentx.api.model.DarajaEnvironment;
 import com.darajaagentx.api.util.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -44,15 +46,24 @@ public class DarajaClient implements DarajaApi {
 
     private final DarajaProperties props;
     private final Clock clock;
+    private final EnvironmentPolicy policy;
     private final ConcurrentHashMap<String, Token> tokens = new ConcurrentHashMap<>();
 
-    public DarajaClient(DarajaProperties props, Clock clock) {
+    @Autowired
+    public DarajaClient(DarajaProperties props, Clock clock, EnvironmentPolicy policy) {
         this.props = props;
         this.clock = clock;
+        this.policy = policy;
+    }
+
+    /** For callers that do not care about the environment: behaves as production, so nothing is held back. */
+    public DarajaClient(DarajaProperties props, Clock clock) {
+        this(props, clock, EnvironmentPolicy.production());
     }
 
     @Override
     public Map<String, Object> post(DarajaEnvironment environment, String consumerKey, String consumerSecret, String path, Map<String, Object> body) {
+        refuseLiveOutsideProduction(environment);
         String token = token(environment, consumerKey, consumerSecret);
         try {
             Map<String, Object> response = client(environment, 20).post().uri(path)
@@ -120,7 +131,15 @@ public class DarajaClient implements DarajaApi {
         }
     }
 
+    /** A staging or development copy never reaches the live Safaricom system unless that was switched on on purpose. */
+    private void refuseLiveOutsideProduction(DarajaEnvironment environment) {
+        if (policy.liveDarajaBlocked(environment)) {
+            throw new DarajaRefusedException(policy.liveDarajaBlockedMessage());
+        }
+    }
+
     private RestClient client(DarajaEnvironment environment, int readSeconds) {
+        refuseLiveOutsideProduction(environment);
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(Duration.ofSeconds(5));
         factory.setReadTimeout(Duration.ofSeconds(readSeconds));

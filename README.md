@@ -7,7 +7,7 @@
 
 <br/>
 
-<img src="docs/assets/badges-root.svg" alt="Spring Boot 4.1.2, Java 21, Flutter 3.22 or later, Claude with tool use, status reference build. Databases MongoDB, PostgreSQL and MySQL, Redis, RabbitMQ, Flyway 12, Docker compose, Postman with 137 requests." width="880"/>
+<img src="docs/assets/badges-root.svg" alt="Spring Boot 4.1.2, Java 21, Flutter 3.22 or later, Claude with tool use, status reference build. Databases MongoDB, PostgreSQL and MySQL, Redis, RabbitMQ, Flyway 12, Docker compose, Postman with 126 requests." width="880"/>
 
 <br/><br/>
 
@@ -279,6 +279,7 @@ The Flutter app and the browser console share the same ten looks. Seven are ever
 | `ANTHROPIC_API_KEY` | agent-service | Lets the assistant answer. Without it, messages are accepted but nothing replies |
 | `AGENTX_TOKEN_SECRET` | agentx-api | 32 or more random characters, signs phone sessions |
 | `AGENTX_PUBLIC_BASE_URL` | agent-service, agentx-api | Public HTTPS address of agentx-api |
+| `APP_ENV` | agentx-api, agent-service | `development` (default), `staging` or `production`. Production refuses to start with development only settings, and live Daraja is refused outside production. See [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md) |
 | `CODE_DELIVERY` | agentx-api | `log`, `dev` or `sms` |
 | `DATABASE_TYPE` | services with a database | `mongodb`, `postgresql` or `mysql` |
 | `MONGODB_URI` | when using MongoDB | Include `serverSelectionTimeoutMS=5000` so a missing database fails fast |
@@ -386,6 +387,7 @@ upload a list. Mail is written to the log until you set `agentx.mail.transport: 
 |---|---|
 | [`FEATURES.md`](FEATURES.md) | Everything the system does today, for customers and for operators |
 | [`docs/DATABASES.md`](docs/DATABASES.md) | PostgreSQL, MySQL and MongoDB: setup, trade-offs, what was tested |
+| [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md) | Development, staging (UAT) and production: the `APP_ENV` switch, what production refuses, a staging copy on Render |
 | [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md) | Business accounts, tills, CSV upload, chat transactions |
 | [`docs/PROFILE_AND_EMAIL.md`](docs/PROFILE_AND_EMAIL.md) | Sign up, profiles, email verification, reports by email, mail and picture storage settings |
 | [`docs/CHATS.md`](docs/CHATS.md) | Many chats per customer: new chat, open an old one, rename, pin, delete |
