@@ -65,7 +65,7 @@ On your machine, in `.env` next to each service (the files are read at start):
 APP_ENV=development
 ```
 
-On Render, `render.yaml` sets `APP_ENV=production` in the shared variable group, so both services get it. `render.staging.yaml` sets `staging`.
+On Render, `deploy/render/render.yaml` sets `APP_ENV=production` in the shared variable group, so both services get it. `render.staging.yaml` sets `staging`.
 
 Use the same value for agentx-api and agent-service. The console shows it as a small label next to the service lights, and the phone app shows a corner label on anything that is not production. Both read it from `GET /api/config`, so they always tell the truth about the server they are connected to.
 
@@ -73,7 +73,7 @@ Use the same value for agentx-api and agent-service. The console shows it as a s
 
 1. Make a second MongoDB database for staging. On Atlas, use the same cluster with another database name in the connection string (for example `agentx_staging`), or a second free cluster.
 2. Make a second RabbitMQ virtual host on CloudAMQP, or a second instance.
-3. In Render, create a second Blueprint from the same repository, choose `render.staging.yaml` as the file, and pick the branch you test from (for example `staging`).
+3. In Render, create a second Blueprint from the same repository, enter `deploy/render/render.staging.yaml` as the Blueprint Path, and pick the branch you test from (for example `staging`).
 4. Paste the staging values when it asks: `MONGODB_URI`, `SPRING_RABBITMQ_ADDRESSES`, `AGENTX_PUBLIC_BASE_URL` (for example `https://agentx-api-staging.onrender.com`), `ANTHROPIC_API_KEY`, and a new `AGENTX_VAULT_KEY`.
 
 Staging has its own service names (`agentx-api-staging`, `agent-service-staging`, `agentx-redis-staging`), its own variable group and its own generated keys. Never reuse the live database, the live `INTERNAL_KEY` or the live vault key. A staging vault key that differs from production is what stops a copied production credential from being opened in staging.

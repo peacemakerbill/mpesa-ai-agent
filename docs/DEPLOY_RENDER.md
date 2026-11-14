@@ -22,7 +22,7 @@ Take the system from a Git repository to a live deployment on Render, with the t
 
 # Deploying on Render
 
-This guide takes Daraja Agent-X from a Git repository to a live system on [Render](https://render.com), using the Blueprint in `render.yaml`. It also covers the two services Render does not host, MongoDB Atlas and CloudAMQP, and what to check afterwards.
+This guide takes Daraja Agent-X from a Git repository to a live system on [Render](https://render.com), using the Blueprint in `deploy/render/render.yaml`. It also covers the two services Render does not host, MongoDB Atlas and CloudAMQP, and what to check afterwards.
 
 Allow about an hour the first time. Most of it is waiting for builds.
 
@@ -49,7 +49,7 @@ Both services must be in the same Render region (Frankfurt in `render.yaml`) or 
 
 You need:
 
-- The code pushed to GitHub, with `render.yaml` at the repository root. Run `mvn clean verify` in `agentx-api` and in `agent-service` first. Render builds from Git, so a red build is cheaper to fix on your machine.
+- The code pushed to GitHub, with the Blueprint in `deploy/render/render.yaml`. Run `mvn clean verify` in `agentx-api` and in `agent-service` first. Render builds from Git, so a red build is cheaper to fix on your machine.
 - A Render account with a payment method.
 - An Anthropic API key.
 - About ten minutes with each of Atlas and CloudAMQP, which you set up in steps 1 and 2.
@@ -114,7 +114,7 @@ Check `git status` before the commit. `.env` must not be staged. Only `.env.exam
 
 1. In the Render dashboard press New, then Blueprint.
 2. Connect GitHub if Render asks, and give it access to the `mpesa-ai-agent` repository.
-3. Pick the repository and the branch to deploy (usually `main`). Name the Blueprint, for example `agentx`.
+3. Pick the repository and the branch to deploy (usually `main`). Name the Blueprint, for example `agentx`. In the **Blueprint Path** field enter `deploy/render/render.yaml`. Render looks for `render.yaml` at the root of the repository unless you tell it otherwise.
 4. Render reads `render.yaml` and shows what it will create: the web service `agentx-api`, the private service `agent-service`, the Key Value instance `agentx-redis`, and the variable group `agentx-shared` (which holds `APP_ENV=production` and the generated `INTERNAL_KEY`).
 5. It then asks for every value marked `sync: false`. Fill them in as below.
 

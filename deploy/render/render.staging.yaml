@@ -1,5 +1,5 @@
 # Render Blueprint for the STAGING (UAT) copy of Daraja Agent-X.
-# Same as render.yaml, with its own service names, its own database and its own message broker, so a test never touches
+# Same as render.yaml (in this folder), with its own service names, its own database and its own message broker, so a test never touches
 # live customers. On Render, create a second Blueprint and point it at this file (Blueprints > New Blueprint Instance, then
 # choose this file path) and at the branch you test from, for example staging. See docs/ENVIRONMENTS.md.
 #

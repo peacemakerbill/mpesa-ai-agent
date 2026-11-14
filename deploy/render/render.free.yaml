@@ -1,5 +1,5 @@
 # Render Blueprint for Daraja Agent-X on the FREE plan, for testing and demos.
-# Put this file at the root of the repository and, when Render asks for the Blueprint file, choose render.free.yaml.
+# This file lives in deploy/render/. When Render asks for the Blueprint Path, enter deploy/render/render.free.yaml.
 # The step by step guide is docs/DEPLOY_RENDER_FREE.md.
 #
 # What it creates, all free:

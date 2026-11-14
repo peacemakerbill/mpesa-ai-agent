@@ -1,5 +1,5 @@
 # Render Blueprint for Daraja Agent-X.
-# Put this file at the root of the repository (next to docker-compose.yml) and name it render.yaml.
+# This file lives in deploy/render/. When Render asks for the Blueprint Path, enter deploy/render/render.yaml.
 #
 # What it creates:
 #   agentx-api     public web service    the phone app, the console and the chat links talk to this one
@@ -16,7 +16,7 @@
 # settings (an http or localhost AGENTX_PUBLIC_BASE_URL, an example INTERNAL_KEY, CORS_ALLOWED_ORIGINS set, AGENT_STORE=memory),
 # and the log tells you which one. Fill in AGENTX_PUBLIC_BASE_URL when the Blueprint asks: it is
 # https://<service name>.onrender.com unless you added your own domain.
-# The test copy lives in render.staging.yaml. See docs/ENVIRONMENTS.md.
+# The test copy is render.staging.yaml, in this folder. See docs/ENVIRONMENTS.md.
 
 envVarGroups:
   - name: agentx-shared

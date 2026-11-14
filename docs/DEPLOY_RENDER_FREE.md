@@ -20,7 +20,7 @@ Run the whole system on Render for nothing. It goes to sleep when idle, and the 
 
 This is the cheapest way to have Daraja Agent-X on the internet: two free web services and a free Key Value store on [Render](https://render.com), with MongoDB Atlas and CloudAMQP, which also have free plans. It is meant for **testing, demos and UAT**. Read "The catch" before you put real customers on it.
 
-The Blueprint is `render.free.yaml`. The paid setup in [DEPLOY_RENDER.md](DEPLOY_RENDER.md) is unchanged and still the right one for a live system.
+The Blueprint is `deploy/render/render.free.yaml`. The paid setup in [DEPLOY_RENDER.md](DEPLOY_RENDER.md) is unchanged and still the right one for a live system.
 
 ## What you get, and what you give up
 
@@ -70,7 +70,7 @@ Other limits of the free plan that matter here, from Render's own free plan page
 
 You need:
 
-- The code pushed to GitHub, with `render.free.yaml` at the repository root. Run `mvn clean verify` in `agentx-api` and in `agent-service` first.
+- The code pushed to GitHub, with the Blueprint in `deploy/render/render.free.yaml`. Run `mvn clean verify` in `agentx-api` and in `agent-service` first.
 - A Render account. Check at sign-up whether Render asks for a card.
 - An Anthropic API key.
 - A MongoDB Atlas free cluster, a CloudAMQP free instance and a vault key. Do **Steps 1 to 3 of [DEPLOY_RENDER.md](DEPLOY_RENDER.md)** for those. They are identical. Skip its payment method.
@@ -79,7 +79,7 @@ Make new secrets. Anything you pasted into a chat or screenshot while developing
 
 ## Step 1. Give the services names of your own
 
-Render builds each address from the service name, and a name that is taken gets random letters added, which would break the addresses below. Open `render.free.yaml` and add something of yours, for example your initials, to the names:
+Render builds each address from the service name, and a name that is taken gets random letters added, which would break the addresses below. Open `deploy/render/render.free.yaml` and add something of yours, for example your initials, to the names:
 
 ```
 agentx-api-free        becomes  agentx-api-free-bgp
@@ -109,7 +109,7 @@ Check `git status` first. `.env` must not be staged.
 ## Step 3. Create the Blueprint
 
 1. In Render choose New, then **Blueprint**, and connect the repository.
-2. When it asks for the Blueprint file, choose `render.free.yaml`.
+2. In the **Blueprint Path** field, enter `deploy/render/render.free.yaml`. Render looks for `render.yaml` at the root of the repository unless you tell it otherwise.
 3. Fill in the values it asks for:
 
 | Variable | Service | What to put |
