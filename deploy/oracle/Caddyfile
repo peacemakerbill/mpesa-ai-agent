@@ -1,0 +1,11 @@
+# Caddy gets and renews the https certificate for DOMAIN by itself (Let's Encrypt).
+# DOMAIN must already point at this server's public IP address, and ports 80 and 443 must be open.
+{$DOMAIN} {
+	encode gzip
+
+	# The calls between our own services are never meant to come from the internet.
+	@internal path /internal /internal/*
+	respond @internal 404
+
+	reverse_proxy agentx-api:8084
+}
