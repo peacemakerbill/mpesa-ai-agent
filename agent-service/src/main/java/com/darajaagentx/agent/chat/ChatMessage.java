@@ -44,6 +44,10 @@ public class ChatMessage {
     public String query;
     public String actionId;
     public String actionTitle;
+    /** For an assistant message that asks the customer to approve a request: the request to open. The app shows an Open request button. */
+    public String requestId;
+    /** The same for a request on a business account. */
+    public String businessId;
 
     public ChatMessage() {
     }

@@ -153,11 +153,11 @@ public class BusinessTools {
         switch (status) {
             case "PENDING_APPROVAL" -> {
                 String message = "*Ready to approve*\n\n" + summary
-                        + "\n\nOpen this link on your phone to review it and approve:\n" + publicUrl + "/b/" + id
-                        + "\n\nYou approve with your fingerprint, face or phone lock. Money moves only after you approve. The link works for about 30 minutes.";
-                ctx.defer(s -> s.text(phone, message));
+                        + "\n\nTap *Open request* to review it and approve."
+                        + " You approve with your fingerprint, face or phone lock. Money moves only after you approve. It stays open for about 30 minutes.";
+                ctx.defer(s -> s.openBusinessRequest(phone, message, id));
                 return Result.ok("Prepared and waiting for the owner's approval in the app: " + summary + " (reference " + shortId(id) + "). "
-                        + "A message with the approval link is being sent. Tell them in one short sentence to open the link and approve. "
+                        + "A message with an Open request button is being sent. Tell them in one short sentence to tap Open request and approve. "
                         + "Do not say that any money was sent." + warning);
             }
             case "SUBMITTED" -> {

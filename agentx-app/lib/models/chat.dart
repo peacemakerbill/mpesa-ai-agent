@@ -1,3 +1,5 @@
+import 'business_operation.dart';
+
 /// One button under an assistant message.
 class ChatButton {
   const ChatButton(this.id, this.title);
@@ -39,6 +41,8 @@ class ChatMessage {
     this.query,
     this.actionId,
     this.actionTitle,
+    this.requestRef,
+    this.businessRef,
   });
 
   final int id;
@@ -67,10 +71,26 @@ class ChatMessage {
   final String? actionId;
   final String? actionTitle;
 
+  /// The request the assistant asks the customer to open, sent as its own field so no address is written into the words.
+  final String? requestRef;
+
+  /// The same for a request on a business account.
+  final String? businessRef;
+
   bool get isMedia => const {'IMAGE', 'DOCUMENT', 'AUDIO', 'VIDEO'}.contains(kind);
 
-  /// The id of the request this message links to, when the assistant put a request link in its words.
-  String? get requestId => mine ? null : requestIdIn(text);
+  /// The id of the request this message asks the customer to open. Older messages have it written into the words as a link instead.
+  String? get requestId => mine ? null : (requestRef ?? requestIdIn(text));
+
+  /// The same for a request on a business account.
+  String? get businessId {
+    if (mine) return null;
+    final t = text;
+    return businessRef ?? (t == null ? null : businessIdIn(t));
+  }
+
+  /// The words as the bubble draws them. In an older message the address of the request is cut out, because the Open request button does that job.
+  String? get shownText => mine ? text : tidyRequestText(text);
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     String? str(String key) {
@@ -118,6 +138,8 @@ class ChatMessage {
       query: str('query'),
       actionId: str('actionId'),
       actionTitle: str('actionTitle'),
+      requestRef: str('requestId'),
+      businessRef: str('businessId'),
     );
   }
 }
@@ -147,6 +169,17 @@ String? requestIdIn(String? text) {
   if (text == null) return null;
   final m = _requestLink.firstMatch(text);
   return m?.group(1)?.toLowerCase();
+}
+
+final RegExp _oldLinkLine = RegExp(r'Open this link on your phone to review it and approve:\s*\S+');
+
+/// An older assistant message asks the customer to open a link and writes the address out. This swaps that for the sentence
+/// the assistant writes now, and leaves every other text as it is.
+String? tidyRequestText(String? text) {
+  if (text == null || (requestIdIn(text) == null && businessIdIn(text) == null)) return text;
+  return text
+      .replaceAll(_oldLinkLine, 'Tap *Open request* to review it and approve.')
+      .replaceAll(' The link works for about 30 minutes.', ' It stays open for about 30 minutes.');
 }
 
 /// A run of text with one style, as the assistant writes it: *bold*, _italic_, `code` and links.

@@ -38,6 +38,23 @@ class ChatChannelTest {
     }
 
     @Test
+    void aRequestMessageCarriesTheRequestAsItsOwnField() {
+        channel.sendRequestText(A, "Tap *Open request* to approve", "req-1", null);
+        channel.sendRequestText(A, "Tap *Open request* to approve", null, "biz-1");
+        channel.sendText(A, "plain");
+
+        List<ChatMessage> all = log.after(A, 0, 10);
+
+        assertThat(all.get(0).kind).isEqualTo("TEXT");
+        assertThat(all.get(0).requestId).isEqualTo("req-1");
+        assertThat(all.get(0).businessId).isNull();
+        assertThat(all.get(1).businessId).isEqualTo("biz-1");
+        assertThat(all.get(1).requestId).isNull();
+        assertThat(all.get(2).requestId).isNull();
+        assertThat(all.get(2).businessId).isNull();
+    }
+
+    @Test
     void anAppAsksOnlyForWhatIsNewerThanItHas() {
         channel.sendText(A, "one");
         channel.sendText(A, "two");

@@ -1083,7 +1083,7 @@ E('co.ip.rec.add', 'agentx', IP, 'Save one email address', 'POST', '/internal/em
 E('co.ip.rec.paste', 'agentx', IP, 'Save addresses from text', 'POST', '/internal/email/recipients/paste', { auth: 'internal', query: { phone: '{{customerPhone}}' }, body: { text: 'a@example.com\nb@example.com' }, note: 'What the assistant calls when the customer pastes or attaches a list.' });
 E('co.ip.rec.del', 'agentx', IP, 'Remove a saved address', 'DELETE', '/internal/email/recipients', { auth: 'internal', query: { phone: '{{customerPhone}}', target: 'accounts@example.com' }, note: 'target is the address or the name it was saved under.' });
 E('co.ip.report', 'agentx', IP, 'Email a report', 'POST', '/internal/email/report', { auth: 'internal', timeout: 60000, query: { phone: '{{customerPhone}}' }, body: { source: 'PAYMENTS', format: 'pdf', title: 'Payments', toMe: true }, note: 'What the assistant calls for send this report to my email as a PDF.' });
-E('co.p.landing', 'agentx', 'Public pages', 'Link landing page', 'GET', '/a/' + ID, { note: 'The page behind the link the assistant puts in the chat.' });
+E('co.p.landing', 'agentx', 'Public pages', 'Link landing page', 'GET', '/a/' + ID, { note: 'The page behind a request link opened from a browser. The chat no longer writes this address out, its messages carry the request as a field.' });
 E('co.p.android', 'agentx', 'Public pages', 'Android app links file', 'GET', '/.well-known/assetlinks.json', { note: '404 until the Android package and fingerprint are set.' });
 E('co.p.ios', 'agentx', 'Public pages', 'iOS app links file', 'GET', '/.well-known/apple-app-site-association', { note: '404 until the iOS app id is set.' });
 
@@ -2290,10 +2290,12 @@ function localMediaHtml(a, caption) {
     default: return esc(a.name);
   }
 }
-/** A link to a request in the assistant's words becomes a button that opens it in the Phone tab. */
+/** A request the assistant asks about (its own field, or an older link in its words) becomes a button that opens it in the Phone tab. */
 function openLink(m) {
-  const link = m.dir === 'out' && /\/a\/([0-9a-fA-F-]{36})/.exec(m.text || '');
-  return link ? `<div class="actions"><button type="button" class="btn sm" data-open="${link[1]}">Open in phone</button></div>` : '';
+  if (m.dir !== 'out') return '';
+  const old = /\/a\/([0-9a-fA-F-]{36})/.exec(m.text || '');
+  const id = m.requestId || (old && old[1]);
+  return id ? `<div class="actions"><button type="button" class="btn sm" data-open="${id}">Open in phone</button></div>` : '';
 }
 /** One chat message from the server, as a bubble. dir "in" is the customer, "out" is the assistant. */
 function messageHtml(m) {

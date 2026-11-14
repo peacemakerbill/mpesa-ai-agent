@@ -49,7 +49,7 @@ Customers chat with an AI assistant, in the app or on the web, in English or Swa
 | Buy airtime | Amount, and a number if it is not their own |
 | Set up a Ratiba | What it pays, how often (daily, weekly, monthly), start date, optional end date |
 | See their requests | A short list with status and M-Pesa code |
-| Cancel a waiting request | By saying so, or with the Cancel button under the link |
+| Cancel a waiting request | By saying so, or with the Cancel button under the message |
 | Record an M-Pesa code | Type it or send the M-Pesa message or a screenshot |
 | Talk to a person | The assistant hands over to the team |
 
@@ -64,8 +64,8 @@ Customers chat with an AI assistant, in the app or on the web, in English or Swa
 
 ### The approval flow
 
-1. The assistant prepares the request and sends a link, plus a Cancel button, in the chat.
-2. The link opens the Daraja Agent-X app. It shows the request in plain words with warnings.
+1. The assistant prepares the request and sends a message with an Open request button, plus a Cancel button, in the chat. No web address is written into the message.
+2. Tapping Open request shows the request in the app, in plain words with warnings.
 3. The customer approves with fingerprint, face or phone lock (the phone's own check).
 4. The app opens the dialler (code typed in, customer presses call) or the M-Pesa app, and shows numbered steps with copy buttons.
 5. The customer types the M-Pesa PIN inside M-Pesa.

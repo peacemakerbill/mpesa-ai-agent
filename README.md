@@ -105,7 +105,7 @@ sequenceDiagram
     API->>AG: POST /internal/chat/{phone}/inbound
     AG->>AG: Claude calls a prepare tool
     AG->>API: create the request
-    API->>A: link in the chat
+    API->>A: Open request button in the chat
     C->>A: fingerprint, face or phone lock
     A->>API: approve, then hand off
     A->>M: dialler opens with the code typed in

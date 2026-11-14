@@ -16,6 +16,7 @@ class BubbleActions {
     required this.onRow,
     required this.onFindContact,
     required this.onOpenRequest,
+    required this.onOpenBusiness,
     required this.onLink,
     required this.onError,
     required this.loadFile,
@@ -26,6 +27,7 @@ class BubbleActions {
   final void Function(ChatRow) onRow;
   final void Function(String query) onFindContact;
   final void Function(String requestId) onOpenRequest;
+  final void Function(String operationId) onOpenBusiness;
   final void Function(String url) onLink;
   final void Function(String message) onError;
   final Future<ChatFile> Function(String mediaId) loadFile;
@@ -87,7 +89,7 @@ class MessageBubble extends StatelessWidget {
     switch (m.kind) {
       case 'BUTTONS':
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _words(context, m.text ?? ''),
+          _words(context, m.shownText ?? ''),
           if (m.footer != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(m.footer!, style: text.bodySmall)),
           _openRequest(context),
           const SizedBox(height: 8),
@@ -99,7 +101,7 @@ class MessageBubble extends StatelessWidget {
         ]);
       case 'LIST':
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _words(context, m.text ?? ''),
+          _words(context, m.shownText ?? ''),
           if (m.footer != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(m.footer!, style: text.bodySmall)),
           _openRequest(context),
           const SizedBox(height: 8),
@@ -147,7 +149,7 @@ class MessageBubble extends StatelessWidget {
         return _words(context, m.actionTitle ?? m.text ?? '');
       default:
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _words(context, m.text ?? ''),
+          _words(context, m.shownText ?? ''),
           _openRequest(context),
         ]);
     }
@@ -157,12 +159,13 @@ class MessageBubble extends StatelessWidget {
 
   Widget _openRequest(BuildContext context) {
     final id = message.requestId;
-    if (id == null) return const SizedBox.shrink();
+    final businessId = message.businessId;
+    if (id == null && businessId == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: SizedBox(
         width: double.infinity,
-        child: FilledButton.icon(onPressed: () => actions.onOpenRequest(id), icon: const Icon(Icons.fact_check_outlined), label: const Text('Open request')),
+        child: FilledButton.icon(onPressed: () => id != null ? actions.onOpenRequest(id) : actions.onOpenBusiness(businessId!), icon: const Icon(Icons.fact_check_outlined), label: const Text('Open request')),
       ),
     );
   }

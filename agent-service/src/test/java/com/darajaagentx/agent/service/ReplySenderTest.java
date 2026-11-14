@@ -40,6 +40,15 @@ class ReplySenderTest {
     }
 
     @Test
+    void anOpenRequestMessageGoesOutTrimmedWithItsRequest() {
+        sender.openRequest(PHONE, "  *Ready to confirm*\n", "req-1");
+        sender.openBusinessRequest(PHONE, "  *Ready to approve*\n", "biz-1");
+
+        verify(channel).sendRequestText(PHONE, "*Ready to confirm*", "req-1", null);
+        verify(channel).sendRequestText(PHONE, "*Ready to approve*", null, "biz-1");
+    }
+
+    @Test
     void blankTextIsNotSent() {
         sender.text(PHONE, "   ");
         sender.text(PHONE, null);

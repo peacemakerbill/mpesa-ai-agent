@@ -154,7 +154,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _openLink(String url) async {
     final businessId = businessIdIn(url);
     if (businessId != null) {
-      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => BusinessOperationScreen(state: widget.state, operationId: businessId)));
+      _openBusiness(businessId);
       return;
     }
     final id = requestIdIn(url);
@@ -163,6 +163,10 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
     if (!await widget.state.launcher.openUrl(url)) _toast('That link could not be opened.');
+  }
+
+  void _openBusiness(String id) {
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => BusinessOperationScreen(state: widget.state, operationId: id)));
   }
 
   void _openRequest(String id) {
@@ -187,6 +191,7 @@ class _ChatScreenState extends State<ChatScreen> {
     onRow: (r) => _chat.sendRow(r),
     onFindContact: _findContact,
     onOpenRequest: _openRequest,
+    onOpenBusiness: _openBusiness,
     onLink: _openLink,
     onError: _toast,
     loadFile: _loadFile,

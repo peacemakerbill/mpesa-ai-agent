@@ -70,7 +70,7 @@ The service reads `.env` through `spring.config.import: optional:file:.env[.prop
 | `ANTHROPIC_API_KEY` | required | Without it, messages are accepted but nothing replies |
 | `ANTHROPIC_MODEL` | `claude-sonnet-5-5` | Model name. `ANTHROPIC_MAX_TOKENS` defaults to 1024 |
 | `AGENTX_BASE_URL` | `http://localhost:8084` | Private address of agentx-api |
-| `AGENTX_PUBLIC_BASE_URL` | `http://localhost:8084` | Public address used in the links sent to customers |
+| `AGENTX_PUBLIC_BASE_URL` | `http://localhost:8084` | Public address of agentx-api. Chat messages no longer write it out, they carry the request as a field and the app shows an Open request button |
 | `BUSINESS_NAME`, `BUSINESS_SUPPORT_PHONE` | `Our Business`, empty | Shown to customers |
 | `APP_ENV` | `development` | `development`, `staging` or `production`. Use the same value as agentx-api. Production refuses `AGENT_STORE=memory`, `CORS_ALLOWED_ORIGINS`, an example `INTERNAL_KEY` and an http public address |
 | `AGENT_STORE` | `redis` | Where conversation state lives |

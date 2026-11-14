@@ -93,7 +93,7 @@ Locally the code is shown on screen by default (`CODE_SHOW_IN_APP=auto`), so you
 | `GET`, `POST`, `DELETE /api/chat/messages` | Read, send and clear the chat |
 | `GET`, `POST`, `DELETE /api/chat/sessions`, `POST /api/chat/sessions/{id}/open`, `PUT .../title`, `PUT .../pin`, `DELETE /api/chat/sessions/{id}` | The list of chats: start a new one, open an old one, rename, pin, delete. See [`docs/CHATS.md`](../docs/CHATS.md) |
 | `POST /api/chat/media`, `GET /api/chat/media/{id}` | Upload and download chat files |
-| `GET /a/{id}` | Landing page that opens the app |
+| `GET /a/{id}` | Landing page that opens the app. The chat no longer shows this address, it is for links opened from a browser or another app |
 | `GET /.well-known/assetlinks.json` and `apple-app-site-association` | App link files |
 
 **Internal, for agent-service** (`X-Internal-Key` required)

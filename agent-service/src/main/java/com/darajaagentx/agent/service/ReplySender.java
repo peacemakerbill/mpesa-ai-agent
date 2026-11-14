@@ -30,6 +30,16 @@ public class ReplySender {
         channel.sendText(phone, markdown.strip());
     }
 
+    /** A message with an Open request button under it, so no link has to be written out. */
+    public void openRequest(String phone, String markdown, String requestId) {
+        channel.sendRequestText(phone, markdown.strip(), requestId, null);
+    }
+
+    /** Like {@link #openRequest} for a request on a business account. */
+    public void openBusinessRequest(String phone, String markdown, String businessId) {
+        channel.sendRequestText(phone, markdown.strip(), null, businessId);
+    }
+
     public void buttons(String phone, String body, String footer, List<Button> buttons) {
         channel.sendButtons(phone, body, footer, buttons);
     }

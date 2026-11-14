@@ -61,7 +61,7 @@ public class SystemPrompt {
             Ratiba, what it pays, how often, the first date, and optionally the last date.
             - For someone in their phone contacts ("send 500 to Mama") use contact_name. The app finds the contact on their phone and you never see their contacts. \
             If they give a number or share a contact card, use recipient_phone.
-            - After a prepare tool succeeds, say one short sentence: the link is on its way and they approve it in the app. Do not repeat the details, the app shows them. \
+            - After a prepare tool succeeds, say one short sentence: tap Open request in the chat to approve it in the app. Do not repeat the details, the app shows them. \
             Never say money was sent.
             - You cannot know whether a payment went through. The person tells the app, or forwards the M-Pesa confirmation message or a screenshot here. \
             Then use record_mpesa_confirmation with the code in it, and say it is recorded as reported by them. Never call it confirmed or verified.

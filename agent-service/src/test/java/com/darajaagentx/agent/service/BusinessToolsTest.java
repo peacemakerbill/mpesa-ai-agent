@@ -112,7 +112,7 @@ class BusinessToolsTest {
     }
 
     @Test
-    void moneyOutIsOnlyPreparedAndTheOwnerGetsAnApprovalLink() {
+    void moneyOutIsOnlyPreparedAndTheOwnerGetsAnOpenRequestMessage() {
         api.next = Map.of("id", ID, "status", "PENDING_APPROVAL", "summary", "Pay KES 500 to 254700111222 from Main shop");
         ToolContext c = ctx("TEXT");
         Result r = tools.execute(c, "prepare_business_request", json("{\"account\":\"@Main shop\",\"type\":\"b2c\",\"amount\":500,\"phone\":\"0700111222\"}"));
@@ -124,8 +124,8 @@ class BusinessToolsTest {
         assertThat(((Map<?, ?>) api.lastBody.get("params")).get("amount")).isEqualTo("500");
         flush(c);
         ArgumentCaptor<String> text = ArgumentCaptor.forClass(String.class);
-        verify(sender).text(eq(PHONE), text.capture());
-        assertThat(text.getValue()).contains("https://app.example.test/b/" + ID);
+        verify(sender).openBusinessRequest(eq(PHONE), text.capture(), eq(ID));
+        assertThat(text.getValue()).contains("Tap *Open request*").doesNotContain("http").doesNotContain("/b/");
     }
 
     @Test

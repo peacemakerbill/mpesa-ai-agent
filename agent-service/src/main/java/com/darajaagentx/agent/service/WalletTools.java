@@ -27,8 +27,8 @@ import static com.darajaagentx.agent.service.ToolCatalog.*;
 
 /**
  * The tools that act on the customer's own M-Pesa. None of them moves money and none of them sees a PIN:
- * each one only asks agentx-api to store a request, then queues a message with a link. The customer opens
- * the link in the Daraja Agent-X app, approves it with biometrics or the phone lock, and finishes in M-Pesa.
+ * each one only asks agentx-api to store a request, then queues a message with an Open request button. The customer opens
+ * the request in the Daraja Agent-X app, approves it with biometrics or the phone lock, and finishes in M-Pesa.
  * The phone number always comes from the signed-in customer in ToolContext, never from the model.
  */
 @Component
@@ -109,18 +109,17 @@ public class WalletTools {
         WalletActionView view = agentx.createAction(body);
 
         String phone = ctx.phone();
-        String link = agentxProps.publicUrl().replaceAll("/+$", "") + "/a/" + view.id();
         String message = "*Ready to confirm*\n\n" + view.summary()
                 + (view.needsContact() ? "\n\nThe app will ask you to pick the contact on your phone." : "")
-                + "\n\nOpen this link on your phone to review it and approve:\n" + link
-                + "\n\nYou approve with your fingerprint, face or phone lock, then finish inside M-Pesa by entering your PIN there."
-                + " The link works for about 30 minutes.";
+                + "\n\nTap *Open request* to review it and approve."
+                + " You approve with your fingerprint, face or phone lock, then finish inside M-Pesa by entering your PIN there."
+                + " It stays open for about 30 minutes.";
         ctx.defer(s -> {
-            s.text(phone, message);
+            s.openRequest(phone, message, view.id().toString());
             s.buttons(phone, "Changed your mind?", null, List.of(new Button("WCAN:" + view.id(), "Cancel request")));
         });
         return Result.ok("Request prepared: " + view.summary() + " (reference " + shortId(view.id()) + "). "
-                + "A message with the approval link is being sent to the customer. Tell them in one short sentence to open the link "
+                + "A message with an Open request button is being sent to the customer. Tell them in one short sentence to tap Open request "
                 + "and approve in the app. Do not say that any money was sent or that the payment is done."
                 + ("TEXT".equals(source) ? "" : " The details came from " + source.toLowerCase(Locale.ENGLISH)
                 + ", so remind them to check every number in the app."));

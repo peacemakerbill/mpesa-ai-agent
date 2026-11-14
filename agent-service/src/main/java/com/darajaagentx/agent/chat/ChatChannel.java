@@ -35,6 +35,15 @@ public class ChatChannel {
         log.append(to, m);
     }
 
+    /** A text that asks the customer to open one request. Exactly one of the two ids is given. */
+    public void sendRequestText(String to, String text, String requestId, String businessId) {
+        ChatMessage m = ChatMessage.out("TEXT");
+        m.text = text;
+        m.requestId = requestId;
+        m.businessId = businessId;
+        log.append(to, m);
+    }
+
     public void sendButtons(String to, String body, String footer, List<Button> buttons) {
         ChatMessage m = ChatMessage.out("BUTTONS");
         m.text = body;

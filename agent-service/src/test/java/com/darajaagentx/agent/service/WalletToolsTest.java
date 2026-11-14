@@ -76,7 +76,7 @@ class WalletToolsTest {
 
     @SuppressWarnings("unchecked")
 	@Test
-    void preparingABillSendsOnlyTheSenderNumberAndQueuesTheLinkAndCancelButton() {
+    void preparingABillSendsOnlyTheSenderNumberAndQueuesTheOpenRequestMessageAndCancelButton() {
         when(agentx.createAction(any())).thenReturn(view("CREATED", "Pay KES 1,200 to Paybill 888880, account 123", false, null, 1200));
         ToolContext ctx = ctx("TEXT");
 
@@ -93,7 +93,10 @@ class WalletToolsTest {
                 .containsEntry("paybill", "888880");
 
         ctx.deferred().forEach(a -> a.accept(sender));
-        verify(sender).text(eq(PHONE), contains("https://app.example.test/a/" + ID));
+        ArgumentCaptor<String> said = ArgumentCaptor.forClass(String.class);
+        verify(sender).openRequest(eq(PHONE), said.capture(), eq(ID.toString()));
+        // the request travels as its own field: no address is written into the words
+        assertThat(said.getValue()).contains("Tap *Open request*").doesNotContain("http").doesNotContain("/a/");
         ArgumentCaptor<List<Button>> buttons = ArgumentCaptor.forClass((Class<List<Button>>) (Class<?>) List.class);
         verify(sender).buttons(eq(PHONE), anyString(), isNull(), buttons.capture());
         assertThat(buttons.getValue()).extracting(Button::id).containsExactly("WCAN:" + ID);
@@ -142,7 +145,7 @@ class WalletToolsTest {
 
         assertThat((Map<String, String>) sentBody().get("details")).containsOnlyKeys("contactName").containsEntry("contactName", "Mama");
         ctx.deferred().forEach(a -> a.accept(sender));
-        verify(sender).text(eq(PHONE), contains("pick the contact on your phone"));
+        verify(sender).openRequest(eq(PHONE), contains("pick the contact on your phone"), eq(ID.toString()));
     }
 
     @SuppressWarnings("unchecked")
