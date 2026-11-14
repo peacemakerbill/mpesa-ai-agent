@@ -36,6 +36,14 @@ The browser blocks one origin calling another unless the service allows it. Each
 CORS_ALLOWED_ORIGINS=http://localhost:8000
 ```
 
+To run the phone app in Chrome as well (`flutter run -d chrome --web-port 3000`), allow its address too, separated by a comma:
+
+```properties
+CORS_ALLOWED_ORIGINS=http://localhost:8000,http://localhost:3000
+```
+
+Write them with `localhost`. A browser counts `127.0.0.1` as a different address.
+
 Leave it empty in production. A wildcard `*` is ignored on purpose. The status lights at the top turn green when a service is reachable, and amber when it is running but this page is not allowed to call it.
 
 Open **Settings** (the sliders icon, top right) to set the service addresses, the internal key, the callback secret, the customer phone numbers and the optional contact search client ids. They are kept in this browser only.

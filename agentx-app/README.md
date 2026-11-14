@@ -47,7 +47,7 @@ The project is one Flutter codebase for five platforms. The phone is the real ta
 | macOS | A Mac | For testing. Same limits as Linux |
 | Windows | Windows with Visual Studio | For testing. Same limits as Linux |
 
-Web is not supported, because the code uses `dart:io`.
+Web is not supported, because the code uses `dart:io`. To try the app in Chrome anyway, run `flutter run -d chrome --web-port 3000` and allow `http://localhost:3000` in agentx-api's `CORS_ALLOWED_ORIGINS` (see `console/README.md`). Expect parts of it to fail there. The console is the tool for testing in a browser.
 
 ## Create the project and run it
 
