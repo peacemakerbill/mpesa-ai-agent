@@ -2,7 +2,6 @@ package com.darajaagentx.agent.service;
 
 import com.darajaagentx.agent.client.AgentXClient;
 import com.darajaagentx.agent.chat.ChatChannel.Button;
-import com.darajaagentx.agent.config.ServiceProperties;
 import com.darajaagentx.agent.dto.WalletActionView;
 import com.darajaagentx.agent.service.ToolExecutor.Result;
 import com.darajaagentx.agent.service.ToolExecutor.ToolException;
@@ -42,11 +41,9 @@ public class WalletTools {
     private static final Pattern RECEIPT = Pattern.compile("^[A-Z0-9]{8,12}$");
 
     private final AgentXClient agentx;
-    private final ServiceProperties.AgentX agentxProps;
 
-    public WalletTools(AgentXClient agentx, ServiceProperties.AgentX agentxProps) {
+    public WalletTools(AgentXClient agentx) {
         this.agentx = agentx;
-        this.agentxProps = agentxProps;
     }
 
     public boolean handles(String name) {

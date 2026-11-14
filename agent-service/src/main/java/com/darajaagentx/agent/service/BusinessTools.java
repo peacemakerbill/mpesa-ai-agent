@@ -4,7 +4,6 @@ import com.darajaagentx.agent.client.BusinessApi;
 import com.darajaagentx.agent.client.BusinessApi.BusinessApiException;
 import com.darajaagentx.agent.service.ToolExecutor.Result;
 import com.darajaagentx.agent.service.ToolExecutor.ToolException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 
@@ -49,12 +48,9 @@ public class BusinessTools {
             "offset", "merchant_name");
 
     private final BusinessApi api;
-    private final String publicUrl;
 
-    public BusinessTools(BusinessApi api,
-                         @Value("${agentx.public-url:${companion.public-url:http://localhost:8084}}") String publicUrl) {
+    public BusinessTools(BusinessApi api) {
         this.api = api;
-        this.publicUrl = publicUrl.replaceAll("/+$", "");
     }
 
     public boolean handles(String name) {

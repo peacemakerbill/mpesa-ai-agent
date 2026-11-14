@@ -3,7 +3,6 @@ package com.darajaagentx.agent.service;
 import com.darajaagentx.agent.TestSupport;
 import com.darajaagentx.agent.client.AgentXClient;
 import com.darajaagentx.agent.chat.ChatChannel.Button;
-import com.darajaagentx.agent.config.ServiceProperties;
 import com.darajaagentx.agent.dto.WalletActionView;
 import com.darajaagentx.agent.exception.AgentXApiException;
 import com.darajaagentx.agent.model.Identity;
@@ -46,7 +45,7 @@ class WalletToolsTest {
 
     @BeforeEach
     void setUp() {
-        WalletTools wallet = new WalletTools(agentx, new ServiceProperties.AgentX("http://agentx", "https://app.example.test/"));
+        WalletTools wallet = new WalletTools(agentx);
         executor = new ToolExecutor(null, null, sender, TestSupport.walletProps(), TestSupport.business(), wallet);
     }
 

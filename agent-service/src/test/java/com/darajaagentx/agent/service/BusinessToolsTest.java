@@ -78,7 +78,7 @@ class BusinessToolsTest {
 
     @BeforeEach
     void setUp() {
-        tools = new BusinessTools(api, "https://app.example.test/");
+        tools = new BusinessTools(api);
     }
 
     private static ToolContext ctx(String source) {

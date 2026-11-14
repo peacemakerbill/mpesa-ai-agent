@@ -54,7 +54,7 @@ class ToolExecutorTest {
     void setUp() {
         intents = new IntentStore(new InMemoryStateStore(), TestSupport.mapper());
         executor = new ToolExecutor(payments, intents, sender, TestSupport.props(), TestSupport.business(),
-                new WalletTools(agentx, new com.darajaagentx.agent.config.ServiceProperties.AgentX("http://agentx", "https://app.example.test")));
+                new WalletTools(agentx));
     }
 
     private static ToolContext ctx(String phone, Role role) {
