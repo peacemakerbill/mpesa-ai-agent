@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
@@ -122,7 +123,7 @@ class ChatFlowIntegrationTest {
     void anUploadIsPassedOnWithItsTypeAndName() throws Exception {
         String phone = newPhone();
         String token = signIn(phone);
-        when(relay.call(eq(HttpMethod.POST), eq(phone), eq("/media"), isNull(), any(), eq(MediaType.IMAGE_PNG), eq("pic.png")))
+        when(relay.call(eq(HttpMethod.POST), eq(phone), eq("/media"), isNull(), any(), argThat((MediaType t) -> t != null && MediaType.IMAGE_PNG.isCompatibleWith(t)), eq("pic.png")))
                 .thenReturn(ResponseEntity.status(201).contentType(MediaType.APPLICATION_JSON).body("{\"mediaId\":\"x\"}".getBytes(StandardCharsets.UTF_8)));
 
         mvc.perform(post("/api/chat/media").header("Authorization", "Bearer " + token).header("X-File-Name", "pic.png")

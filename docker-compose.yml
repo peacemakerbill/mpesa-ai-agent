@@ -67,38 +67,6 @@ services:
       timeout: 5s
       retries: 10
 
-  # OPTIONAL. Only for a business that wants to collect payments through its own Daraja app.
-  # Start it with: docker compose --profile business up   (and set AGENT_BUSINESS_PAYMENTS=true on agent-service)
-  # Safaricom calls this service (through your public HTTPS URL, see PUBLIC_BASE_URL)
-  payment-service:
-    profiles: ["business"]
-    build: ./payment-service
-    env_file:
-      - path: ./payment-service/.env
-        required: false
-    environment:
-      # Pick the database with DATABASE_TYPE (postgresql, mysql or mongodb) in a .env file next to this compose file
-      DATABASE_TYPE: ${DATABASE_TYPE:-postgresql}
-      POSTGRES_URL: jdbc:postgresql://postgres:5432/payments
-      MYSQL_URL: jdbc:mysql://mysql:3306/payments?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&preserveInstants=true&useSSL=false&allowPublicKeyRetrieval=true
-      MONGODB_URI: mongodb://mongo:27017/payments
-      RABBITMQ_HOST: rabbitmq
-    ports:
-      - "8083:8083"
-    restart: on-failure
-    depends_on:
-      postgres:
-        condition: service_healthy
-        required: false
-      mysql:
-        condition: service_healthy
-        required: false
-      mongo:
-        condition: service_healthy
-        required: false
-      rabbitmq:
-        condition: service_healthy
-
   # The phone app, the browser console and the links in the chat talk to this one: sign-in, chat and requests. Put HTTPS in front of port 8084 (AGENTX_PUBLIC_BASE_URL).
   # It also serves the app link files under /.well-known/. It never holds M-Pesa keys or PINs.
   agentx-api:
@@ -137,7 +105,6 @@ services:
       - path: ./agent-service/.env
         required: false
     environment:
-      PAYMENT_BASE_URL: http://payment-service:8083
       AGENTX_BASE_URL: http://agentx-api:8084
       REDIS_HOST: redis
       RABBITMQ_HOST: rabbitmq

@@ -92,7 +92,7 @@ Files you attach are uploaded to agentx-api (`POST /api/chat/media`) and then na
 > This page holds the internal key and secrets in the browser. Use it on your own machine with test values, never with production keys. Do not turn on `CORS_ALLOWED_ORIGINS` or `CODE_DELIVERY=dev` on a server other people can reach.
 
 - A matched message here is the simulator matching a message it made itself. It shows how the checks behave, not that money moved.
-- Calls to payment-service and the Daraja callbacks only work with that service running and, for real payments, with Daraja credentials.
+- The Daraja callbacks only work when agentx-api has a public HTTPS address (`AGENTX_PUBLIC_BASE_URL`) and, for real payments, a business account with Daraja credentials saved in the app.
 
 <div align="center">
 <sub>M-Pesa is a registered mark of Safaricom. This project is not affiliated with or endorsed by Safaricom.</sub>

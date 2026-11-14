@@ -102,10 +102,9 @@ agent:
   # Largest file a customer can attach in the chat
   max-upload-bytes: 20971520
   max-text-chars: 20000
-  # Off: the agent only prepares requests for the customer's own M-Pesa (agentx-api).
-  # On: also offers the business tools that need payment-service (Daraja): paying the business by STK Push,
-  # refunds, payouts, staff roles. Needs payment-service and its Daraja credentials.
-  business-payments: ${AGENT_BUSINESS_PAYMENTS:false}
+  # Keep false. This switched on tools that called payment-service, which has been removed. Business requests
+  # (STK Push, payouts, balance and so on) are prepared through agentx-api and its business accounts instead.
+  business-payments: false
 
 logging:
   level:

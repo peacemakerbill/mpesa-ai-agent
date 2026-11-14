@@ -25,11 +25,9 @@ class ReportMailServiceTest {
     private final RecipientService recipients;
     private final ReportMailService reports;
 
+    /** JUnit allows one constructor only, so the properties are made here. */
     ReportMailServiceTest() {
-        this(Fakes.mailProps());
-    }
-
-    private ReportMailServiceTest(MailProperties props) {
+        MailProperties props = Fakes.mailProps();
         rig = new Fakes.Rig(props, false);
         recipients = new RecipientService(rig.recipients.repo(), 50);
         reports = new ReportMailService(sources(), rig.service, recipients, rig.outbox, rig.mailer, props, rig.limiter, rig.clock);

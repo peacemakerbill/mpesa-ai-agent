@@ -71,12 +71,10 @@ The service reads `.env` through `spring.config.import: optional:file:.env[.prop
 | `ANTHROPIC_MODEL` | `claude-sonnet-5-5` | Model name. `ANTHROPIC_MAX_TOKENS` defaults to 1024 |
 | `AGENTX_BASE_URL` | `http://localhost:8084` | Private address of agentx-api |
 | `AGENTX_PUBLIC_BASE_URL` | `http://localhost:8084` | Public address used in the links sent to customers |
-| `PAYMENT_BASE_URL` | `http://localhost:8083` | Only used when business payments are on |
 | `BUSINESS_NAME`, `BUSINESS_SUPPORT_PHONE` | `Our Business`, empty | Shown to customers |
 | `AGENT_STORE` | `redis` | Where conversation state lives |
 | `AGENT_RATE_LIMIT_PER_MINUTE` | `12` | Messages per customer per minute |
 | `AGENT_ESCALATION_PHONES` | empty | Comma separated numbers that receive hand-overs |
-| `AGENT_BUSINESS_PAYMENTS` | `false` | Switches the optional Daraja tools on |
 | `STT_ENABLED`, `STT_BASE_URL`, `STT_API_KEY`, `STT_MODEL` | off | Voice note transcription, any OpenAI compatible endpoint |
 | `TTS_ENABLED`, `TTS_BASE_URL`, `TTS_API_KEY`, `TTS_MODEL`, `TTS_VOICE` | off | Spoken replies |
 | `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` | `localhost`, `6379` | Redis |
@@ -115,7 +113,7 @@ The service answers **202 Accepted** at once and replies on its own threads. A r
 - `ClaudeClient` tries the model up to 3 times when the API answers 408, 429, 500, 502, 503, 504 or 529, or cannot be reached, and then raises a `ModelException` instead of hanging.
 - Messages are accepted at once (202) and handled on their own threads, so a slow model never blocks the caller.
 - Spring AMQP retry uses `max-retries` (renamed from `max-attempts` in Spring AMQP 4).
-- 503 answers for database and broker outages are in payment-service today. Adding the same to this service's `GlobalExceptionHandler` is an open item.
+- 503 answers for database and broker outages are not in this service yet. Adding them to its `GlobalExceptionHandler` is an open item.
 
 ## Boot 4 notes for contributors
 

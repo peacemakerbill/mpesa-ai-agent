@@ -185,9 +185,8 @@ Request states: `CREATED`, `APPROVED`, `HANDED_OFF`, `DONE_REPORTED`, `NOT_DONE`
 | [agent-service](agent-service/README.md) | 8082 | Claude model with tool use, the chat (messages and files) and conversation memory, role handling, menus, media understanding, contact lookup |
 | [agentx-api](agentx-api/README.md) | 8084 | Signs customers in by SMS code, relays the chat, stores requests, serves the app, matches message evidence, publishes events, serves app-link files |
 | [agentx_app](agentx-app/README.md) | none | The Flutter app above |
-| [payment-service](payment-service/README.md) | 8083 | **Optional** Daraja module for a business, off by default |
 
-**Infrastructure.** A database you choose with `DATABASE_TYPE` (MongoDB, PostgreSQL or MySQL, with separate `payments` and `agentx` databases), Redis and RabbitMQ. payment-service defaults to MongoDB when run directly, and the compose file starts PostgreSQL unless you say otherwise. See [`docs/DATABASES.md`](docs/DATABASES.md). All Java services use the same layered packages: controller, service, repository, model, dto, exception, config.
+**Infrastructure.** A database you choose with `DATABASE_TYPE` (MongoDB, PostgreSQL or MySQL, with the `agentx` database), Redis and RabbitMQ. agentx-api defaults to MongoDB when run directly, and the compose file starts PostgreSQL unless you say otherwise. See [`docs/DATABASES.md`](docs/DATABASES.md). All Java services use the same layered packages: controller, service, repository, model, dto, exception, config.
 
 **Engineering features.** Flyway migrations for the SQL databases, idempotency keys, row locking on state changes, events sent only after commit, Docker Compose for everything, per-service `.env.example` files read through `spring.config.import`, and unit and integration tests for the Java services and Dart tests for the app.
 
@@ -197,10 +196,9 @@ Request states: `CREATED`, `APPROVED`, `HANDED_OFF`, `DONE_REPORTED`, `NOT_DONE`
 |---|---|
 | Database not up yet when a SQL service starts | Flyway retries the connection 6 times, 5 seconds apart, then stops with one clear message |
 | Database or Mongo unreachable at run time | Hikari times out after 5 seconds, Mongo after `serverSelectionTimeoutMS=5000`, so requests do not hang |
-| Database, query timeout or RabbitMQ failure inside a payment call | payment-service answers **503 Service Unavailable** with a plain body |
 | The model API answers 408, 429, 5xx or 529 | agent-service tries up to 3 times before giving up |
 
-The 503 handler is in payment-service today. agent-service and agentx-api still need the same treatment.
+agent-service and agentx-api do not answer **503 Service Unavailable** for a database, query timeout or RabbitMQ failure yet.
 
 <div align="center">
 <img src="docs/assets/divider.svg" alt="" width="100%"/>
@@ -226,17 +224,17 @@ The 503 handler is in payment-service today. agent-service and agentx-api still 
 - **Many chats:** a customer can start a new chat, go back to an old one (its messages and the assistant's memory come back), rename it, pin it and delete it. In the app under the Chats button and in the console's Chats panel. See [`docs/CHATS.md`](docs/CHATS.md).
 - **Mail settings** in `application.yml` under `agentx.mail`: `log` (writes emails to the log, the default) or `smtp`, sender, limits, allowed domains. See [`docs/PROFILE_AND_EMAIL.md`](docs/PROFILE_AND_EMAIL.md).
 
-## Optional business payments (Daraja)
+## Business payments (Daraja)
 
-Switched on with `docker compose --profile business up` and `AGENT_BUSINESS_PAYMENTS=true`. Off by default. See [`payment-service/README.md`](payment-service/README.md).
+Run inside agentx-api. Each business saves its own Daraja credentials in the app, encrypted with `AGENTX_VAULT_KEY`, so nothing about a business lives in a `.env` file. See [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md).
 
-- **STK Push** to your own Paybill or Till after the customer taps Pay, with the result coming only from Safaricom's callback, a reconciler for lost callbacks, and payment status and history.
-- **C2B** direct Paybill and Till payments (validation and confirmation callbacks).
-- **Receipts** as PDF, and **QR codes** to pay.
-- **Refunds**, **payouts** (withdrawals, disbursements) and **reversals** through B2C, all needing a second person to approve.
-- **Transaction lookup** and **account balance** for staff and admins.
-- **Roles:** `CUSTOMER`, `STAFF`, `APPROVER`, `ADMIN`, decided from a staff list and the signed-in number. The model only sees the tools its role allows, and payment-service checks again.
-- **Limits:** per payment and per day, configurable.
+- **STK Push** to the business's Paybill or Till, **STK query**, **Dynamic QR**, **pull transactions**, **transaction status**, **account balance**, **B2C**, **Pochi la Biashara**, **B2B** and **reversal**, prepared from the chat.
+- **Approval in the app** for money going out. A request is sent once, and an unclear answer is shown as unknown, never sent again.
+- **Lost callbacks:** a job asks Safaricom about an STK Push whose callback never arrived, settles it, and marks it unknown after 15 minutes.
+- **Limits:** most per request, STK Push requests per hour, and requests waiting for approval.
+- **Reports** of business requests as PDF, CSV or Excel, by email.
+
+Not included, because they belonged to the removed payment-service: staff roles with a second approver, C2B confirmation callbacks, per day payout limits and PDF payment receipts.
 
 ## Try it without a real frontend
 

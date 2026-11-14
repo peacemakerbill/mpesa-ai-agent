@@ -179,7 +179,7 @@ The look and wording of each email are files in `agentx-api/src/main/resources/m
 | A report is sent to anyone other than the owner | The owner's verified email | A short notice listing who got it, so a customer notices if someone else asked on their behalf. |
 | An email address needs verifying | That address | The 6 digit code. |
 
-Sign in emails need one small edit to `AuthController` in your repository, which `agentx-api/tools/apply_profile_hooks.py` makes for you (see APPLY.md). Payment emails cover payments made from the app (the same event that puts the news in the chat) and business requests made from the chat. Payments made inside `payment-service` itself are not part of this update.
+Sign in emails need one small edit to `AuthController` in your repository, which `agentx-api/tools/apply_profile_hooks.py` makes for you (see APPLY.md). Payment emails cover payments made from the app (the same event that puts the news in the chat) and business requests made from the chat.
 
 ## Reports by email
 
@@ -326,4 +326,3 @@ Please run these on your own machine before relying on it:
 - **Network storage is a mounted folder.** Pictures do not go to S3 in this update.
 - **Attached files in the chat.** The assistant can only read a file a customer attaches if your agent-service passes its text to the model. Pasted addresses always work.
 - **The sign in edit.** `AuthController` needs the one line from `apply_profile_hooks.py`. If the script cannot find its place in your version of the file it prints the exact lines to add.
-- **Payment emails from `payment-service`.** Not included. Emails cover payments made from the app and business requests made from the chat, which `agentx-api` records.

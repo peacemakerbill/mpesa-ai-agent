@@ -61,7 +61,6 @@ Customers chat with an assistant in the app or on the web, in English or Swahili
 <td><a href="agentx-app/README.md"><img src="docs/assets/card-agentx-app.svg" alt="agentx_app" width="384"/></a></td>
 </tr>
 <tr>
-<td><a href="payment-service/README.md"><img src="docs/assets/card-payment.svg" alt="payment-service" width="384"/></a></td>
 <td><a href="console/README.md"><img src="docs/assets/card-console.svg" alt="console" width="384"/></a></td>
 <td><a href="postman/README.md"><img src="docs/assets/card-postman.svg" alt="postman" width="384"/></a></td>
 </tr>
@@ -71,9 +70,8 @@ Customers chat with an assistant in the app or on the web, in English or Swahili
 | Part | Port | Job | Needed |
 |---|---|---|---|
 | agent-service | 8082 | Talks to Claude, keeps each customer's chat and files, prepares requests with tools | Yes |
-| agentx-api | 8084 | Signs customers up and in by SMS code, keeps profiles, sends email, relays the chat to the agent, stores prepared requests, serves the app and its link files | Yes |
+| agentx-api | 8084 | Signs customers up and in by SMS code, keeps profiles, sends email, relays the chat to the agent, stores prepared requests, keeps business accounts and sends their Daraja requests, serves the app and its link files | Yes |
 | agentx_app | none | Flutter app for Android, iOS, macOS, Linux and Windows: chat, find contacts, approve, hand over to M-Pesa, report | Yes |
-| payment-service | 8083 | Daraja for a **business**: STK Push to your own shortcode, refunds, payouts, staff roles | Optional, off by default |
 | console | 8000 | One HTML file that behaves like a frontend for every endpoint | For testing |
 | postman | none | Collection and environment for every endpoint | For testing |
 
@@ -86,7 +84,7 @@ All Java services share the same layered packages: `controller`, `service`, `rep
 ## Architecture
 
 <div align="center">
-<img src="docs/assets/architecture.svg" alt="Architecture: app, agentx-api, agent-service, Claude, infrastructure and the optional payment-service" width="100%"/>
+<img src="docs/assets/architecture.svg" alt="Architecture: app, agentx-api, agent-service, Claude and infrastructure" width="100%"/>
 </div>
 
 <br/>
@@ -172,7 +170,7 @@ None of these is a Safaricom confirmation. A message can also correct a request 
 ## Quick start
 
 > [!WARNING]
-> **Status: a reference build.** The code was written and then migrated to Spring Boot 4.1.2 with Jackson 3. agent-service has been seen starting on Boot 4 (Tomcat 11, RabbitMQ connected). payment-service and agentx-api are migrated but have not yet been confirmed running end to end. Nothing has been through a full end to end test. Verify the M-Pesa hand-off values and the SMS wording on real phones before relying on any of it.
+> **Status: a reference build.** The code was written and then migrated to Spring Boot 4.1.2 with Jackson 3. agent-service has been seen starting on Boot 4 (Tomcat 11, RabbitMQ connected). agentx-api is migrated but has not yet been confirmed running end to end. Nothing has been through a full end to end test. Verify the M-Pesa hand-off values and the SMS wording on real phones before relying on any of it.
 
 **1. Prerequisites.** Java 21, Maven 3.9 or later, Docker, Flutter 3.22 or later, an Anthropic API key, and a public HTTPS address for agentx-api (a Cloudflare Tunnel is fine for testing). Real sign-in codes need an Africa's Talking account.
 
@@ -197,7 +195,6 @@ cd agentx-api && mvn spring-boot:run
 ```bash
 cd agent-service   && mvn clean verify
 cd agentx-api       && mvn clean verify
-cd payment-service && mvn clean verify
 cd agentx_app && flutter pub get && flutter analyze && flutter test
 ```
 
@@ -212,7 +209,7 @@ cd console && python3 -m http.server 8000     # then open http://localhost:8000/
 
 <br/>
 
-Pick the database with `DATABASE_TYPE` (`mongodb`, `postgresql` or `mysql`). payment-service defaults to **MongoDB** when run directly, and the compose file starts PostgreSQL unless you say otherwise. Start the matching container with `docker compose --profile mongodb up` or `docker compose --profile mysql up`. MongoDB has no multi-record transactions, so prefer a SQL database for payment-service before real money. Trade-offs are in [`docs/DATABASES.md`](docs/DATABASES.md).
+Pick the database with `DATABASE_TYPE` (`mongodb`, `postgresql` or `mysql`). agentx-api defaults to **MongoDB** when run directly, and the compose file starts PostgreSQL unless you say otherwise. Start the matching container with `docker compose --profile mongodb up` or `docker compose --profile mysql up`. MongoDB has no multi-record transactions, so prefer a SQL database for agentx-api before real money. Trade-offs are in [`docs/DATABASES.md`](docs/DATABASES.md).
 
 If PostgreSQL already has a data volume from an earlier run, the init script is skipped, so create the database once by hand:
 
@@ -286,7 +283,6 @@ The Flutter app and the browser console share the same ten looks. Seven are ever
 | `DATABASE_TYPE` | services with a database | `mongodb`, `postgresql` or `mysql` |
 | `MONGODB_URI` | when using MongoDB | Include `serverSelectionTimeoutMS=5000` so a missing database fails fast |
 | `CORS_ALLOWED_ORIGINS` | any service the console calls | Leave empty in production. A wildcard is ignored on purpose |
-| `AGENT_BUSINESS_PAYMENTS` | agent-service | `true` switches the optional Daraja tools on |
 
 Each service reads a local `.env` file through `spring.config.import: optional:file:.env[.properties]`. Real environment variables always win over the file.
 
@@ -305,7 +301,6 @@ One broken connection should not take the whole project down.
 |---|---|
 | Database is not up yet when a SQL service starts | Flyway retries the connection 6 times, 5 seconds apart, then stops with one clear message |
 | Database or Mongo is unreachable at run time | Hikari gives up after 5 seconds, Mongo after `serverSelectionTimeoutMS=5000`, so requests do not hang |
-| A payment call hits a database, query or RabbitMQ failure | payment-service answers **503 Service Unavailable** with a plain body, not a stack trace |
 
 The retry and timeout values sit in the profile ymls, so they are easy to tune.
 
@@ -329,15 +324,11 @@ The retry and timeout values sit in the profile ymls, so they are easy to tune.
 - **Images** (an M-Pesa message, an invoice, a Paybill sign) and **PDFs** go to the model. **Word, Excel, CSV and text** files are read on the server.
 - Videos and unsupported files are kept in the chat, and the assistant says plainly that it cannot open them.
 
-## Optional business payments
+## Business payments
 
-payment-service is the Daraja module for a **business**. It is not needed for personal wallet requests.
+Business payments run inside agentx-api. There is no separate payment service and no Daraja key, secret or passkey in any `.env` file: each business adds its own under **Settings, Business accounts** in the app, and they are stored encrypted with `AGENTX_VAULT_KEY`. The setup is described in the next section.
 
-1. Start it with `docker compose --profile business up --build`.
-2. Set `AGENT_BUSINESS_PAYMENTS=true` in the agent-service `.env`.
-3. Follow [`payment-service/README.md`](payment-service/README.md) for Daraja setup, callbacks and the staff list.
-
-With the switch off, the assistant is told nothing about these tools, the code refuses them, and every sender is a customer.
+**Lost callbacks.** Safaricom reports the result of an STK Push by calling agentx-api. If that call is lost, a job in agentx-api (`OperationReconciler`) asks Safaricom about the push after 2 minutes and settles it. A push still unanswered after 15 minutes is marked unknown, and the owner is told to check the M-Pesa statement. The timings are `agentx.business.reconcile.*` in `application.yml`.
 
 <div align="center">
 <img src="docs/assets/divider.svg" alt="" width="100%"/>
@@ -379,7 +370,7 @@ upload a list. Mail is written to the log until you set `agentx.mail.transport: 
 - The Google and Microsoft contact sign-ins need your own OAuth client ids and were not run against real accounts. See [`agentx-app/docs/CONTACTS.md`](agentx-app/docs/CONTACTS.md).
 - The phone check protects our approval step only. Whether a biometric or the device lock was used is a best guess recorded for the audit trail.
 - The M-Pesa SMS patterns in `agentx-app/lib/models/mpesa_sms.dart` were written from memory. Test them with real messages.
-- 503 handling is in payment-service. agent-service and agentx-api still need the same treatment in their exception handlers.
+- agent-service and agentx-api do not answer **503 Service Unavailable** for a database, query or RabbitMQ failure yet. Add a handler to each `GlobalExceptionHandler`.
 - No admin dashboard, offline mode or Swahili text in the app screens yet. The assistant itself replies in the customer's language.
 
 ## Security notes

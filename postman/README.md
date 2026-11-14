@@ -52,15 +52,14 @@ A collection and an environment for every HTTP endpoint of the services, with a 
 |---|---|
 | 1. agent-service | Deliver a customer message straight to the agent (text, voice, image, document, contact, location, buttons, menu), and read or clear a customer's chat |
 | 2. agentx-api | Walkthrough, agent-side calls, app-side calls, the chat (read, send, upload, download), business accounts and business requests (C3, C4), sign up and profile (C5), email addresses and reports (C6), the agent side of profile and email (B2), public pages |
-| 3. payment-service | Optional Daraja module: payments, refunds and payouts with approvals, QR, staff roles, Daraja callbacks |
 
 ## Good to know
 
 - Ids, tokens and codes are saved automatically by test scripts into collection variables, so requests chain from one call to the next.
 - The agent needs an `ANTHROPIC_API_KEY` to answer. Without one, messages are accepted but there is no reply.
-- Payment and operation requests need Daraja credentials and the optional module running.
+- Business requests (STK Push, payouts and so on) need a business account with Daraja credentials saved in agentx-api.
 - The collection was generated from the code and has not been run against the services.
-- Addresses and ports in the environment match the defaults: agent-service 8082, payment-service 8083, agentx-api 8084.
+- Addresses and ports in the environment match the defaults: agent-service 8082, agentx-api 8084.
 
 <div align="center">
 <sub>M-Pesa is a registered mark of Safaricom. This project is not affiliated with or endorsed by Safaricom.</sub>

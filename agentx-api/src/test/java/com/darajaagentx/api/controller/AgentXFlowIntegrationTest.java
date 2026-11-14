@@ -366,7 +366,7 @@ class AgentXFlowIntegrationTest {
         String[] t = handedOffBill(phone, "device-sms-two-123").split("\\|");
 
         app(t[0], "POST", "/api/actions/" + t[1] + "/sms-evidence",
-                smsBody("SGL1234567", "BILL", 1200, "KPLC PREPAID", "999999", System.currentTimeMillis()))
+                smsBody("SGL7654321", "BILL", 1200, "KPLC PREPAID", "999999", System.currentTimeMillis()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("different account")));
         app(t[0], "GET", "/api/actions/" + t[1], null)

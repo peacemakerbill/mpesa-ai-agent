@@ -11,7 +11,7 @@
 
 <br/><br/>
 
-`agentx-api` and `payment-service` can each run on **PostgreSQL**, **MySQL** or **MongoDB**. You pick one word.
+`agentx-api` can run on **PostgreSQL**, **MySQL** or **MongoDB**. You pick one word.
 
 <sub><a href="../README.md">Back to the project overview</a></sub>
 
@@ -36,7 +36,7 @@ spring:
 Or leave the file alone and set `DATABASE_TYPE` in the environment or in the service's `.env`. **The environment wins.** Each service can use a different database.
 
 > [!NOTE]
-> **Defaults.** agentx-api and payment-service both default to `mongodb` when you run them directly. A `DATABASE_TYPE` line in a service's `.env` wins over the default, so check that file if the service starts on a database you did not expect. The compose file still starts PostgreSQL unless `DATABASE_TYPE` says otherwise.
+> **Defaults.** agentx-api defaults to `mongodb` when you run it directly. A `DATABASE_TYPE` line in its `.env` wins over the default, so check that file if the service starts on a database you did not expect. The compose file still starts PostgreSQL unless `DATABASE_TYPE` says otherwise.
 
 Each service reads its local `.env` through `spring.config.import: optional:file:.env[.properties]`. Spring Boot does not read `.env` on its own, so this line must stay in `application.yml`. Real environment variables always win over the file.
 
@@ -48,7 +48,7 @@ The connection details live in three small files next to `application.yml`:
 | `application-mysql.yml` | `mysql` | `MYSQL_URL` (or `DB_URL`) |
 | `application-mongodb.yml` | `mongodb` | `MONGODB_URI` |
 
-SQL databases also read `DB_USER` and `DB_PASSWORD`. Defaults point at `localhost`, with database names `agentx` and `payments`.
+SQL databases also read `DB_USER` and `DB_PASSWORD`. Defaults point at `localhost`, with the database name `agentx`.
 
 ## With Docker Compose
 
@@ -81,7 +81,7 @@ Then set the address in `.env`, for example:
 
 ```properties
 DATABASE_TYPE=mongodb
-MONGODB_URI=mongodb://localhost:27017/payments?serverSelectionTimeoutMS=5000
+MONGODB_URI=mongodb://localhost:27017/agentx?serverSelectionTimeoutMS=5000
 ```
 
 ## What changes underneath
@@ -125,12 +125,12 @@ Flyway retries the connection 6 times, 5 seconds apart, so a database that is st
 **MongoDB profile**
 
 ```properties
-MONGODB_URI=mongodb://localhost:27017/payments?serverSelectionTimeoutMS=5000
+MONGODB_URI=mongodb://localhost:27017/agentx?serverSelectionTimeoutMS=5000
 ```
 
 The driver gives up looking for a server after 5 seconds, so a missing database fails fast.
 
-At run time, payment-service answers **503 Service Unavailable** when a database, a query timeout or RabbitMQ fails inside a request. agent-service and agentx-api do not have that handler yet.
+A database, query timeout or RabbitMQ failure inside a request does not have its own **503 Service Unavailable** answer yet.
 
 </td>
 </tr>
@@ -189,12 +189,12 @@ spring:
 ## MongoDB: read this before choosing it for payments
 
 > [!WARNING]
-> MongoDB is the default for payment-service when run directly, because it is the easiest to start. For real money, think again.
+> MongoDB is the default for agentx-api when run directly, because it is the easiest to start. For real money, think again.
 
-- **No multi-document transactions.** The service does not use a Mongo replica set. When one action changes two records (for example a payment and its operation), the two writes are not atomic. A crash between them can leave one done and one not. The reconciler in payment-service repairs lost callbacks, but this is a real weakening compared with SQL.
+- **No multi-document transactions.** The service does not use a Mongo replica set. When one action changes two records (for example a payment and its operation), the two writes are not atomic. A crash between them can leave one done and one not. The reconciler in agentx-api repairs STK Pushes whose callback was lost, but this is a real weakening compared with SQL.
 - **Idempotency still holds.** Unique indexes on the idempotency key and the M-Pesa receipt are created for you.
 - **Row locks become version checks.** Two callbacks racing on the same record: one wins, the other gets `409`.
-- If you need strict atomicity across records, choose PostgreSQL or MySQL. For payment-service that is the safer pick.
+- If you need strict atomicity across records, choose PostgreSQL or MySQL. For business payments that is the safer pick.
 
 ## Moving data
 
@@ -206,7 +206,7 @@ Switching the word does **not** move data. A new database starts empty. To keep 
 > Be honest with yourself about what has been run.
 
 - The code for all three databases was written and checked for syntax only. It has been migrated to Spring Boot 4.1.2, but a full build and test run is yours to do.
-- agent-service has been seen starting on Boot 4. payment-service reached its database connection step and stopped there only because PostgreSQL was not running. That was a missing database, not a code error.
+- agent-service has been seen starting on Boot 4.
 - The tests use an in-memory H2 database in PostgreSQL mode. **MySQL and MongoDB were never run**, not even in a test. Run `mvn clean verify` first, then start each service once per database with the compose profiles above and try the Journey tab of `console/console.html`.
 - The Boot 4 class names in the exclude lists were taken from the Boot 4 documentation, but start each profile once to confirm them on your machine.
 

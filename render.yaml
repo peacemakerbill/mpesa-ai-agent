@@ -1,0 +1,135 @@
+# Render Blueprint for Daraja Agent-X.
+# Put this file at the root of the repository (next to docker-compose.yml) and name it render.yaml.
+#
+# What it creates:
+#   agentx-api     public web service    the phone app, the console and the chat links talk to this one
+#   agent-service  private service       the chat and the model, only agentx-api talks to it
+#   agentx-redis   Render Key Value      used by agent-service for the chat history
+#
+# Not created here, because Render does not host them:
+#   MongoDB        Use MongoDB Atlas and paste its connection string when the Blueprint asks.
+#   RabbitMQ       Use a hosted one (CloudAMQP) and paste its address when the Blueprint asks.
+#
+# Every service must stay in the same region, or they cannot reach each other on the private network.
+
+envVarGroups:
+  - name: agentx-shared
+    envVars:
+      # The shared secret between your own services (X-Internal-Key header). Render makes a random one once.
+      - key: INTERNAL_KEY
+        generateValue: true
+
+services:
+  - type: keyvalue
+    name: agentx-redis
+    region: frankfurt
+    plan: free               # in memory only: a restart clears the chat history, which is kept 24 hours anyway
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+  - type: web
+    name: agentx-api
+    runtime: docker
+    region: frankfurt
+    plan: starter            # a free web service cannot receive the private calls from agent-service
+    dockerfilePath: ./agentx-api/Dockerfile
+    dockerContext: ./agentx-api
+    healthCheckPath: /actuator/health/liveness
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - agentx-api/**
+    envVars:
+      - fromGroup: agentx-shared
+
+      # Render sends traffic to the port in PORT (10000). The service reads SERVER_PORT.
+      - key: SERVER_PORT
+        value: "10000"
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=70 -XX:+UseSerialGC
+
+      # Database
+      - key: DATABASE_TYPE
+        value: mongodb
+      # Atlas connection string with the database name in it, see the notes
+      - key: MONGODB_URI
+        sync: false
+
+      # Message broker (CloudAMQP or any hosted RabbitMQ). Looks like amqps://user:password@host/vhost
+      - key: SPRING_RABBITMQ_ADDRESSES
+        sync: false
+
+      # Private address of agent-service. The name is the service name, the port is the one in PORT.
+      - key: AGENT_BASE_URL
+        value: http://agent-service:10000
+
+      # Your public https address, for example https://agentx-api.onrender.com. Links in the chat point here.
+      - key: AGENTX_PUBLIC_BASE_URL
+        sync: false
+      - key: AGENTX_TOKEN_SECRET
+        generateValue: true
+      # Locks business credentials people save in the app. Create it once, keep a copy. Blank turns the feature off.
+      - key: AGENTX_VAULT_KEY
+        sync: false
+
+      # How sign-in codes reach people. Never dev on a real system.
+      - key: CODE_DELIVERY
+        value: log
+      - key: CORS_ALLOWED_ORIGINS
+        value: ""
+
+      # Email. Render blocks the usual SMTP ports on free services, so see the notes before turning this on.
+      - key: MAIL_TRANSPORT
+        value: log
+      - key: AGENTX_WEBSITE
+        sync: false
+      - key: AGENTX_APP_URL
+        sync: false
+
+  - type: pserv
+    name: agent-service
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    dockerfilePath: ./agent-service/Dockerfile
+    dockerContext: ./agent-service
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - agent-service/**
+    envVars:
+      - fromGroup: agentx-shared
+      - key: SERVER_PORT
+        value: "10000"
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=70 -XX:+UseSerialGC
+
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+      - key: AGENT_STORE
+        value: redis
+      - key: REDIS_HOST
+        fromService:
+          type: keyvalue
+          name: agentx-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: keyvalue
+          name: agentx-redis
+          property: port
+
+      - key: SPRING_RABBITMQ_ADDRESSES
+        sync: false
+
+      # agentx-api, by its private name, and by its public address for links shown to customers
+      - key: AGENTX_BASE_URL
+        value: http://agentx-api:10000
+      - key: AGENTX_PUBLIC_BASE_URL
+        sync: false
+
+      - key: BUSINESS_NAME
+        value: Daraja Agent-X
+      - key: CORS_ALLOWED_ORIGINS
+        value: ""
