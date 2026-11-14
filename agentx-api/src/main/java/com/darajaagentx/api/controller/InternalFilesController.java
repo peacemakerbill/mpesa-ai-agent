@@ -39,7 +39,7 @@ public class InternalFilesController {
     /** Keeps the bytes. {@code keepSeconds} is how long they are needed, and a store that can drop them after that does. */
     @PutMapping("/{name}")
     public ResponseEntity<Void> put(@PathVariable String name, @RequestBody byte[] bytes,
-                                    @RequestParam(value = "keepSeconds", required = false) Long keepSeconds) {
+                                    @RequestParam(required = false) Long keepSeconds) {
         if (!NAME.matcher(name).matches()) {
             return ResponseEntity.badRequest().build();
         }
