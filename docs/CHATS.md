@@ -1,8 +1,24 @@
+<div align="center">
+
+<img src="assets/banner-chats.svg" alt="" width="100%"/>
+
+<br/>
+
+<img src="assets/badges-chats.svg" alt="Up to 100 chats each, pinned chats stay on top, the assistant's memory returns with the chat, saved chats are kept 180 days, deleting is for good." width="880"/>
+
+<br/><br/>
+
+Several chats for every customer. Start one, go back to an old one, rename it, pin it.
+
+<sub><a href="../README.md">Back to the project overview</a> &nbsp;|&nbsp; <a href="../FEATURES.md">Features</a> &nbsp;|&nbsp; <a href="PROFILE_AND_EMAIL.md">Profile and email</a></sub>
+
+<img src="assets/divider.svg" alt="" width="100%"/>
+
+</div>
+
 # Many chats
 
 A customer can keep several chats, the way Claude and ChatGPT do. They start a new chat, go back to an old one, rename it, pin it to the top and delete it.
-
-<sub><a href="../README.md">Back to the project overview</a></sub>
 
 ## What the customer sees
 
@@ -21,6 +37,12 @@ A customer can keep several chats, the way Claude and ChatGPT do. They start a n
 ## How it works
 
 Nothing in the assistant had to learn about several chats. Each customer still has **one live chat**, the one the assistant reads and writes. Every other chat is kept aside as a saved copy. Opening a chat sets the live one aside and brings the saved one in, with fresh message numbers so an app that is already open notices the change.
+
+<div align="center">
+
+<img src="assets/chats-flow.svg" alt="Opening a chat: the customer taps it, the live chat is kept as a copy, the saved copy becomes the live chat, its messages get fresh numbers, and the app reads again from the start." width="100%"/>
+
+</div>
 
 | Stored in the state store (Redis, or memory in development) | Holds |
 |---|---|

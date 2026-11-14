@@ -1,0 +1,51 @@
+<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/assets/badges-email-templates.svg  (create the docs/assets folder if it does not exist) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="880" height="94" viewBox="0 0 880 94" role="img" aria-label="Sent as HTML only, a small template language, edit without a rebuild, dark mode supported, no emojis and tested, times in Nairobi time.">
+<title>Sent as HTML only, a small template language, edit without a rebuild, dark mode supported, no emojis and tested, times in Nairobi time.</title>
+<defs><clipPath id="c161"><rect width="161" height="42" rx="6"/></clipPath><clipPath id="c193"><rect width="193" height="42" rx="6"/></clipPath><clipPath id="c143"><rect width="143" height="42" rx="6"/></clipPath><clipPath id="c145"><rect width="145" height="42" rx="6"/></clipPath><clipPath id="c122"><rect width="122" height="42" rx="6"/></clipPath><clipPath id="cl"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z"/></clipPath><clipPath id="od"><rect x="-1" y="21" width="10" height="17"/></clipPath></defs>
+<style>
+:root { --bg:#F6F7F4; --pn:#FFFFFF; --ink:#14211A; --mut:#5B6A62; --rule:#D8DDD6; --grn:#17803D; --amb:#A8650A; --red:#B3261E; --blu:#1F5FBF; --dot:#C9D0C8; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0F1512; --pn:#151D19; --ink:#E7EDE9; --mut:#8D9C94; --rule:#2A352F; --grn:#47C27A; --amb:#E0A84A; --red:#FF7B72; --blu:#6EA8FF; --dot:#26312B; } }
+text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+:where(text:not([fill])) { fill: var(--ink); }
+.m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+.mut { fill: var(--mut); }
+.bg { fill: var(--bg); stroke: var(--rule); }
+.pn { fill: var(--pn); stroke: var(--rule); }
+.hl { stroke: var(--rule); fill: none; }
+.hf { fill: var(--rule); }
+.g { fill: var(--grn); } .gs { stroke: var(--grn); fill: none; }
+.ms { stroke: var(--mut); fill: none; }
+.wt { fill: #fff; } .w8 { fill: #fff; fill-opacity: .82; } .w6 { fill: #fff; fill-opacity: .6; }
+.halo { paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.fu { opacity: 0; animation: fu .8s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes fu { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+.lf { animation: lf .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lf { from { fill-opacity: 0; fill: #47C27A } to { fill-opacity: 1; fill: #fff } }
+.wipe { animation: wipe 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes wipe { from { clip-path: inset(-12% 100% -12% 0) } to { clip-path: inset(-12% -3% -12% 0) } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } .fu { opacity: 1 !important; } }
+
+.pp { animation: pp .5s cubic-bezier(.2,.9,.3,1.3) both; transform-box: fill-box; transform-origin: center; }
+@keyframes pp { from { opacity: 0; transform: translate(0,0) scale(.4) } to { opacity: 1 } }
+.dr * { stroke-dasharray: 1; animation: dr .9s ease-in-out both; animation-delay: inherit; }
+.dr { }
+@keyframes dr { from { stroke-dashoffset: 1; opacity: 0 } 6% { opacity: 1 } to { stroke-dashoffset: 0; opacity: 1 } }
+.sh { animation: sh 9s ease-in-out infinite both; }
+@keyframes sh { 0% { transform: translateX(0) skewX(-18deg) } 9% { transform: translateX(110px) skewX(-18deg) } 100% { transform: translateX(110px) skewX(-18deg) } }
+.ac { transform-box: fill-box; transform-origin: left center; animation: ac .8s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes ac { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+.rg { transform-box: fill-box; transform-origin: center; animation: rg 2.4s ease-out infinite; }
+@keyframes rg { 0% { transform: scale(1); opacity: .8 } 100% { transform: scale(2.6); opacity: 0 } }
+.od { animation: od 1.3s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes od { from { transform: translateY(0) } }
+@media (prefers-reduced-motion: reduce) { .sh, .rg { display: none; } .dr *, .pp, .ac { animation: none !important; } }
+</style>
+<g transform="translate(30.6,1)"><g class="fu" style="animation-delay:0.15s"><rect class="pn" x=".5" y=".5" width="144.2" height="41" rx="6"/><g clip-path="url(#c145)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#2B3A32"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.40s"><path pathLength="1" d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" />
+  <rect pathLength="1" x="2" y="4" width="20" height="16" rx="2" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:1.35s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.50s" x="42" y="39" width="103.2" height="3" fill="#2B3A32"/><text x="54" y="17" font-size="10.5" class="mut">Sent as</text><text x="54" y="34" font-size="13.5" font-weight="700">HTML only</text></g></g></g><g transform="translate(183.8,1)"><g class="fu" style="animation-delay:0.22s"><rect class="pn" x=".5" y=".5" width="192.5" height="41" rx="6"/><g clip-path="url(#c193)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#2B3A32"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.47s"><path pathLength="1" d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1" />
+  <path pathLength="1" d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:1.82s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.57s" x="42" y="39" width="151.5" height="3" fill="#2B3A32"/><text x="54" y="17" font-size="10.5" class="mut">Language</text><text x="54" y="34" font-size="13.5" font-weight="700">small, {{name}}</text></g></g></g><g transform="translate(385.2,1)"><g class="fu" style="animation-delay:0.29s"><rect class="pn" x=".5" y=".5" width="142.3" height="41" rx="6"/><g clip-path="url(#c143)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#17803D"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.54s"><path pathLength="1" d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+  <path pathLength="1" d="M21 3v5h-5" />
+  <path pathLength="1" d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+  <path pathLength="1" d="M8 16H3v5" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:2.29s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.64s" x="42" y="39" width="101.3" height="3" fill="#17803D"/><text x="54" y="17" font-size="10.5" class="mut">Edit</text><text x="54" y="34" font-size="13.5" font-weight="700">no rebuild</text></g></g></g><g transform="translate(536.5,1)"><g class="fu" style="animation-delay:0.36s"><rect class="pn" x=".5" y=".5" width="142.8" height="41" rx="6"/><g clip-path="url(#c143)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#2B3A32"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.61s"><path pathLength="1" d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:2.76s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.71s" x="42" y="39" width="101.8" height="3" fill="#2B3A32"/><text x="54" y="17" font-size="10.5" class="mut">Dark mode</text><text x="54" y="34" font-size="13.5" font-weight="700">supported</text></g></g></g><g transform="translate(688.3,1)"><g class="fu" style="animation-delay:0.43s"><rect class="pn" x=".5" y=".5" width="160.1" height="41" rx="6"/><g clip-path="url(#c161)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#B3261E"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.68s"><circle pathLength="1" cx="12" cy="12" r="10" />
+  <path pathLength="1" d="M4.929 4.929 19.07 19.071" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:3.23s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.78s" x="42" y="39" width="119.1" height="3" fill="#B3261E"/><text x="54" y="17" font-size="10.5" class="mut">Emojis</text><text x="54" y="34" font-size="13.5" font-weight="700">none, tested</text></g></g></g><g transform="translate(378.9,51)"><g class="fu" style="animation-delay:0.50s"><rect class="pn" x=".5" y=".5" width="121.2" height="41" rx="6"/><g clip-path="url(#c122)"><path d="M6 0H42V42H6A6 6 0 0 1 0 36V6A6 6 0 0 1 6 0Z" fill="#2B3A32"/><g transform="translate(11.0,11.0) scale(0.8333333333333334)"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dr" style="animation-delay:0.75s"><circle pathLength="1" cx="12" cy="12" r="10" />
+  <path pathLength="1" d="M12 6v6l4 2" /></g></g><g clip-path="url(#cl)"><rect class="sh" style="animation-delay:1.70s" x="-30" y="-4" width="14" height="50" fill="#fff" fill-opacity=".34" transform="skewX(-18)"/></g><rect class="ac" style="animation-delay:0.85s" x="42" y="39" width="80.2" height="3" fill="#2B3A32"/><text x="54" y="17" font-size="10.5" class="mut">Times</text><text x="54" y="34" font-size="13.5" font-weight="700">Nairobi</text></g></g></g>
+</svg>

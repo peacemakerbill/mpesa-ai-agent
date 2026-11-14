@@ -1,3 +1,21 @@
+<div align="center">
+
+<img src="assets/banner-email-templates.svg" alt="" width="100%"/>
+
+<br/>
+
+<img src="assets/badges-email-templates.svg" alt="Sent as HTML only, a small template language, edit without a rebuild, dark mode supported, no emojis and tested, times in Nairobi time." width="880"/>
+
+<br/><br/>
+
+Every automatic email is built from files in one folder, so the look and the wording change without touching Java.
+
+<sub><a href="../README.md">Back to the project overview</a> &nbsp;|&nbsp; <a href="PROFILE_AND_EMAIL.md">Profile and email</a> &nbsp;|&nbsp; <a href="ENVIRONMENTS.md">Environments</a></sub>
+
+<img src="assets/divider.svg" alt="" width="100%"/>
+
+</div>
+
 # Email templates
 
 Every automatic email is built from files in one folder, so the look and the wording can change without touching Java. Emails are sent as HTML only. There are no plain text template files.
