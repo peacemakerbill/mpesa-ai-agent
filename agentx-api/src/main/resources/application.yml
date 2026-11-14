@@ -126,6 +126,17 @@ agentx:
   # callbacks must go to a different public https address, for example a tunnel to your laptop while testing. Address only.
   stk:
     callback-url: ${AGENTX_STK_CALLBACK_URL:}
+  # Development only (docs/DEV_TUNNEL.md). When no public address is set for the STK answers, a zrok2 or ngrok tunnel is opened
+  # once the service is up, installing the program into your own folder if it is missing. Needs one account token.
+  dev-tunnel:
+    mode: ${DEV_TUNNEL:auto}
+    provider: ${DEV_TUNNEL_PROVIDER:auto}
+    install: ${DEV_TUNNEL_INSTALL:true}
+    wait-seconds: ${DEV_TUNNEL_WAIT:40}
+    zrok-token: ${ZROK_ENABLE_TOKEN:}
+    ngrok-token: ${NGROK_AUTHTOKEN:}
+    zrok-version: ${ZROK2_VERSION:}
+    zrok-share-args: ${ZROK_SHARE_ARGS:}
   # Requests made on business accounts from the chat. Safaricom posts its answers to PUBLIC_BASE_URL/daraja/business/...,
   # so public-base-url above must be an HTTPS address that Safaricom can reach.
   business:

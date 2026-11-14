@@ -84,7 +84,7 @@ public class BusinessOperationService {
     private final BusinessOpsProperties props;
     private final String publicBaseUrl;
     /** Where Safaricom answers an STK Push when that differs from publicBaseUrl (AGENTX_STK_CALLBACK_URL). Empty means the same address. */
-    private String stkCallbackBase = "";
+    private volatile String stkCallbackBase = "";
     private final SlidingWindowLimiter limiter;
     private final Clock clock;
     private final ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
@@ -117,7 +117,7 @@ public class BusinessOperationService {
     }
 
     /** Sends the answers to STK Pushes to this address instead of the public address of the service. Blank goes back to the public address. */
-    void setStkCallbackBase(String url) {
+    public void setStkCallbackBase(String url) {
         this.stkCallbackBase = StkCallback.normalize(url);
         String where = stkCallbackBase.isEmpty() ? publicBaseUrl : stkCallbackBase;
         String problem = StkCallback.problem(where);
@@ -126,7 +126,7 @@ public class BusinessOperationService {
         } else {
             log.warn("Safaricom's answers to STK Pushes would go to {}, but {}. The prompt still reaches the phone, and the result is then fetched "
                     + "from Safaricom about every minute instead. Set AGENTX_STK_CALLBACK_URL to a public https address to get it at once, or in development "
-                    + "start with ./run-dev.sh to open a tunnel for you.", where, problem);
+                    + "give a zrok or ngrok token (ZROK_ENABLE_TOKEN or NGROK_AUTHTOKEN) so a tunnel is opened for you.", where, problem);
         }
     }
 

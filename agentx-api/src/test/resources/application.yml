@@ -27,6 +27,8 @@ internal:
   key: test-internal-key
 
 agentx:
+  dev-tunnel:
+    mode: off
   token-secret: test-token-secret-with-at-least-32-characters
   token-ttl: P30D
   link-code-ttl: PT10M
