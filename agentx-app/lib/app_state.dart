@@ -11,6 +11,7 @@ import 'contacts/contact_services.dart';
 import 'contacts/platform/platform_contacts.dart';
 import 'models/wake.dart';
 import 'models/wallet_action.dart';
+import 'services/agent_poke.dart';
 import 'services/approval.dart';
 import 'services/code_reader.dart';
 import 'services/launcher.dart';
@@ -22,7 +23,7 @@ import 'theme/app_theme.dart';
 
 /// Holds what every screen shares: whether this phone is signed in, the hand-off settings, and a link waiting to be opened.
 class AppState extends ChangeNotifier {
-  AppState({SecureStore? store, ApiClient? api, Approval? approval, Launcher? launcher, ContactServices? contacts, ChatDevice? chatDevice, SmsReader? sms, Waker? waker, CodeReader? codeReader}) {
+  AppState({SecureStore? store, ApiClient? api, Approval? approval, Launcher? launcher, ContactServices? contacts, ChatDevice? chatDevice, SmsReader? sms, Waker? waker, AgentPoke? agentPoke, CodeReader? codeReader}) {
     this.store = store ?? SecureStore();
     this.api = api ?? ApiClient(baseUrl: AppConfig.apiBaseUrl, tokenProvider: this.store.token);
     this.approval = approval ?? Approval();
@@ -31,6 +32,7 @@ class AppState extends ChangeNotifier {
     this.chatDevice = chatDevice ?? PlatformChatDevice(navigatorKey: navigatorKey, compressor: compressor);
     this.sms = sms ?? DeviceSmsReader();
     this.waker = waker ?? Waker(() => this.api.wake());
+    this.agentPoke = agentPoke ?? AgentPoke(AppConfig.agentWakeUrl);
     this.codeReader = codeReader ?? DeviceCodeReader();
   }
 
@@ -48,6 +50,9 @@ class AppState extends ChangeNotifier {
   late final ChatDevice chatDevice;
   late final SmsReader sms;
   late final Waker waker;
+
+  /// Wakes the assistant service at the same time as the server. It does nothing when no address is set.
+  late final AgentPoke agentPoke;
 
   /// Reads the sign-in code from the text message, on Android. Signing in and signing up both use it.
   late final CodeReader codeReader;
@@ -97,10 +102,13 @@ class AppState extends ChangeNotifier {
         notifyListeners();
       }
     });
+    // The assistant service gets its own wake-up request now, so it starts with the server and not after it.
+    unawaited(agentPoke.start());
     final ok = await waker.run(onAnswer: (answer) {
       lastWake = answer;
       if (server == ServerPhase.starting) notifyListeners();
     });
+    agentPoke.stop();
     reveal.cancel();
     server = ok ? ServerPhase.ready : ServerPhase.unreachable;
     if (ok) _readyAt = DateTime.now();

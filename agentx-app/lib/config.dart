@@ -22,6 +22,11 @@ class AppConfig {
   static String defaultApiBaseUrl(TargetPlatform platform, {required bool web}) =>
       !web && platform == TargetPlatform.android ? 'http://10.0.2.2:8084' : 'http://localhost:8084';
 
+  /// Where the assistant service is, for example https://agent-service-free-ab.onrender.com. The app asks it to wake up at
+  /// the same time as the server, so a free host that puts both to sleep is ready sooner. Empty does nothing, which is right
+  /// for a server that never sleeps. Only the address of its public health check is used, and it holds no secret.
+  static const String agentWakeUrl = String.fromEnvironment('AGENT_WAKE_URL');
+
   /// The custom scheme used when the https link does not open the app directly.
   static const String linkScheme = 'agentx';
 

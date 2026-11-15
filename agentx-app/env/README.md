@@ -11,6 +11,7 @@ One small file for each server the app can be built for. They hold the settings 
 ```json
 {
   "API_BASE_URL": "https://agentx-api-free-bgp.onrender.com",
+  "AGENT_WAKE_URL": "https://agent-service-free-bgp.onrender.com",
   "MS_CLIENT_ID": ""
 }
 ```
@@ -18,6 +19,7 @@ One small file for each server the app can be built for. They hold the settings 
 | Key | Meaning |
 |---|---|
 | `API_BASE_URL` | The server's address, starting with `https://` and with no slash at the end. Required for a release build. |
+| `AGENT_WAKE_URL` | Optional. The address of the assistant service, for a free host that puts both services to sleep. The app asks it to wake up at the same moment as the server, so the wait is the longer of the two instead of the two added together. Leave it empty (or leave the line out) when the services never sleep. It is only a public address, never a key. |
 | `MS_CLIENT_ID` | The Microsoft app registration id for Outlook contacts. Empty hides that source. See `docs/CONTACTS.md`. |
 
 These are not secrets. They end up inside the built app, and `staging.json` and `production.json` are committed. Never put a key or password in them.
@@ -33,6 +35,7 @@ tool/app.sh production build appbundle       a store build
 tool/app.sh staging build apk
 tool/app.sh staging show                     print the settings
 tool/app.sh staging set API_BASE_URL https://agentx-api-free-bgp.onrender.com
+tool/app.sh staging set AGENT_WAKE_URL https://agent-service-free-bgp.onrender.com
 ```
 
 `set` changes one value and leaves the rest of the file as it was. It is the way to update the file when the server's address changes, and it asks you to commit the file afterwards.
