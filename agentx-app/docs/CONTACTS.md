@@ -1,6 +1,3 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/agentx-app/docs/CONTACTS.md
-     Replace the existing file. The images it uses are in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
-
 <div align="center">
 
 <img src="../../docs/assets/banner-contacts.svg" alt="" width="100%"/>

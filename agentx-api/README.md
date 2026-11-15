@@ -1,6 +1,3 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/agentx-api/README.md
-     Replace the existing file if there is one. The SVG images it uses go in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
-
 <div align="center">
 
 <img src="../docs/assets/banner-agentx-api.svg" alt="" width="100%"/>
@@ -94,8 +91,25 @@ Locally the code is shown on screen by default (`CODE_SHOW_IN_APP=auto`), so you
 | `GET`, `POST`, `DELETE /api/chat/messages` | Read, send and clear the chat |
 | `GET`, `POST`, `DELETE /api/chat/sessions`, `POST /api/chat/sessions/{id}/open`, `PUT .../title`, `PUT .../pin`, `DELETE /api/chat/sessions/{id}` | The list of chats: start a new one, open an old one, rename, pin, delete. See [`docs/CHATS.md`](../docs/CHATS.md) |
 | `POST /api/chat/media`, `GET /api/chat/media/{id}` | Upload and download chat files |
+| `GET`, `POST /api/business-accounts` | List the customer's business accounts, and save one. Secrets are encrypted and only a clue (the last 4 characters) comes back, with a `credentials` block that says which credentials are saved and whether the vault key can still open them |
+| `GET`, `PUT`, `DELETE /api/business-accounts/{id}` | Read, change and remove one account. A secret left out of a change keeps the saved value |
+| `POST /api/business-accounts/{id}/verify` | Ask Safaricom for a token with the saved consumer key and secret, and check the certificate for the initiator password |
+| `GET /api/business-accounts/csv-template`, `POST /api/business-accounts/import` | The CSV template, and upload up to 500 accounts |
+| `GET /api/business-operations`, `GET /api/business-operations/{id}` | List and read business requests. Each carries a `timeline` of what happened, step by step, with the time of each |
+| `POST /api/business-operations/qr` | Make a Dynamic QR code to pay a saved account, or any Till, Paybill or phone number. See "QR codes and Lipa na Bonga" below |
+| `POST /api/business-operations/{id}/approval-code`, `.../approve`, `.../decline` | Approve (fingerprint, phone lock or text message code) or decline a business request that is waiting |
 | `GET /a/{id}` | Landing page that opens the app. The chat no longer shows this address, it is for links opened from a browser or another app |
 | `GET /.well-known/assetlinks.json` and `apple-app-site-association` | App link files |
+
+**Called by Safaricom** (no session token, the address carries a one time token for that request)
+
+| Method and path | Purpose |
+|---|---|
+| `POST /stk-callback/{id}/{token}` | The answer to an STK Push |
+| `POST /results/{id}/{token}`, `POST /timeout/{id}/{token}` | The result, and the timeout, of B2C, B2B, balance, transaction status, reversal and pull transactions |
+| `GET /daraja/ping` | Answers `{"status":"ok","service":"agentx-api"}`, so you can check that this address leads to this service from the internet. It shows nothing private |
+
+The older routes `/daraja/business/{id}/{token}/callback`, `/result` and `/timeout` are still served for requests that were sent before the short paths. The addresses are chosen by `AGENTX_STK_CALLBACK_URL`, `AGENTX_RESULT_URL` and `AGENTX_TIMEOUT_URL`, see [`docs/STK_CALLBACK.md`](../docs/STK_CALLBACK.md).
 
 **Internal, for agent-service** (`X-Internal-Key` required)
 

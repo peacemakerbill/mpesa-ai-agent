@@ -4769,6 +4769,86 @@
               ]
             },
             {
+              "name": "Make a QR code for the saved account",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"account\": \"{{bizAccountId}}\",\n  \"amount\": 300,\n  \"reference\": \"Table 4\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-operations/qr",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-operations",
+                    "qr"
+                  ]
+                },
+                "description": "Makes a Daraja Dynamic QR code that pays the saved account: a Buy Goods account pays its Till, a Paybill account pays its Paybill with the saved account reference as the account number. The answer is the usual request view and qrCode holds a base64 PNG. The picture is not stored, so ask again for a new one. The saved account's consumer key and secret sign the call. Up to 60 a hour."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('A picture came back', function () { pm.expect(pm.response.json().qrCode).to.be.a('string').that.is.not.empty; });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Make a QR code for any Till",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"account\": \"{{bizAccountId}}\",\n  \"amount\": 500,\n  \"payTo\": \"till\",\n  \"payToNumber\": \"123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{agentxUrl}}/api/business-operations/qr",
+                  "host": [
+                    "{{agentxUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "business-operations",
+                    "qr"
+                  ]
+                },
+                "description": "Pays any Till, with the saved account only signing the call. payTo can be account (the default), till, paybill or phone. A paybill needs payToNumber and a reference, which becomes the account number."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                      "pm.test('A picture came back', function () { pm.expect(pm.response.json().qrCode).to.be.a('string').that.is.not.empty; });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
               "name": "Open a business request",
               "request": {
                 "method": "GET",

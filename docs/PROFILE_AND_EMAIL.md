@@ -1,6 +1,3 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/docs/PROFILE_AND_EMAIL.md
-     The images it uses are in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
-
 <div align="center">
 
 <img src="assets/banner-profile.svg" alt="" width="100%"/>

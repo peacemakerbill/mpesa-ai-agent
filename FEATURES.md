@@ -1,6 +1,3 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/FEATURES.md
-     Replace the existing file. The images it uses are in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
-
 <div align="center">
 
 <img src="docs/assets/banner-features.svg" alt="" width="100%"/>
@@ -213,6 +210,9 @@ agent-service and agentx-api do not answer **503 Service Unavailable** for a dat
 
 - **Business accounts** (Settings): Paybill or Buy Goods shortcode, till numbers, consumer key and secret, STK passkey, initiator name and password, encrypted on the server. Security credential made by the server. Several branches or tills under one shortcode, and store numbers or child shortcodes with their own number (a Buy Goods store number has its linked till, a Paybill child has none), each using the head office's credentials or its own, whichever it has from Daraja. CSV upload with a full check first. See [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md).
 - **Transactions in chat:** STK Push, STK Push query, Dynamic QR, balance, pull transactions, B2C, Pochi la Biashara, B2B. Money out needs approval in the app. Requests are sent once.
+- **QR codes:** a Dynamic QR code to pay a saved account, or any Till, Paybill or phone number, from the app (QR icon on Business accounts) or by asking in the chat. Not stored, 60 an hour per customer. **Lipa na Bonga** has no merchant API, so only the payer's steps (`*126#`) are shown, for a Till.
+- **Saved credentials card:** which credentials are saved, a masked clue for each, and a warning when the vault key cannot open them.
+- **Request timeline:** each business request lists what happened and when: asked, approved, sent, accepted, timed out, finished.
 - **`@` mentions and contact picker** in the chat box.
 - **Chat file storage:** Redis (default, 24 hours), a folder or network share, S3-compatible storage, or through agentx-api into its database or Cloudinary (no disk needed). See [`agent-service/STORAGE.md`](agent-service/STORAGE.md).
 - **Phone file cache** with a size limit, and a My OneApp screen. See [`agentx-app/docs/FILES_AND_MY_ONEAPP.md`](agentx-app/docs/FILES_AND_MY_ONEAPP.md).
@@ -249,7 +249,7 @@ Not included, because they belonged to the removed payment-service: staff roles 
 
 **[`postman/`](postman/README.md)**
 
-A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 133 requests, and a walkthrough you can run with the collection runner.
+A collection and an environment for every endpoint, with tests and scripts that carry values from one call to the next. 135 requests, and a walkthrough you can run with the collection runner.
 
 </td>
 <td width="50%" valign="top">

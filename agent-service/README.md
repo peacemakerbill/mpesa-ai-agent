@@ -1,6 +1,3 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/agent-service/README.md
-     Replace the existing file if there is one. The SVG images it uses go in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
-
 <div align="center">
 
 <img src="../docs/assets/banner-agent.svg" alt="" width="100%"/>
@@ -28,6 +25,7 @@ agent-service is the only part that talks to the model. It never moves money. It
 | Understand the customer | Text, voice notes (optional speech to text), photos, PDFs, Word, Excel, CSV and text files, shared contacts and locations |
 | Keep the chat | Messages and files per phone number, with conversation memory in Redis |
 | Prepare requests | Send money, Paybill, Till, Pochi la Biashara, airtime, Ratiba, and list or cancel requests, by calling agentx-api |
+| Business accounts | When the customer has saved a business account: lists the accounts, prepares STK Push, Dynamic QR, balance, pull transactions, B2C, Pochi la Biashara and B2B requests, lists and cancels them (`list_business_accounts`, `prepare_business_request`, `list_business_requests`, `cancel_business_request`). A QR code can pay the saved account or any Till, Paybill or phone number, and comes back in the chat as a picture. `lipa_na_bonga_steps` explains paying a Till with Bonga Points, because Safaricom has no API for it. The assistant never asks for a Service PIN and never says it paid with points |
 | Profile and email | Shows and updates the customer's profile, verifies an email, keeps a list of addresses, and emails a report as PDF, CSV or Excel. Edits are in [`HOOKS4.md`](HOOKS4.md) |
 | Hand over to a person | Escalates to the phones in `AGENT_ESCALATION_PHONES` |
 | Stay safe | Refuses the PIN, treats text inside images and files as data, adds scam warnings, rate limits each customer |

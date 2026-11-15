@@ -1,6 +1,3 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/agentx-app/README.md
-     Replace the existing file. The SVG images it uses go in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
-
 <div align="center">
 
 <img src="../docs/assets/banner-agentx-app.svg" alt="" width="100%"/>
@@ -113,7 +110,7 @@ No screen hard-codes a colour. Everything reads the palette through `context.tk`
 | `lib/chat/mentions.dart`, `media_cache.dart`, `one_app.dart` | `@` mentions, the phone file cache with its size limit, and My OneApp |
 | `lib/models/business_account.dart`, `business_operation.dart` | Business accounts, CSV import result, and operations prepared from the chat |
 | `lib/models/profile.dart`, `lib/profile/` | The profile, saved email addresses, sign up steps, and the profile picture widget |
-| `lib/widgets/` | Chat bubbles and shared pieces: panel, status tag, callout, amount, progress timeline, appearance sheet, and `auth_shell.dart`, the frame shared by the pages before sign in |
+| `lib/widgets/` | Chat bubbles and shared pieces: panel, status tag, callout, amount, progress timeline, appearance sheet, `brand.dart` (the logo, loader and lockup), and `auth_shell.dart`, the frame shared by the pages before sign in |
 | `lib/theme/app_theme.dart` | The ten looks and the `ThemeData` built from them |
 | `test/` | Hand-off, link parsing, models, API client, chat, contact parsers, sources and finder. Tests import `package:agentx_app/...`, so the project name must stay `agentx_app` |
 
@@ -141,6 +138,12 @@ No screen hard-codes a colour. Everything reads the palette through `context.tk`
 ## Business accounts, files and My OneApp
 
 See `docs/BUSINESS_ACCOUNTS.md`, `docs/FILES_AND_MY_ONEAPP.md` and `docs/ANDROID_LINKS.md`.
+
+On **Business accounts**, the QR icon (and **QR code** on each account) makes a Dynamic QR code a customer scans to pay, for the saved account or for any Till, Paybill or phone number, and shows the Lipa na Bonga steps for a Till. The same can be asked in the chat. See "QR codes" in `docs/BUSINESS_ACCOUNTS.md`.
+
+## The logo
+
+`lib/widgets/brand.dart` draws the logo with a painter, so it is sharp at every size and needs no image or package. `BrandMark` takes a `motion`: `still` (default), `intro` (draws once, then a coin crosses the bridge) or `loop`. `BrandLoader` replaces a page-sized progress circle, and `BrandLockup` is the mark with the name. With the phone's "remove animations" setting on, every motion shows a still logo. The launcher icons were made from the same drawing, see [`../docs/BRAND.md`](../docs/BRAND.md).
 
 ## Sign up and profile
 

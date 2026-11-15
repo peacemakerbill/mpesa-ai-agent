@@ -1,6 +1,3 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/agentx-app/docs/PLATFORM_SETUP.md
-     Replace the existing file. You can delete this comment. -->
-
 <div align="center">
 <img src="../../docs/assets/banner-platform.svg" alt="" width="100%"/>
 <br/>

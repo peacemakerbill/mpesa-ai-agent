@@ -1,6 +1,3 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/console/README.md
-     Replace the existing file if there is one. The SVG images it uses go in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
-
 <div align="center">
 
 <img src="../docs/assets/banner-console.svg" alt="" width="100%"/>
@@ -18,6 +15,10 @@ A single HTML file that acts like a frontend for the whole system. No packages, 
 <img src="../docs/assets/divider.svg" alt="" width="100%"/>
 
 </div>
+
+## The logo
+
+The console shows the logo drawing itself once at the start of a browser session (any key or click skips it, and it is skipped with reduced motion), in the header, and as the spinner beside every "Loading" and "Sending" line. `dmMark()` in `console.html` draws it. See [`../docs/BRAND.md`](../docs/BRAND.md).
 
 ## Run it
 

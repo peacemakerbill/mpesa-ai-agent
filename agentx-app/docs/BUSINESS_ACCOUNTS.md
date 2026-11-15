@@ -37,6 +37,48 @@ Secrets are encrypted with AES-256-GCM on the server. The key is `AGENTX_VAULT_K
 field, so a copied value does not open under another owner. The phone never gets a secret back, only whether it is saved. Leave a secret box empty
 when editing to keep the saved one.
 
+## Saved credentials, at a glance
+
+Open an account and the **Saved credentials** card lists each credential with a small clue, so you can tell that what you typed was kept: the last 4 characters of the consumer key, and a plain "saved" for the others. It says how many of them are saved. The full values never leave the server.
+
+The card also warns you in two cases, each with what to do:
+
+- The server has no `AGENTX_VAULT_KEY`, so nothing saved can be opened. Set it and restart agentx-api.
+- Some values cannot be opened with the vault key the server has now, which happens when the key was changed after saving. Enter those values again to replace them.
+
+A branch that uses its head office's credentials shows where each group comes from.
+
+## What happened to a request
+
+Every business request has a timeline, oldest first: asked, approved, sent to Safaricom, accepted, timed out, finished. Each step shows the time it happened (the clock time for today, the day and time for an older one) and a plain sentence. Open a request from **Business requests** (the history icon on the Business accounts page) or from the chat to read it. A request made before steps were recorded shows a short timeline rebuilt from what was stored.
+
+A timeout is not a failure. It means Safaricom's queue took too long and the outcome is not known yet, so the timeline says it is still being checked.
+
+## QR codes
+
+A QR code is a picture a customer scans in the My Safaricom or M-PESA app to pay you. Make one in either of two ways.
+
+**In the app.** On **Business accounts** press the QR icon in the top bar, or **QR code** on one account. Choose the account whose consumer key and secret sign the call, then:
+
+| Pay to | What to give |
+|---|---|
+| The saved account | Nothing more. A Buy Goods account pays its Till, a Paybill account pays its Paybill with the saved account reference as the account number |
+| A Till | The Till number, 5 to 7 digits |
+| A Paybill | The Paybill number and the account number to pay into |
+| A phone number | A Kenyan mobile number |
+
+Give the amount in whole shillings, and a reference if you want one on the payment. The picture appears at once. **Save or share the picture** puts it in your files and opens it, from where you can send it or print it. **Make another** starts again.
+
+**In the chat.** Say it in your own words: "make a QR code for KES 500 for the shop", "QR for 1200 to Paybill 888880 account 123456", "a QR to pay 0712345678 300 shillings". The assistant asks for anything missing and never guesses a number.
+
+The picture is made by Safaricom (Daraja Dynamic QR) and is not stored by Daraja Agent-X, so make another when you need it. At most 60 codes an hour for each customer.
+
+## Lipa na Bonga
+
+Safaricom gives merchants no way to charge Bonga Points. Lipa na Bonga is a step the customer takes on their own phone: dial `*126#`, choose to pay with Bonga Points, enter the Till number and the amount, then their Service PIN. One Bonga Point is worth KES 0.20, so 5 points are worth KES 1.
+
+So Daraja Agent-X does not "pay with Bonga". For a QR code that pays a Till, the app shows a **Prefer to pay with Bonga Points?** card with those steps and the points needed for the amount, and in the chat the assistant can give the same steps when asked. It never asks for a Service PIN and never says it paid with points.
+
 ## Head offices, tills, store numbers and child shortcodes
 
 A **head office** holds a shortcode and, once it has gone live on the Daraja portal, its credentials. The credentials are optional on a head office,

@@ -1,6 +1,3 @@
-<!-- PLACE THIS FILE AT: mpesa-ai-agent/README.md
-     Replace the existing file if there is one. The SVG images it uses go in mpesa-ai-agent/docs/assets/. You can delete this comment. -->
-
 <div align="center">
 
 <img src="docs/assets/logo-animated.svg" alt="Daraja Agent-X" width="340"/>
@@ -11,7 +8,7 @@
 
 <br/>
 
-<img src="docs/assets/badges-root.svg" alt="Spring Boot 4.1.2, Java 21, Flutter 3.22 or later, Claude with tool use, status reference build. Databases MongoDB, PostgreSQL and MySQL, Redis, RabbitMQ, Flyway 12, Docker compose, Postman with 133 requests." width="880"/>
+<img src="docs/assets/badges-root.svg" alt="Spring Boot 4.1.2, Java 21, Flutter 3.22 or later, Claude with tool use, status reference build. Databases MongoDB, PostgreSQL and MySQL, Redis, RabbitMQ, Flyway 12, Docker compose, Postman with 135 requests." width="880"/>
 
 <br/><br/>
 
@@ -358,6 +355,10 @@ The security credential is made by the server from the initiator password and Sa
 See [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md).
 
 From the chat the assistant can prepare STK Push, STK Push query, Dynamic QR, account balance, pull transactions, B2C, Pochi la Biashara and B2B.
+
+**QR codes.** Ask "make a QR code for KES 500" in the chat, or press the QR icon on Business accounts in the app. The code can pay the saved account or any Till, Paybill or phone number, and is made by Daraja Dynamic QR. **Lipa na Bonga** has no merchant API, so for a Till the app and the assistant only explain how the payer uses Bonga Points on their own phone (`*126#`). Nothing here charges Bonga Points.
+
+**Credentials and history.** Each business account shows which credentials are saved, with a masked clue and a warning if the vault key changed. Each business request has a timeline of what happened, step by step.
 Money going out always waits for approval in the app. A request is sent once; if the answer is unclear it is shown as unknown and never sent again.
 The B2B and pull transactions request shapes were written from memory and must be checked against Safaricom's documentation before production.
 
@@ -405,6 +406,7 @@ upload a list. Mail is written to the log until you set `agentx.mail.transport: 
 | [`docs/DATABASES.md`](docs/DATABASES.md) | PostgreSQL, MySQL and MongoDB: setup, trade-offs, what was tested |
 | [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md) | Development, staging (UAT) and production: the `APP_ENV` switch, what production refuses, a staging copy on Render |
 | [`agentx-app/docs/BUSINESS_ACCOUNTS.md`](agentx-app/docs/BUSINESS_ACCOUNTS.md) | Business accounts, tills, CSV upload, chat transactions |
+| [`docs/BRAND.md`](docs/BRAND.md) | The logo, its colours and files, and where it is used |
 | [`docs/PROFILE_AND_EMAIL.md`](docs/PROFILE_AND_EMAIL.md) | Sign up, profiles, email verification, reports by email, mail and picture storage settings |
 | [`docs/CHATS.md`](docs/CHATS.md) | Many chats per customer: new chat, open an old one, rename, pin, delete |
 | [`agent-service/STORAGE.md`](agent-service/STORAGE.md) | Where chat files are kept: Redis, a folder, S3, or agentx-api's database or Cloudinary |
