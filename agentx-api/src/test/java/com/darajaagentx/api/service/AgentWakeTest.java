@@ -13,6 +13,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.ExpectedCount.once;
@@ -120,5 +122,67 @@ class AgentWakeTest {
 
         wake.awake();
         server.verify();
+    }
+
+    @Test
+    void aServiceThatDoesNotAnswerIsAlsoWokenByOneLongRequestInTheBackground() {
+        RestClient.Builder quickBuilder = RestClient.builder().baseUrl("http://agent.test");
+        MockRestServiceServer quick = MockRestServiceServer.bindTo(quickBuilder).build();
+        RestClient.Builder longBuilder = RestClient.builder().baseUrl("http://agent.test");
+        MockRestServiceServer longRun = MockRestServiceServer.bindTo(longBuilder).build();
+        List<Runnable> queued = new ArrayList<>();
+        AgentWake sleeping = new AgentWake(quickBuilder.build(), longBuilder.build(), clock, queued::add);
+
+        quick.expect(once(), requestTo(HEALTH)).andRespond(withException(new IOException("timed out")));
+        assertThat(sleeping.awake()).isFalse();
+        assertThat(queued).hasSize(1);
+
+        clock.advance(Duration.ofSeconds(4));
+        quick.reset();
+        quick.expect(once(), requestTo(HEALTH)).andRespond(withStatus(HttpStatus.BAD_GATEWAY));
+        assertThat(sleeping.awake()).isFalse();
+        assertThat(queued).hasSize(1);   // only one long request is open at a time
+        quick.verify();
+
+        // The long request ends because the service answered
+        longRun.expect(once(), requestTo(HEALTH)).andRespond(withSuccess());
+        queued.get(0).run();
+        longRun.verify();
+
+        assertThat(sleeping.awake()).isTrue();   // remembered, so no new ping
+    }
+
+    @Test
+    void aLongRequestThatEndsWithoutAnAnswerIsStartedAgainOnTheNextCheck() {
+        RestClient.Builder quickBuilder = RestClient.builder().baseUrl("http://agent.test");
+        MockRestServiceServer quick = MockRestServiceServer.bindTo(quickBuilder).build();
+        RestClient.Builder longBuilder = RestClient.builder().baseUrl("http://agent.test");
+        MockRestServiceServer longRun = MockRestServiceServer.bindTo(longBuilder).build();
+        List<Runnable> queued = new ArrayList<>();
+        AgentWake sleeping = new AgentWake(quickBuilder.build(), longBuilder.build(), clock, queued::add);
+
+        quick.expect(once(), requestTo(HEALTH)).andRespond(withException(new IOException("timed out")));
+        assertThat(sleeping.awake()).isFalse();
+
+        longRun.expect(once(), requestTo(HEALTH)).andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
+        queued.get(0).run();
+
+        clock.advance(Duration.ofSeconds(4));
+        quick.reset();
+        quick.expect(once(), requestTo(HEALTH)).andRespond(withException(new IOException("timed out")));
+        assertThat(sleeping.awake()).isFalse();
+        assertThat(queued).hasSize(2);
+    }
+
+    @Test
+    void aServiceThatIsAwakeNeverStartsALongRequest() {
+        RestClient.Builder builder = RestClient.builder().baseUrl("http://agent.test");
+        MockRestServiceServer awakeServer = MockRestServiceServer.bindTo(builder).build();
+        List<Runnable> queued = new ArrayList<>();
+        AgentWake awake = new AgentWake(builder.build(), builder.build(), clock, queued::add);
+
+        awakeServer.expect(once(), requestTo(HEALTH)).andRespond(withSuccess());
+        assertThat(awake.awake()).isTrue();
+        assertThat(queued).isEmpty();
     }
 }
