@@ -54,7 +54,7 @@ Open **Settings** (the sliders icon, top right) to set the service addresses, th
 | Tab | What it does |
 |---|---|
 | **Journey** | Runs a whole request from chat to message check and draws it as a trace across five parties: customer, agent, Daraja Agent-X API, phone app and M-Pesa. Solid lines are real calls, dashed lines are steps the console can only pretend (a fingerprint, the PIN, the M-Pesa message). Press any solid line to read its exact request and answer. You can make the M-Pesa message show a different number or account to see it refused. It needs no AI, because it uses the agent-side endpoints of agentx-api |
-| **Chat** | The real chat with the real agent. Sign in with a phone number and the 6 digit code. The plus button opens the attach menu: photo, camera, video, record a video, audio file, document, contact and location. The microphone button records a voice note with a timer, live level, cancel and send. You can drag a file onto the chat or paste one. Buttons and menus the assistant sends can be tapped, and **Find in contacts** opens the contact finder. The chat is read every 1.5 seconds |
+| **Chat** | The real chat with the real agent. Sign in with a phone number and the 6 digit code. The plus button opens the attach menu: photo, camera, video, record a video, audio file, document, contact and location. The microphone button records a voice note with a timer, live level, cancel and send. You can drag a file onto the chat or paste one. Buttons and menus the assistant sends can be tapped, and **Find in contacts** opens the contact finder. The chat is read every 1.5 seconds. An empty chat shows three things to try |
 | **Phone** | The Daraja Agent-X app on a phone: sign in, list, approve with a fingerprint, open M-Pesa, report, and check an M-Pesa message. Messages from M-Pesa are simulated and kept in this browser |
 | **Business** | Business accounts as in the app's Settings: add a shortcode with its consumer key and secret, STK passkey and initiator, add tills, store numbers or child shortcodes under it (each with the head office's credentials or its own), **Check with Safaricom**, and upload many accounts from a CSV file (download the template, check the file, then save). Below that, the requests the assistant prepared from the chat, with Approve and Decline. Secrets are sent to the server and never shown again, only whether each one is saved. Needs `AGENTX_VAULT_KEY` on agentx-api and the same sign-in as Chat |
 | **Profile** | Sign up (phone, names, the SMS code) or sign in, then the profile: names, address, location, picture upload, email with its code, saved addresses (add, paste or upload a CSV or text file), email a report as PDF, CSV or Excel, and the emails sent. Uses the same token as Chat |
@@ -67,7 +67,7 @@ The dock at the bottom lists every call made, with its full request and answer. 
 
 ## Ten looks
 
-Picked from the menu at the top right and shared with the Flutter app.
+Picked from the menu at the top right and shared with the Flutter app. Both draw them the same way: Inter is bundled in the page, so it looks the same offline. Daylight, Graphite, Pwani, Kahawa, Savanna and Lipa read like a chat app (the assistant's replies sit flat beside the logo, your words are in a bubble filled with the accent colour, cards float on a soft shadow, and the message box is one rounded bar that lights up while you type). Mono, Matatu, Blueprint and Receipt keep their boxed look.
 
 <div align="center">
 <img src="../docs/assets/themes.svg" alt="The ten looks" width="100%"/>
@@ -94,6 +94,14 @@ Contacts are searched in the browser. Only the contact you choose is sent, and o
 ## Files and voice notes in Chat
 
 Files you attach are uploaded to agentx-api (`POST /api/chat/media`) and then named in the message you send, exactly as the app does. Chrome and Edge record voice notes as WebM and Safari as MP4. Check that your transcription step accepts WebM or MP4.
+
+### Photo and video size
+
+Settings has **Photos and videos** with the same three choices as the app: **Original**, **Balanced** (photos up to 1920 pixels, videos at 2.5 Mbit/s) and **Small** (1280 pixels, 1 Mbit/s). A photo is made smaller in the browser before it is added to the tray, and the tray says how big it was. A photo under 200 KB, a GIF or an SVG is left alone, and the smaller file is used only when it really is smaller. A photo with see-through parts stays a PNG. A video you record with the camera uses the chosen bit rate. A video you pick from your files is sent as it is, like the app does on a computer.
+
+### Selecting and copying
+
+Words in a message can be selected with the mouse and copied with Ctrl+C. Every message also has a small copy icon beside its time that copies the words without the formatting marks. For a location it copies the name and the coordinates, for a photo or a document its caption, and a voice note has no copy icon. The M-Pesa code on a request in the Phone tab and on a business request has a copy icon too.
 
 ## Be careful
 
