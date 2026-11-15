@@ -286,7 +286,7 @@ class BusinessOperationServiceTest {
         assertThat((String) daraja.lastBody().get("SecurityCredential")).hasSizeGreaterThan(100);
         assertThat(daraja.lastBody().toString()).doesNotContain(PASS);
         String result = String.valueOf(daraja.lastBody().get("ResultURL"));
-        assertThat(result).startsWith("https://api.example.com/daraja/business/" + p.operation().getId() + "/").endsWith("/result");
+        assertThat(result).startsWith("https://api.example.com/results/" + p.operation().getId() + "/");
         assertThat(result.substring("https://".length())).doesNotContain("//");
     }
 
@@ -326,7 +326,7 @@ class BusinessOperationServiceTest {
         assertThat(body.get("TransactionType")).isEqualTo("CustomerBuyGoodsOnline");
         assertThat(String.valueOf(body.get("Amount"))).isEqualTo("1200");
         assertThat(body.get("PhoneNumber")).isEqualTo("254712345678");
-        assertThat(String.valueOf(body.get("CallBackURL"))).endsWith("/callback");
+        assertThat(String.valueOf(body.get("CallBackURL"))).contains("/stk-callback/");
         assertThat(new String(Base64.getDecoder().decode(String.valueOf(body.get("Password"))))).startsWith("174379" + PASSKEY);
     }
 
@@ -352,10 +352,10 @@ class BusinessOperationServiceTest {
         service.setStkCallbackBase("https://tunnel.example.org/ ");
         BusinessOperation push = prepare("Counter two", "STK_PUSH", params("amount", "5", "phone", "0712345678"), "tunnel").operation();
         assertThat(String.valueOf(daraja.lastBody().get("CallBackURL")))
-                .isEqualTo("https://tunnel.example.org/daraja/business/" + push.getId() + "/" + push.getCallbackToken() + "/callback");
+                .isEqualTo("https://tunnel.example.org/stk-callback/" + push.getId() + "/" + push.getCallbackToken());
 
         BusinessOperationService.Prepared balance = prepare("Main shop", "BALANCE", params(), "bal-tunnel");
-        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).startsWith("https://api.example.com/daraja/business/" + balance.operation().getId() + "/");
+        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).startsWith("https://api.example.com/results/" + balance.operation().getId() + "/");
     }
 
     @Test
@@ -364,7 +364,7 @@ class BusinessOperationServiceTest {
         BusinessOperationService.Prepared balance = prepare("Main shop", "BALANCE", params(), "bal-own");
         String id = balance.operation().getId().toString();
         String token = balance.operation().getCallbackToken();
-        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).isEqualTo("https://results.example.org/daraja/business/" + id + "/" + token + "/result");
+        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).isEqualTo("https://results.example.org/results/" + id + "/" + token);
         assertThat(String.valueOf(daraja.lastBody().get("QueueTimeOutURL"))).isEqualTo("https://hooks.example.org/q/" + id + "/" + token + "/late");
     }
 
@@ -372,9 +372,9 @@ class BusinessOperationServiceTest {
     void withoutResultAndTimeoutAddressesThePublicAddressIsUsed() {
         service.setInitiatorUrls("", " ");
         BusinessOperationService.Prepared balance = prepare("Main shop", "BALANCE", params(), "bal-public");
-        String base = "https://api.example.com/daraja/business/" + balance.operation().getId() + "/" + balance.operation().getCallbackToken();
-        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).isEqualTo(base + "/result");
-        assertThat(String.valueOf(daraja.lastBody().get("QueueTimeOutURL"))).isEqualTo(base + "/timeout");
+        String ids = balance.operation().getId() + "/" + balance.operation().getCallbackToken();
+        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).isEqualTo("https://api.example.com/results/" + ids);
+        assertThat(String.valueOf(daraja.lastBody().get("QueueTimeOutURL"))).isEqualTo("https://api.example.com/timeout/" + ids);
     }
 
     @Test
@@ -383,8 +383,8 @@ class BusinessOperationServiceTest {
         service.useTunnel("https://tunnel.example.org/");
         BusinessOperationService.Prepared balance = prepare("Main shop", "BALANCE", params(), "bal-tunnel2");
         String id = balance.operation().getId() + "/" + balance.operation().getCallbackToken();
-        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).isEqualTo("https://tunnel.example.org/daraja/business/" + id + "/result");
-        assertThat(String.valueOf(daraja.lastBody().get("QueueTimeOutURL"))).isEqualTo("https://hooks.example.org/daraja/business/" + id + "/timeout");
+        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).isEqualTo("https://tunnel.example.org/results/" + id);
+        assertThat(String.valueOf(daraja.lastBody().get("QueueTimeOutURL"))).isEqualTo("https://hooks.example.org/timeout/" + id);
     }
 
     @Test
@@ -392,7 +392,7 @@ class BusinessOperationServiceTest {
         service.setStkCallbackBase("");
         BusinessOperation push = prepare("Counter two", "STK_PUSH", params("amount", "5", "phone", "0712345678"), "plain").operation();
         assertThat(String.valueOf(daraja.lastBody().get("CallBackURL")))
-                .isEqualTo("https://api.example.com/daraja/business/" + push.getId() + "/" + push.getCallbackToken() + "/callback");
+                .isEqualTo("https://api.example.com/stk-callback/" + push.getId() + "/" + push.getCallbackToken());
     }
 
     @Test
@@ -535,7 +535,7 @@ class BusinessOperationServiceTest {
         assertThat(body.get("ShortCode")).isEqualTo("174379");
         assertThat(body.get("RequestType")).isEqualTo("Pull");
         assertThat(body.get("NominatedNumber")).isEqualTo("254712345678");
-        assertThat(String.valueOf(body.get("CallBackURL"))).endsWith("/result");
+        assertThat(String.valueOf(body.get("CallBackURL"))).contains("/results/");
         assertThat(op.getStatus()).isEqualTo(BusinessOperationStatus.SUCCEEDED);
         assertThat(op.getResultText()).contains("nominated number");
 
@@ -714,8 +714,8 @@ class BusinessOperationServiceTest {
         Thread[] early = new Thread[1];
         DarajaApi racing = (env, key, secret, path, body) -> {
             String[] parts = String.valueOf(body.get("ResultURL")).split("/");
-            UUID id = UUID.fromString(parts[parts.length - 3]);
-            String token = parts[parts.length - 2];
+            UUID id = UUID.fromString(parts[parts.length - 2]);
+            String token = parts[parts.length - 1];
             early[0] = new Thread(() -> holder[0].onCallback(id, token, "result", initiatorResult(0, "ok", "RACE123456", params("AccountBalance", "Working Account|KES|5.00|5.00|0|0"))));
             early[0].start();
             try {

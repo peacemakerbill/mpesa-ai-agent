@@ -142,7 +142,7 @@ agentx:
     ngrok-token: ${NGROK_AUTHTOKEN:}
     zrok-version: ${ZROK2_VERSION:}
     zrok-share-args: ${ZROK_SHARE_ARGS:}
-  # Requests made on business accounts from the chat. Safaricom posts its answers to PUBLIC_BASE_URL/daraja/business/...,
+  # Requests made on business accounts from the chat. Safaricom posts its answers to PUBLIC_BASE_URL/stk-callback/..., /results/... and /timeout/...,
   # so public-base-url above must be an HTTPS address that Safaricom can reach.
   business:
     # The most one request may move, in whole KES

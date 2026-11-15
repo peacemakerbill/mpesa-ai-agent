@@ -168,7 +168,7 @@ public class BusinessOperationService {
         String where = stkCallbackBase.isEmpty() ? publicBaseUrl : stkCallbackBase;
         String problem = StkCallback.problem(where);
         if (problem == null) {
-            log.info("Safaricom's answers to STK Pushes go to {}/daraja/business/...", where);
+            log.info("Safaricom's answers to STK Pushes go to {}/stk-callback/...", where);
         } else {
             log.warn("Safaricom's answers to STK Pushes would go to {}, but {}. The prompt still reaches the phone, and the result is then fetched "
                     + "from Safaricom about every minute instead. Set AGENTX_STK_CALLBACK_URL to a public https address to get it at once, or in development "
@@ -332,16 +332,15 @@ public class BusinessOperationService {
     private DarajaRequests.Call build(BusinessOperation op, ResolvedCredentials c) {
         String owner = op.getOwnerPhone();
         Map<String, String> p = op.getParams();
-        String base = publicBaseUrl + "/daraja/business/" + op.getId() + "/" + op.getCallbackToken();
         String result = CallbackUrls.resolve(resultUrl, initiatorFallback(), op.getId(), op.getCallbackToken(), "result");
         String timeout = CallbackUrls.resolve(timeoutUrl, initiatorFallback(), op.getId(), op.getCallbackToken(), "timeout");
-        String stkBase = stkCallbackBase.isEmpty() ? base : stkCallbackBase + "/daraja/business/" + op.getId() + "/" + op.getCallbackToken();
+        String stkUrl = CallbackUrls.resolve("", stkCallbackBase.isEmpty() ? publicBaseUrl : stkCallbackBase, op.getId(), op.getCallbackToken(), "callback");
         return switch (op.getType()) {
             case STK_PUSH -> {
                 if (c.passkey() == null) {
                     throw new InvalidActionRequestException("This business account has no STK passkey saved.");
                 }
-                yield DarajaRequests.stkPush(c, p.get("phone"), op.getAmount(), p.get("reference"), p.get("description"), stkBase + "/callback", clock.instant());
+                yield DarajaRequests.stkPush(c, p.get("phone"), op.getAmount(), p.get("reference"), p.get("description"), stkUrl, clock.instant());
             }
             case STK_QUERY -> {
                 if (c.passkey() == null) {

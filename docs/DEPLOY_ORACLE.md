@@ -240,7 +240,7 @@ Edit `.env`, then run `docker compose up -d` to apply it.
 
 **Email.** Set `MAIL_TRANSPORT=smtp` and fill in `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM` and `MAIL_FROM_NAME`. Oracle may block outbound port 25, and ports 587 and 465 are normally open. For Gmail use an app password. See `docs/PROFILE_AND_EMAIL.md` for every mail setting.
 
-Safaricom posts its answers to `https://YOUR_DOMAIN/daraja/business/...`, which works as soon as the domain is live.
+Safaricom posts its answers to `https://YOUR_DOMAIN/stk-callback/...`, `/results/...` and `/timeout/...`, which works as soon as the domain is live.
 
 ## Day to day
 

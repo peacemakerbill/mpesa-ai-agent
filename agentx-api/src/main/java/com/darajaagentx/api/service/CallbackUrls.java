@@ -3,8 +3,9 @@ package com.darajaagentx.api.service;
 import java.util.UUID;
 
 /**
- * Builds the address Safaricom is told to call for a request. A configured value is either an address (the path and the
- * request's token are added) or a template that has {@code {id}} and {@code {token}} in it (used as written).
+ * Builds the address Safaricom is told to call for a request: {@code ADDRESS/results/ID/TOKEN}, {@code ADDRESS/timeout/ID/TOKEN}
+ * or {@code ADDRESS/stk-callback/ID/TOKEN}. A configured value is either an address (the short path and the request's token are
+ * added) or a template that has {@code {id}} and {@code {token}} in it (used as written, {@code {kind}} becomes the short word).
  */
 public final class CallbackUrls {
 
@@ -29,7 +30,7 @@ public final class CallbackUrls {
             return path(fallbackBase, id, token, kind);
         }
         if (isTemplate(value)) {
-            return value.replace("{id}", id.toString()).replace("{token}", token).replace("{kind}", kind);
+            return value.replace("{id}", id.toString()).replace("{token}", token).replace("{kind}", word(kind));
         }
         return path(StkCallback.normalize(value), id, token, kind);
     }
@@ -46,7 +47,17 @@ public final class CallbackUrls {
         return StkCallback.problem(resolve(value, "", SAMPLE_ID, "token", "result"));
     }
 
+    /** The short word in the address for each kind of answer. Safaricom refuses addresses that contain words like mpesa or safaricom. */
+    public static String word(String kind) {
+        return switch (kind) {
+            case "callback" -> "stk-callback";
+            case "result" -> "results";
+            case "timeout" -> "timeout";
+            default -> throw new IllegalArgumentException("Unknown kind " + kind);
+        };
+    }
+
     private static String path(String base, UUID id, String token, String kind) {
-        return base + "/daraja/business/" + id + "/" + token + "/" + kind;
+        return base + "/" + word(kind) + "/" + id + "/" + token;
     }
 }

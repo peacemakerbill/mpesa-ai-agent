@@ -12,7 +12,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  *   <li>An address such as {@code https://hooks.example.com}: the service adds the path and the secret token of each
  *       request, so every answer can be matched to the request it belongs to.</li>
  *   <li>A template with {@code {id}} and {@code {token}} in it, such as
- *       {@code https://hooks.example.com/safaricom/{id}/{token}/result}: used exactly as written, with the two values filled in.</li>
+ *       {@code https://hooks.example.com/results/{id}/{token}}: used exactly as written, with the two values filled in.</li>
  * </ul>
  * Blank means the public address of this service (AGENTX_PUBLIC_BASE_URL), or the development tunnel when one is open.
  *
