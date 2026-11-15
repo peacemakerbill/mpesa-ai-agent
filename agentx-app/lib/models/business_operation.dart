@@ -29,6 +29,28 @@ String? businessIdIn(String text, {String scheme = 'agentx'}) {
 /// Where a request on a business account has got to.
 enum OperationStage { waiting, sent, done, failed, declined, expired, unclear }
 
+/// One step in what happened to a request: asked, approved, sent, accepted, timed out, finished.
+class OperationStep {
+  const OperationStep({required this.at, required this.code, required this.text});
+
+  final DateTime? at;
+
+  /// A short word such as ASKED, WAITING, APPROVED, SENT, ACCEPTED, TIMEOUT, SUCCEEDED, FAILED, UNKNOWN, DECLINED or EXPIRED.
+  final String code;
+  final String text;
+
+  /// True for the steps that end the story well or badly, so the list can colour them.
+  bool get isGood => code == 'SUCCEEDED';
+  bool get isBad => code == 'FAILED' || code == 'DECLINED' || code == 'EXPIRED';
+  bool get isUnsure => code == 'TIMEOUT' || code == 'UNKNOWN';
+
+  factory OperationStep.fromJson(Map<String, dynamic> json) => OperationStep(
+        at: json['at'] is String ? DateTime.tryParse(json['at'] as String)?.toLocal() : null,
+        code: json['code'] as String? ?? '',
+        text: json['text'] as String? ?? '',
+      );
+}
+
 /// One thing asked of Safaricom on a business account from the chat: a payout, an STK Push, a balance check.
 /// There are no secrets in here. The server never sends them.
 class BusinessOperation {
@@ -48,6 +70,7 @@ class BusinessOperation {
     required this.createdAt,
     required this.expiresAt,
     required this.completedAt,
+    this.timeline = const [],
   });
 
   final String id;
@@ -68,6 +91,9 @@ class BusinessOperation {
   final DateTime? expiresAt;
   final DateTime? completedAt;
 
+  /// What happened to it, oldest first.
+  final List<OperationStep> timeline;
+
   factory BusinessOperation.fromJson(Map<String, dynamic> json) {
     final raw = json['params'];
     return BusinessOperation(
@@ -86,6 +112,9 @@ class BusinessOperation {
       createdAt: _time(json['createdAt']),
       expiresAt: _time(json['expiresAt']),
       completedAt: _time(json['completedAt']),
+      timeline: json['timeline'] is List
+          ? (json['timeline'] as List).whereType<Map<String, dynamic>>().map(OperationStep.fromJson).toList()
+          : const [],
     );
   }
 

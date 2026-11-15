@@ -14,6 +14,7 @@ import com.darajaagentx.api.exception.TooManyRequestsException;
 import com.darajaagentx.api.model.BusinessAccount;
 import com.darajaagentx.api.model.BusinessOperation;
 import com.darajaagentx.api.model.BusinessOperationStatus;
+import com.darajaagentx.api.model.BusinessOperationType;
 import com.darajaagentx.api.model.DarajaEnvironment;
 import com.darajaagentx.api.repository.BusinessAccountRepository;
 import com.darajaagentx.api.repository.BusinessOperationRepository;
@@ -358,6 +359,35 @@ class BusinessOperationServiceTest {
     }
 
     @Test
+    void resultsAndTimeoutsGoToTheirConfiguredAddresses() {
+        service.setInitiatorUrls("https://results.example.org/", "https://hooks.example.org/q/{id}/{token}/late");
+        BusinessOperationService.Prepared balance = prepare("Main shop", "BALANCE", params(), "bal-own");
+        String id = balance.operation().getId().toString();
+        String token = balance.operation().getCallbackToken();
+        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).isEqualTo("https://results.example.org/daraja/business/" + id + "/" + token + "/result");
+        assertThat(String.valueOf(daraja.lastBody().get("QueueTimeOutURL"))).isEqualTo("https://hooks.example.org/q/" + id + "/" + token + "/late");
+    }
+
+    @Test
+    void withoutResultAndTimeoutAddressesThePublicAddressIsUsed() {
+        service.setInitiatorUrls("", " ");
+        BusinessOperationService.Prepared balance = prepare("Main shop", "BALANCE", params(), "bal-public");
+        String base = "https://api.example.com/daraja/business/" + balance.operation().getId() + "/" + balance.operation().getCallbackToken();
+        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).isEqualTo(base + "/result");
+        assertThat(String.valueOf(daraja.lastBody().get("QueueTimeOutURL"))).isEqualTo(base + "/timeout");
+    }
+
+    @Test
+    void aTunnelCarriesResultsAndTimeoutsOnlyWhenTheyHaveNoAddressOfTheirOwn() {
+        service.setInitiatorUrls("", "https://hooks.example.org");
+        service.useTunnel("https://tunnel.example.org/");
+        BusinessOperationService.Prepared balance = prepare("Main shop", "BALANCE", params(), "bal-tunnel2");
+        String id = balance.operation().getId() + "/" + balance.operation().getCallbackToken();
+        assertThat(String.valueOf(daraja.lastBody().get("ResultURL"))).isEqualTo("https://tunnel.example.org/daraja/business/" + id + "/result");
+        assertThat(String.valueOf(daraja.lastBody().get("QueueTimeOutURL"))).isEqualTo("https://hooks.example.org/daraja/business/" + id + "/timeout");
+    }
+
+    @Test
     void withoutAnStkAddressTheAnswerGoesToThePublicAddress() {
         service.setStkCallbackBase("");
         BusinessOperation push = prepare("Counter two", "STK_PUSH", params("amount", "5", "phone", "0712345678"), "plain").operation();
@@ -484,6 +514,57 @@ class BusinessOperationServiceTest {
         assertThat(op.getResultText()).contains("AAA1").contains("2 transactions");
     }
 
+    @Test
+    void pullSendsTheFullTimestampAndReadsTransactionsInsideAListOfLists() {
+        daraja.answer = Map.of("ResponseCode", "1000", "ResponseMessage", "Success", "Response", List.of(List.of(
+                Map.of("transactionId", "BBB1", "amount", "700", "trxDate", "2026-11-03 10:00:00"), Map.of("transactionId", "BBB2", "amount", "20", "trxDate", "2026-11-03 11:00:00"))));
+        BusinessOperation op = prepare("Main shop", "PULL", params("start_date", "2026-11-01", "end_date", "2026-11-02"), "pull-nested").operation();
+        assertThat(daraja.lastPath()).isEqualTo("/pulltransactions/v1/query");
+        assertThat(String.valueOf(daraja.lastBody().get("StartDate"))).isEqualTo("2026-11-01 00:00:00");
+        assertThat(String.valueOf(daraja.lastBody().get("EndDate"))).matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}");
+        assertThat(op.getStatus()).isEqualTo(BusinessOperationStatus.SUCCEEDED);
+        assertThat(op.getResultText()).contains("BBB1").contains("BBB2").contains("2 transactions");
+    }
+
+    @Test
+    void aShortcodeIsRegisteredForPullOnceWithANominatedNumber() {
+        daraja.answer = Map.of("ResponseCode", "1000", "ResponseMessage", "Success");
+        BusinessOperation op = prepare("Main shop", "PULL_REGISTER", params("phone", "0712 345 678"), "pull-reg").operation();
+        assertThat(daraja.lastPath()).isEqualTo("/pulltransactions/v1/register");
+        Map<String, Object> body = daraja.lastBody();
+        assertThat(body.get("ShortCode")).isEqualTo("174379");
+        assertThat(body.get("RequestType")).isEqualTo("Pull");
+        assertThat(body.get("NominatedNumber")).isEqualTo("254712345678");
+        assertThat(String.valueOf(body.get("CallBackURL"))).endsWith("/result");
+        assertThat(op.getStatus()).isEqualTo(BusinessOperationStatus.SUCCEEDED);
+        assertThat(op.getResultText()).contains("nominated number");
+
+        daraja.answer = Map.of("ResponseCode", "500", "ResponseMessage", "Already registered");
+        BusinessOperation refused = prepare("Main shop", "PULL_REGISTER", params("phone", "0712345678"), "pull-reg2").operation();
+        assertThat(refused.getStatus()).isEqualTo(BusinessOperationStatus.FAILED);
+        assertThat(refused.getFailure()).contains("Already registered");
+        assertThatThrownBy(() -> prepare("Main shop", "PULL_REGISTER", params(), "pull-reg3")).isInstanceOf(InvalidActionRequestException.class);
+    }
+
+    @Test
+    void aFinishedPayoutNamesTheAmountTheReceiverAndTheTime() {
+        assertThat(BusinessOperationService.payoutText(params("TransactionAmount", "500", "ReceiverPartyPublicName", "254700111222 - JOHN DOE",
+                "TransactionCompletedDateTime", "03.11.2026 10:15:00")))
+                .isEqualTo("Done. KES 500 received by 254700111222 - JOHN DOE at 03.11.2026 10:15:00.");
+        assertThat(BusinessOperationService.payoutText(params())).isEqualTo("Done.");
+        assertThat(BusinessOperationService.payoutText(params("ReceiverPartyPublicName", "JOHN DOE"))).isEqualTo("Done. Received by JOHN DOE.");
+    }
+
+    @Test
+    void aStatusAnswerReadsAsAFewPlainLines() {
+        String text = BusinessOperationService.statusText(params("ReceiptNo", "QGH7ABC123", "TransactionStatus", "Completed", "Amount", "1500",
+                "DebitPartyName", "254700111222 - JANE", "CreditPartyName", "600111 - SHOP", "FinalisedTime", "20261103101500"), "ok");
+        assertThat(text).startsWith("Transaction QGH7ABC123: Completed").contains("Amount: KES 1500").contains("From: 254700111222 - JANE")
+                .contains("To: 600111 - SHOP").contains("Finished: 20261103101500");
+        assertThat(BusinessOperationService.statusText(params("Something", "else"), "ok")).isEqualTo("Something: else");
+        assertThat(BusinessOperationService.statusText(params(), "Safaricom said done")).isEqualTo("Safaricom said done");
+    }
+
     // ---------------------------------------------------------------- money out waits for the owner
 
     @Test
@@ -513,6 +594,53 @@ class BusinessOperationServiceTest {
         service.onCallback(op.getId(), op.getCallbackToken(), "result", initiatorResult(0, "ok", "QGH9XYZ789", params("ReceiverPartyPublicName", "254700111222 - JOHN DOE")));
         assertThat(op.getStatus()).isEqualTo(BusinessOperationStatus.SUCCEEDED);
         assertThat(chat.last()).contains("JOHN DOE").contains("QGH9XYZ789");
+    }
+
+    @Test
+    void everyStepOfARequestIsRecordedInOrderEvenWhenAResultArrivesAfterATimeout() {
+        daraja.answer = Map.of("ResponseCode", "0", "ConversationID", "AG_77");
+        BusinessOperation op = service.prepare(OWNER, "Main shop", "B2C", params("amount", "500", "phone", "0700111222", "remarks", "Salary"), "voice", "steps").operation();
+        service.approve(OWNER, op.getId(), "BIOMETRIC");
+        service.onCallback(op.getId(), op.getCallbackToken(), "timeout", Map.of());
+        assertThat(op.getStatus()).isEqualTo(BusinessOperationStatus.UNKNOWN);
+
+        service.onCallback(op.getId(), op.getCallbackToken(), "result", initiatorResult(0, "ok", "QGH9XYZ789", params("ReceiverPartyPublicName", "254700111222 - JOHN DOE")));
+        assertThat(op.getStatus()).isEqualTo(BusinessOperationStatus.SUCCEEDED);
+        assertThat(op.getFailure()).isNull();
+
+        List<String> codes = op.events().stream().map(BusinessOperation.Event::code).toList();
+        assertThat(codes).containsExactly("ASKED", "WAITING", "APPROVED", "SENT", "ACCEPTED", "TIMEOUT", "SUCCEEDED");
+        BusinessOperationView view = BusinessOperationView.of(op, false, null);
+        assertThat(view.timeline()).hasSize(7);
+        assertThat(view.timeline().get(0).text()).contains("by voice");
+        assertThat(view.timeline().get(4).text()).contains("AG_77");
+        assertThat(view.timeline().get(6).text()).contains("JOHN DOE").contains("QGH9XYZ789");
+        assertThat(view.toString()).doesNotContain(op.getCallbackToken());
+    }
+
+    @Test
+    void aRequestFromBeforeStepsWereRecordedStillGetsAShortTimeline() {
+        BusinessOperation old = new BusinessOperation(OWNER, UUID.randomUUID(), "Main shop", BusinessOperationType.BALANCE);
+        old.setSummary("Check the account balance");
+        old.setStatus(BusinessOperationStatus.SUCCEEDED);
+        old.setResultText("Working Account: KES 5.00");
+        old.prepareForMongo(Instant.parse("2026-11-03T06:00:00Z"));
+        old.setApprovedAt(Instant.parse("2026-11-03T06:00:01Z"));
+        old.setCompletedAt(Instant.parse("2026-11-03T06:00:05Z"));
+        List<String> codes = BusinessOperationView.of(old, false, null).timeline().stream().map(BusinessOperationView.Step::code).toList();
+        assertThat(codes).containsExactly("ASKED", "SENT", "SUCCEEDED");
+    }
+
+    @Test
+    void theTrailKeepsTheNewestStepsWhenItGrowsAndIgnoresBarsAndLineBreaks() {
+        BusinessOperation op = new BusinessOperation(OWNER, UUID.randomUUID(), "Main shop", BusinessOperationType.BALANCE);
+        for (int i = 0; i < 100; i++) {
+            op.addEvent(Instant.ofEpochSecond(1_000 + i), "STEP", "step " + i + " with a | bar\nand a line break " + "x".repeat(100));
+        }
+        List<BusinessOperation.Event> events = op.events();
+        assertThat(events.get(events.size() - 1).text()).startsWith("step 99 with a / bar and a line break");
+        assertThat(events.size() < 100).isTrue();
+        assertThat(events.get(0).code()).isEqualTo("STEP");
     }
 
     @Test

@@ -8,6 +8,7 @@ import '../layout/responsive.dart';
 import '../models/business_operation.dart';
 import '../services/approval.dart';
 import '../theme/app_theme.dart';
+import '../widgets/operation_timeline.dart';
 import '../widgets/otp_approval.dart';
 import '../widgets/ui.dart';
 
@@ -100,7 +101,7 @@ class _BusinessOperationScreenState extends State<BusinessOperationScreen> {
   /// After the request is sent, Safaricom answers on its own a few seconds later. Look now and then, for about two minutes.
   void _watch() {
     _poll?.cancel();
-    if (_op?.stage != OperationStage.sent) return;
+    if (_op?.stage != OperationStage.sent && _op?.stage != OperationStage.unclear) return;
     _poll = Timer.periodic(const Duration(seconds: 5), (t) async {
       _polls++;
       if (_polls > 24 || !mounted) {
@@ -111,7 +112,7 @@ class _BusinessOperationScreenState extends State<BusinessOperationScreen> {
         final op = await s.api.businessOperation(widget.operationId);
         if (!mounted) return;
         setState(() => _op = op);
-        if (op.stage != OperationStage.sent) t.cancel();
+        if (op.stage != OperationStage.sent && op.stage != OperationStage.unclear) t.cancel();
       } on Exception {
         // try again at the next tick
       }
@@ -278,6 +279,10 @@ class _BusinessOperationScreenState extends State<BusinessOperationScreen> {
         const SizedBox(height: 12),
         Text('You approve with your fingerprint, face or phone lock, or with a code sent to you by text message. This app never sees your M-Pesa PIN or your keys.',
             style: text.bodySmall?.copyWith(color: t.p.ink2)),
+      ],
+      if (op.timeline.isNotEmpty) ...[
+        const SizedBox(height: 20),
+        OperationTimeline(steps: op.timeline),
       ],
       if (op.createdAt != null) ...[
         const SizedBox(height: 16),

@@ -28,6 +28,7 @@ This update adds five things.
 3. **Email verification.** An email address only counts once the customer has typed the code that was sent to it.
 4. **Automatic emails.** A welcome email, a notice when the account is signed in on a device, and a notice when a payment or business request finishes.
 5. **Reports by email.** Say it in the chat: "send this report to my email as a PDF", "email this as Excel to finance@acme.co.ke", or "send this to everyone on my list as CSV". The assistant picks the endpoints, builds the file and sends it.
+6. **Reports to download.** Say "give me a report of my payouts this month" or "download this as Excel". The file arrives in the chat as a document the customer taps to open or save. When they do not say how they want it, the assistant asks once: email it (to the profile email or another address), download it here, or both. For both it makes the report twice from the same details, once for the email and once for the chat. The download goes through `POST /internal/email/report/file`, which builds the same report as the email path, follows the same hourly limit, row limit and size limit, and returns the file as Base64. It sends nothing by email.
 
 The profile picture is kept wherever the backend is configured to keep files: a folder on the server, or a shared network folder. One setting switches between the two.
 

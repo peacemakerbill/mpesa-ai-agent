@@ -22,7 +22,9 @@ import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -110,6 +112,13 @@ public class BusinessOperation {
     @Column(length = 20)
     private String approvalMethod;
 
+    /**
+     * What happened, one line per step: epoch milliseconds, a code and a short text, separated by a vertical bar. Read with
+     * {@link #events()}. It holds nothing secret, only plain words and references such as a conversation id.
+     */
+    @Column(length = 4000)
+    private String trail;
+
     @Column
     private Instant expiresAt;
 
@@ -162,6 +171,46 @@ public class BusinessOperation {
             createdAt = now;
         }
         updatedAt = now;
+    }
+
+    /** One step in what happened to a request. */
+    public record Event(Instant at, String code, String text) {
+    }
+
+    private static final int TRAIL_LIMIT = 3900;
+
+    /** Adds a step. Line breaks and bars are removed from the text, and the oldest steps go first when the log gets too long. */
+    public void addEvent(Instant at, String code, String text) {
+        String clean = text == null ? "" : text.replace('|', '/').replaceAll("\\s+", " ").strip();
+        if (clean.length() > 220) {
+            clean = clean.substring(0, 219) + "\u2026";
+        }
+        String line = at.toEpochMilli() + "|" + code + "|" + clean;
+        String all = trail == null || trail.isEmpty() ? line : trail + "\n" + line;
+        while (all.length() > TRAIL_LIMIT && all.indexOf('\n') > 0) {
+            all = all.substring(all.indexOf('\n') + 1);
+        }
+        trail = all;
+    }
+
+    /** The steps in the order they happened. Empty for a request made before the log existed. */
+    public List<Event> events() {
+        List<Event> out = new ArrayList<>();
+        if (trail == null || trail.isEmpty()) {
+            return out;
+        }
+        for (String line : trail.split("\n")) {
+            String[] part = line.split("\\|", 3);
+            if (part.length < 2) {
+                continue;
+            }
+            try {
+                out.add(new Event(Instant.ofEpochMilli(Long.parseLong(part[0])), part[1], part.length > 2 ? part[2] : ""));
+            } catch (NumberFormatException ignored) {
+                // a damaged line is skipped, the rest still reads
+            }
+        }
+        return out;
     }
 
     public UUID getId() { return id; }

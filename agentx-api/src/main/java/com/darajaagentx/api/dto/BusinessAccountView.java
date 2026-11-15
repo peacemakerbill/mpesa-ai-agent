@@ -37,8 +37,27 @@ public record BusinessAccountView(
         boolean hasPasskey,
         List<Capability> capabilities,
         Instant verifiedAt,
-        Instant createdAt
+        Instant createdAt,
+        /** What is saved, where it comes from, and a masked clue for each secret. Never the secrets themselves. */
+        CredentialStatus credentials
 ) {
+
+    /** One credential: whether it is saved, where from, and a masked clue the person can recognise it by. */
+    public record CredentialItem(String code, String label, boolean saved, String source, String mask, boolean readable, String note) {
+    }
+
+    /**
+     * The state of every credential on one account. {@code ready} is true when everything saved can be opened,
+     * {@code problems} counts what is saved but cannot be opened (usually a changed vault key).
+     */
+    public record CredentialStatus(boolean vaultConfigured, int savedCount, int problems, Instant updatedAt, List<CredentialItem> items) {
+    }
+
+    public BusinessAccountView withCredentials(CredentialStatus status) {
+        return new BusinessAccountView(id, label, environment, shortcodeType, shortcode, tillNumber, accountReference, parentId,
+                inheritsCredentials, ownShortcode, headShortcode, credentialSources, consumerKeyHint, hasConsumerSecret, initiatorName,
+                hasInitiatorPassword, hasPasskey, capabilities, verifiedAt, createdAt, status);
+    }
 
     /** For each group of credentials: OWN (saved on this account), HEAD (the head office's) or NONE (not saved anywhere). */
     public record CredentialSources(String app, String passkey, String initiator) {
@@ -64,7 +83,7 @@ public record BusinessAccountView(
                 head == null ? "" : head.getShortcode(), sources,
                 app == null ? null : app.getConsumerKeyHint(), app != null && app.getConsumerSecretEnc() != null,
                 ini == null ? null : ini.getInitiatorName(), ini != null && ini.getInitiatorPasswordEnc() != null, pk != null,
-                capabilities(app != null, pk != null, ini != null), app == null ? null : app.getVerifiedAt(), a.getCreatedAt());
+                capabilities(app != null, pk != null, ini != null), app == null ? null : app.getVerifiedAt(), a.getCreatedAt(), null);
     }
 
     private static BusinessAccount pick(BusinessAccount a, BusinessAccount head, boolean own, boolean fromHead) {

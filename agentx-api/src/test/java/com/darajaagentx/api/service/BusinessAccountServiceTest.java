@@ -126,6 +126,53 @@ class BusinessAccountServiceTest {
     }
 
     @Test
+    void eachSavedSecretShowsAMaskedClueAndNeverTheValue() {
+        BusinessAccountView.CredentialStatus c = fullHead().credentials();
+        assertThat(c.savedCount()).isEqualTo(5);
+        assertThat(c.problems()).isZero();
+        assertThat(c.vaultConfigured()).isTrue();
+        Map<String, BusinessAccountView.CredentialItem> by = new LinkedHashMap<>();
+        c.items().forEach(i -> by.put(i.code(), i));
+        assertThat(by.get("CONSUMER_KEY").mask()).isEqualTo("AbC\u2022\u2022\u2022\u20223456");
+        assertThat(by.get("CONSUMER_SECRET").mask()).isEqualTo("\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022cr3t");
+        assertThat(by.get("PASSKEY").mask()).isEqualTo("bfb2\u2022\u2022\u2022\u2022c919");
+        assertThat(by.get("INITIATOR_NAME").mask()).isEqualTo("testapi");
+        assertThat(by.get("INITIATOR_PASSWORD").mask()).matches("\u2022+").hasSizeLessThanOrEqualTo(12);
+        assertThat(c.items()).allMatch(i -> i.saved() && "OWN".equals(i.source()) && i.readable());
+        assertThat(c.items().toString()).doesNotContain(SECRET, PASS, PASSKEY, KEY);
+    }
+
+    @Test
+    void anAccountWithNothingSavedSaysSo() {
+        BusinessAccountView v = service.create(OWNER, head("Bare", "sandbox", "paybill", "400200", null, null, null, null, null, null));
+        assertThat(v.credentials().savedCount()).isZero();
+        assertThat(v.credentials().items()).allMatch(i -> !i.saved() && "NONE".equals(i.source()) && i.mask().isEmpty());
+    }
+
+    @Test
+    void aBranchShowsTheHeadOfficesSecretsAsInherited() {
+        BusinessAccountView h = fullHead();
+        BusinessAccountView till = service.create(OWNER, branch("Till 1", h.id(), "123456", null));
+        assertThat(till.credentials().items()).filteredOn(i -> i.code().equals("CONSUMER_SECRET"))
+                .allMatch(i -> i.saved() && "HEAD".equals(i.source()) && !i.mask().isEmpty());
+    }
+
+    @Test
+    void aSecretThatCannotBeOpenedIsReportedInsteadOfLookingLikeItIsMissing() throws Exception {
+        BusinessAccountView h = fullHead();
+        byte[] other = new byte[32];
+        other[0] = 9;
+        SecretVault changed = new SecretVault(Base64.getEncoder().encodeToString(other));
+        Path certs = Path.of(getClass().getResource("/daraja-certs").toURI());
+        BusinessAccountService after = new BusinessAccountService(store(), changed, new SecurityCredentialGenerator(new DarajaProperties("a", "b", certs.toString())),
+                (env, key, secret) -> new TokenProbe.Outcome(TokenProbe.Kind.ACCEPTED, 200), Clock.systemUTC());
+        BusinessAccountView.CredentialStatus c = after.get(OWNER, h.id()).credentials();
+        assertThat(c.problems()).isEqualTo(4);
+        assertThat(c.items()).filteredOn(i -> i.code().equals("CONSUMER_SECRET")).allMatch(i -> i.saved() && !i.readable() && i.note().contains("vault key"));
+        assertThat(c.items()).filteredOn(i -> i.code().equals("INITIATOR_NAME")).allMatch(i -> i.readable());
+    }
+
+    @Test
     void withoutAnInitiatorOrPasskeyOnlyTheMatchingApisAreReady() {
         BusinessAccountView v = service.create(OWNER, head("Fees", "production", "paybill", "400200", null, KEY, SECRET, null, null, null));
         assertThat(v.capabilities()).filteredOn(c -> c.code().equals("DYNAMIC_QR")).allMatch(BusinessAccountView.Capability::ready);

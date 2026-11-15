@@ -10,6 +10,7 @@ import com.darajaagentx.api.dto.RecipientRequest;
 import com.darajaagentx.api.dto.RecipientView;
 import com.darajaagentx.api.dto.ReportEmailRequest;
 import com.darajaagentx.api.dto.ReportEmailResult;
+import com.darajaagentx.api.dto.ReportFileResult;
 import com.darajaagentx.api.exception.ActionNotFoundException;
 import com.darajaagentx.api.exception.InvalidActionRequestException;
 import com.darajaagentx.api.service.ProfileService;
@@ -100,5 +101,11 @@ public class InternalProfileController {
     @PostMapping("/email/report")
     public ReportEmailResult report(@RequestParam String phone, @RequestBody ReportEmailRequest request) {
         return reports.send(Phones.normalize(phone), request);
+    }
+
+    /** The same report as a file for the chat to hand over, with nothing emailed. */
+    @PostMapping("/email/report/file")
+    public ReportFileResult reportFile(@RequestParam String phone, @RequestBody ReportEmailRequest request) {
+        return reports.file(Phones.normalize(phone), request);
     }
 }

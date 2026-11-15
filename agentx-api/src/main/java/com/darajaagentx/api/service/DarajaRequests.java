@@ -179,6 +179,19 @@ public final class DarajaRequests {
         return new Call("/pulltransactions/v1/query", body);
     }
 
+    /**
+     * One time step before Pull transactions can be used: the shortcode is registered with a nominated number and an address.
+     * Safaricom's page lists the path as pulltransactions/v1/register with RequestType "Pull".
+     */
+    public static Call pullRegister(ResolvedCredentials c, String nominatedNumber, String callbackUrl) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("ShortCode", c.shortcode());
+        body.put("RequestType", "Pull");
+        body.put("NominatedNumber", nominatedNumber);
+        body.put("CallBackURL", callbackUrl);
+        return new Call("/pulltransactions/v1/register", body);
+    }
+
     private static String password(ResolvedCredentials c, String stamp) {
         String raw = c.shortcode() + c.passkey() + stamp;
         return Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));

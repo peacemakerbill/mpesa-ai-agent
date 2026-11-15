@@ -32,6 +32,9 @@ class ProfileToolsTest {
         RuntimeException failure;
         Map<String, Object> lastChanges;
         Map<String, Object> lastReport;
+        Map<String, Object> lastFileRequest;
+        Map<String, Object> fileResult = Map.of("fileName", "report.pdf", "contentType", "application/pdf", "format", "PDF",
+                "title", "Business requests", "rows", 3, "bytes", 5, "data", java.util.Base64.getEncoder().encodeToString("%PDF-".getBytes()));
         String codeRequestedFor;
         String codeChecked;
         String pasted;
@@ -102,6 +105,13 @@ class ProfileToolsTest {
             lastReport = request;
             return reportResult;
         }
+
+        @Override
+        public Map<String, Object> reportFile(String phone, Map<String, Object> request) {
+            maybeFail();
+            lastFileRequest = request;
+            return fileResult;
+        }
     }
 
     private final FakeApi api = new FakeApi();
@@ -123,7 +133,7 @@ class ProfileToolsTest {
     @Test
     void theToolsAreDefinedAndRecognised() {
         assertThat(ProfileTools.definitions()).extracting(d -> d.get("name")).containsExactly("get_my_profile", "update_my_profile",
-                "request_email_verification", "confirm_email_code", "list_email_recipients", "save_email_recipients", "remove_email_recipient", "send_report_email");
+                "request_email_verification", "confirm_email_code", "list_email_recipients", "save_email_recipients", "remove_email_recipient", "send_report_email", "download_report");
         assertThat(tools.handles("send_report_email")).isTrue();
         assertThat(tools.handles("list_business_accounts")).isFalse();
     }
@@ -253,6 +263,40 @@ class ProfileToolsTest {
         assertThat(api.lastReport.get("to")).isEqualTo(List.of("a@x.com", "b@x.com"));
         assertThat(api.lastReport.get("toMe")).isEqualTo(false);
         assertThat(r.content()).contains("also gets a notice");
+    }
+
+    @Test
+    void aDownloadedReportIsAttachedToTheChatAndNothingIsEmailed() {
+        ToolContext ctx = ctx();
+        Result r = tools.execute(ctx, "download_report", json("{\"source\":\"business_requests\",\"format\":\"pdf\",\"from\":\"2026-11-01\"}"));
+        assertThat(r.error()).isFalse();
+        assertThat(api.lastReport).isNull();
+        assertThat(api.lastFileRequest.get("source")).isEqualTo("BUSINESS_REQUESTS");
+        assertThat(api.lastFileRequest.get("from")).isEqualTo("2026-11-01");
+        assertThat(r.content()).contains("report.pdf").contains("attached in this chat").contains("Do not say it was emailed");
+        assertThat(ctx.deferred()).hasSize(1);
+        ReplySender sender = org.mockito.Mockito.mock(ReplySender.class);
+        ctx.deferred().forEach(d -> d.accept(sender));
+        org.mockito.Mockito.verify(sender).document(org.mockito.ArgumentMatchers.eq(PHONE), org.mockito.ArgumentMatchers.eq("%PDF-".getBytes()),
+                org.mockito.ArgumentMatchers.eq("application/pdf"), org.mockito.ArgumentMatchers.eq("report.pdf"), org.mockito.ArgumentMatchers.contains("3 rows"));
+    }
+
+    @Test
+    void aDownloadThatComesBackEmptyOrUnreadableAttachesNothing() {
+        api.fileResult = Map.of("fileName", "r.pdf", "data", "");
+        ToolContext ctx = ctx();
+        assertThat(tools.execute(ctx, "download_report", json("{\"source\":\"PAYMENTS\"}")).error()).isTrue();
+        api.fileResult = Map.of("fileName", "r.pdf", "data", "***not base64***");
+        assertThat(tools.execute(ctx, "download_report", json("{\"source\":\"PAYMENTS\"}")).error()).isTrue();
+        assertThat(ctx.deferred()).isEmpty();
+    }
+
+    @Test
+    void aReportTooLargeToSendComesBackAsAPlainError() {
+        api.failure = new ProfileApiException(400, "That report is too large to attach. Narrow the dates.");
+        Result r = tools.execute(ctx(), "download_report", json("{\"source\":\"PAYMENTS\"}"));
+        assertThat(r.error()).isTrue();
+        assertThat(r.content()).contains("too large");
     }
 
     @Test

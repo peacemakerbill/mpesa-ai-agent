@@ -243,4 +243,22 @@ class BusinessToolsTest {
         assertThat(tools.execute(ctx("TEXT"), "cancel_business_request", json("{}")).content()).contains("no business request waiting");
         verifyNoInteractions(sender);
     }
+
+    @Test
+    void aRequestIsExplainedStepByStepAndCanBeFoundByItsMpesaCode() {
+        api.ops = new ArrayList<>(List.of(Map.of("id", ID, "status", "SUCCEEDED", "summary", "Pay KES 500 to 254700111222", "receipt", "QGH7ABC123",
+                "resultText", "Done. KES 500 received by JOHN DOE.",
+                "timeline", List.of(
+                        Map.of("at", "2026-11-03T06:00:00Z", "code", "ASKED", "text", "Asked in chat: Pay KES 500 to 254700111222"),
+                        Map.of("at", "2026-11-03T06:01:00Z", "code", "APPROVED", "text", "You approved it (biometric)."),
+                        Map.of("at", "2026-11-03T06:03:30Z", "code", "SUCCEEDED", "text", "Done. KES 500 received by JOHN DOE.")))));
+
+        String byCode = tools.execute(ctx("TEXT"), "list_business_requests", json("{\"request_id\":\"qgh7abc123\"}")).content();
+        assertThat(byCode).contains("What happened, oldest first").contains("03 Nov 09:00 Asked in chat").contains("03 Nov 09:01 You approved it")
+                .contains("03 Nov 09:03 Done. KES 500 received by JOHN DOE.");
+        // the list shows one line per request, the steps only appear when one is opened
+        assertThat(tools.execute(ctx("TEXT"), "list_business_requests", json("{}")).content()).doesNotContain("What happened");
+        assertThat(BusinessTools.timeline(null)).isEmpty();
+        assertThat(BusinessTools.timeline(List.of(Map.of("text", "No time given")))).isEqualTo("  - No time given");
+    }
 }

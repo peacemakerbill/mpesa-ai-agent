@@ -10,6 +10,9 @@ import tools.jackson.databind.JsonNode;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HexFormat;
@@ -40,7 +43,7 @@ public class BusinessTools {
 
     private static final Set<String> NAMES = Set.of(LIST_BUSINESS_ACCOUNTS, PREPARE_BUSINESS_REQUEST, LIST_BUSINESS_REQUESTS, CANCEL_BUSINESS_REQUEST);
 
-    public static final List<String> TYPES = List.of("STK_PUSH", "STK_QUERY", "DYNAMIC_QR", "PULL", "BALANCE", "STATUS", "B2C", "B2POCHI", "B2B", "REVERSAL");
+    public static final List<String> TYPES = List.of("STK_PUSH", "STK_QUERY", "DYNAMIC_QR", "PULL_REGISTER", "PULL", "BALANCE", "STATUS", "B2C", "B2POCHI", "B2B", "REVERSAL");
 
     /** The details a request can carry. Each is passed on as text and agentx-api checks it. */
     public static final List<String> DETAIL_KEYS = List.of("amount", "phone", "reference", "description", "remarks", "occasion", "command",
@@ -229,7 +232,14 @@ public class BusinessTools {
         if (text.length() >= 32) {
             return text;
         }
-        List<String> hits = api.operations(ctx.phone(), 10).stream().map(o -> str(o.get("id"))).filter(i -> i.toLowerCase(Locale.ENGLISH).startsWith(text)).toList();
+        List<Map<String, Object>> recent = api.operations(ctx.phone(), 10);
+        // An M-Pesa code such as QGH7ABC123 finds the request that produced it
+        List<String> byReceipt = recent.stream().filter(o -> !str(o.get("receipt")).isEmpty() && str(o.get("receipt")).equalsIgnoreCase(raw.strip()))
+                .map(o -> str(o.get("id"))).toList();
+        if (byReceipt.size() == 1) {
+            return byReceipt.get(0);
+        }
+        List<String> hits = recent.stream().map(o -> str(o.get("id"))).filter(i -> i.toLowerCase(Locale.ENGLISH).startsWith(text)).toList();
         if (hits.size() == 1) {
             return hits.get(0);
         }
@@ -243,6 +253,10 @@ public class BusinessTools {
             sb.append(" | M-Pesa code ").append(str(o.get("receipt")));
         }
         if (full) {
+            String steps = timeline(o.get("timeline"));
+            if (!steps.isEmpty()) {
+                sb.append("\n  What happened, oldest first:\n").append(steps);
+            }
             if (!str(o.get("resultText")).isEmpty()) {
                 sb.append("\n  ").append(str(o.get("resultText")).replace("\n", "\n  "));
             }
@@ -251,6 +265,29 @@ public class BusinessTools {
             }
         }
         return sb.toString();
+    }
+
+    private static final DateTimeFormatter STEP_TIME = DateTimeFormatter.ofPattern("dd MMM HH:mm", Locale.ENGLISH).withZone(ZoneId.of("Africa/Nairobi"));
+
+    /** The steps of one request, one per line with the Nairobi time, so the assistant can say exactly where a payment got to. */
+    static String timeline(Object raw) {
+        if (!(raw instanceof List<?> list) || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Object item : list) {
+            if (!(item instanceof Map<?, ?> step)) {
+                continue;
+            }
+            String when = "";
+            try {
+                when = STEP_TIME.format(Instant.parse(str(step.get("at")))) + " ";
+            } catch (RuntimeException e) {
+                // a step without a usable time is still shown
+            }
+            sb.append("  - ").append(when).append(str(step.get("text"))).append('\n');
+        }
+        return sb.toString().stripTrailing();
     }
 
     // ------------------------------------------------------------ helpers
@@ -321,11 +358,11 @@ public class BusinessTools {
         prepareProps.put("account", string("Which business account, by its name, till number or shortcode. The customer may write it as @Name. "
                 + "Leave out only when they have exactly one."));
         prepareProps.put("type", enumString("What to do. STK_PUSH asks a customer to pay (a PIN prompt on their phone). STK_QUERY checks an earlier STK Push. "
-                + "DYNAMIC_QR makes a QR code for an amount. PULL lists transactions in a period. BALANCE checks the account balance. STATUS looks up one transaction by its code. "
+                + "DYNAMIC_QR makes a QR code for an amount. PULL_REGISTER is the one time step that lets a shortcode use PULL (needs a phone number to nominate). PULL lists transactions in a period, and needs PULL_REGISTER to have been done once. BALANCE checks the account balance. STATUS looks up one transaction by its code. "
                 + "B2C pays money to a phone number. B2POCHI pays a Pochi la Biashara. B2B pays a Paybill or Till. REVERSAL reverses a customer payment.", TYPES));
         prepareProps.put("amount", integer("Amount in whole Kenyan shillings"));
-        prepareProps.put("phone", string("Kenyan phone number: who to charge for STK_PUSH, who to pay for B2C and B2POCHI"));
-        prepareProps.put("use_my_number", Map.of("type", "boolean", "description", "STK_PUSH, B2C and B2POCHI: true when the customer means their own phone "
+        prepareProps.put("phone", string("Kenyan phone number: who to charge for STK_PUSH, who to pay for B2C and B2POCHI, the nominated number for PULL_REGISTER"));
+        prepareProps.put("use_my_number", Map.of("type", "boolean", "description", "STK_PUSH, B2C, B2POCHI and PULL_REGISTER: true when the customer means their own phone "
                 + "number (\"my phone\", \"send an STK push to me\"). You cannot see their full number, so never ask them to type it. Leave out when they gave a number."));
         prepareProps.put("reference", string("STK_PUSH and DYNAMIC_QR: reference shown to the payer. Letters and digits, at most 12. Optional."));
         prepareProps.put("description", string("STK_PUSH: what it is for, at most 13 characters. Optional."));
@@ -355,7 +392,8 @@ public class BusinessTools {
                                 + "fingerprint or phone lock. Say plainly which of the two happened.",
                         prepareProps, List.of("type")),
                 tool(LIST_BUSINESS_REQUESTS,
-                        "Show recent business requests and what happened to each. With request_id it shows one in full.",
+                        "Show recent business requests and what happened to each. With request_id it shows one in full, with a step by step account of what happened: "
+                                + "asked, approved, sent, accepted, timed out, done or failed. Use it whenever they ask what happened to a payment or request. request_id can also be the M-Pesa code of a request made here.",
                         Map.of("limit", integer("How many, 1 to 10. Default 5."), "request_id", string("Id of one request. Optional.")), List.of()),
                 tool(CANCEL_BUSINESS_REQUEST,
                         "Cancel a business request that is still waiting for the owner's approval. Without request_id it cancels the newest waiting one.",

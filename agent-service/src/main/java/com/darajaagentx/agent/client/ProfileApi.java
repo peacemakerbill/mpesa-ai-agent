@@ -33,6 +33,12 @@ public interface ProfileApi {
     /** Builds a PDF, CSV or Excel report and emails it. */
     Map<String, Object> sendReport(String phone, Map<String, Object> request);
 
+    /**
+     * Builds the same kind of report as a file and returns it, without emailing anything. The answer has fileName, contentType, format,
+     * title, rows, bytes and data (the file as Base64).
+     */
+    Map<String, Object> reportFile(String phone, Map<String, Object> request);
+
     /** agentx-api answered with an error, or could not be reached (status 0). The message is safe to show. */
     @SuppressWarnings("serial")
 	class ProfileApiException extends RuntimeException {

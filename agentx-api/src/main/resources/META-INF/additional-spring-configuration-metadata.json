@@ -107,6 +107,18 @@
       "defaultValue": 5
     },
     {
+      "name": "agentx.initiator.result-url",
+      "type": "java.lang.String",
+      "description": "Where Safaricom posts the final result of B2C, B2B, Pochi, balance, status and reversal requests. An address, or a template with {id} and {token}. Blank uses agentx.public-base-url. Set with AGENTX_RESULT_URL.",
+      "defaultValue": ""
+    },
+    {
+      "name": "agentx.initiator.timeout-url",
+      "type": "java.lang.String",
+      "description": "Where Safaricom posts the notice that such a request waited too long in its queue. An address, or a template with {id} and {token}. Blank uses agentx.public-base-url. Set with AGENTX_TIMEOUT_URL.",
+      "defaultValue": ""
+    },
+    {
       "name": "agentx.public-base-url",
       "type": "java.lang.String",
       "description": "Public HTTPS address of this service. Links shown in the chat look like PUBLIC_BASE_URL/a/ACTION_ID. Set with AGENTX_PUBLIC_BASE_URL.",

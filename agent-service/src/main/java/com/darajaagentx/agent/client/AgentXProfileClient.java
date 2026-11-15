@@ -108,6 +108,13 @@ public class AgentXProfileClient implements ProfileApi {
                 .retrieve().onStatus(s -> s.isError(), this::fail).body(MAP));
     }
 
+    @Override
+    public Map<String, Object> reportFile(String phone, Map<String, Object> request) {
+        return call(() -> http.post().uri("/internal/email/report/file?phone={p}", phone)
+                .contentType(MediaType.APPLICATION_JSON).body(request)
+                .retrieve().onStatus(s -> s.isError(), this::fail).body(MAP));
+    }
+
     private static final ParameterizedTypeReference<Map<String, Object>> MAP = new ParameterizedTypeReference<>() {
     };
 

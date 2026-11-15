@@ -184,6 +184,32 @@ void main() {
       expect(find.text('Declined'), findsOneWidget);
     });
 
+    testWidgets('the request shows what happened to it, step by step', (tester) async {
+      final json = _op(status: 'UNKNOWN', needsApproval: false, failure: 'Safaricom reported that the request timed out while waiting.');
+      json['timeline'] = [
+        {'at': '2026-11-03T06:00:00Z', 'code': 'ASKED', 'text': 'Asked in chat: Pay KES 500 to 254700111222'},
+        {'at': '2026-11-03T06:01:00Z', 'code': 'APPROVED', 'text': 'You approved it (biometric).'},
+        {'at': '2026-11-03T06:01:02Z', 'code': 'ACCEPTED', 'text': 'Safaricom accepted it for processing. Conversation AG_1. The result comes later.'},
+        {'at': '2026-11-03T06:03:00Z', 'code': 'TIMEOUT', 'text': 'Safaricom said the request waited too long in its queue.'},
+      ];
+      final state = _state((req) async => _json(json));
+      await _show(tester, BusinessOperationScreen(state: state, operationId: _id));
+      await tester.scrollUntilVisible(find.text('What happened'), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.text('What happened'), findsOneWidget);
+      expect(find.textContaining('You approved it'), findsOneWidget);
+      expect(find.textContaining('Conversation AG_1'), findsOneWidget);
+      expect(find.textContaining('waited too long in its queue'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());   // stops the check that runs while the outcome is unsure
+    });
+
+    test('a request from an older server has an empty timeline and the steps read their codes', () {
+      expect(BusinessOperation.fromJson(_op()).timeline, isEmpty);
+      final step = OperationStep.fromJson({'at': 'bad', 'code': 'TIMEOUT', 'text': 'x'});
+      expect(step.at, isNull);
+      expect(step.isUnsure, isTrue);
+      expect(step.isGood, isFalse);
+    });
+
     testWidgets('an expired request offers nothing to approve', (tester) async {
       final state = _state((req) async => _json(_op(status: 'EXPIRED', needsApproval: false, resultText: 'Not approved in time. Nothing was sent to Safaricom.')));
       await _show(tester, BusinessOperationScreen(state: state, operationId: _id));

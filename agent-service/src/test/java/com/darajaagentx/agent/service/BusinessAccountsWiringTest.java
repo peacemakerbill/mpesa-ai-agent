@@ -67,7 +67,7 @@ class BusinessAccountsWiringTest {
         for (AgentProperties props : List.of(TestSupport.walletProps(), TestSupport.props())) {
             List<String> names = new ArrayList<>();
             new ToolCatalog(TestSupport.mapper(), props).toolsFor(Role.CUSTOMER).forEach(t -> names.add(t.path("name").asString()));
-            assertThat(names).contains("get_my_profile", "update_my_profile", "send_report_email");
+            assertThat(names).contains("get_my_profile", "update_my_profile", "send_report_email", "download_report");
             assertThat(names).doesNotHaveDuplicates();
         }
 

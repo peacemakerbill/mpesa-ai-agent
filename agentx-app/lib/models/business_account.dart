@@ -59,6 +59,64 @@ class CredentialSources {
   }
 }
 
+/// One saved credential as the server describes it: whether it is saved, where it comes from, and a masked clue such
+/// as "AbC••••3456". [readable] is false when it is saved but the server can no longer open it.
+class CredentialItem {
+  const CredentialItem({required this.code, required this.label, required this.saved, required this.source, required this.mask, required this.readable, required this.note});
+
+  final String code;
+  final String label;
+  final bool saved;
+
+  /// "OWN", "HEAD" or "NONE".
+  final String source;
+  final String mask;
+  final bool readable;
+  final String note;
+
+  bool get needsReentry => saved && !readable;
+
+  factory CredentialItem.fromJson(Map<String, dynamic> json) => CredentialItem(
+        code: json['code'] as String? ?? '',
+        label: json['label'] as String? ?? '',
+        saved: json['saved'] == true,
+        source: json['source'] as String? ?? 'NONE',
+        mask: json['mask'] as String? ?? '',
+        readable: json['readable'] != false,
+        note: json['note'] as String? ?? '',
+      );
+}
+
+/// The state of every credential on an account, so a person can confirm what has been saved.
+class CredentialStatus {
+  const CredentialStatus({required this.vaultConfigured, required this.savedCount, required this.problems, required this.updatedAt, required this.items});
+
+  final bool vaultConfigured;
+  final int savedCount;
+  final int problems;
+  final DateTime? updatedAt;
+  final List<CredentialItem> items;
+
+  CredentialItem? item(String code) {
+    for (final i in items) {
+      if (i.code == code) return i;
+    }
+    return null;
+  }
+
+  factory CredentialStatus.fromJson(Map<String, dynamic> json) {
+    final raw = json['items'];
+    final updated = json['updatedAt'];
+    return CredentialStatus(
+      vaultConfigured: json['vaultConfigured'] != false,
+      savedCount: (json['savedCount'] as num?)?.toInt() ?? 0,
+      problems: (json['problems'] as num?)?.toInt() ?? 0,
+      updatedAt: updated is String ? DateTime.tryParse(updated) : null,
+      items: raw is List ? raw.whereType<Map<String, dynamic>>().map(CredentialItem.fromJson).toList() : const [],
+    );
+  }
+}
+
 /// A business account as agentx-api returns it. There are never any secrets in here, only whether each one is saved.
 class BusinessAccount {
   const BusinessAccount({
@@ -81,6 +139,7 @@ class BusinessAccount {
     required this.hasPasskey,
     required this.capabilities,
     required this.verifiedAt,
+    this.credentials,
   });
 
   final String id;
@@ -110,6 +169,9 @@ class BusinessAccount {
   final bool hasPasskey;
   final List<AccountCapability> capabilities;
   final DateTime? verifiedAt;
+
+  /// What is saved, with masked clues. Null when talking to an older server.
+  final CredentialStatus? credentials;
 
   bool get isBranch => parentId != null;
   bool get hasKey => consumerKeyHint.isNotEmpty;
@@ -168,6 +230,7 @@ class BusinessAccount {
       hasPasskey: json['hasPasskey'] == true,
       capabilities: caps is List ? caps.whereType<Map<String, dynamic>>().map(AccountCapability.fromJson).toList() : const [],
       verifiedAt: verified is String ? DateTime.tryParse(verified) : null,
+      credentials: json['credentials'] is Map<String, dynamic> ? CredentialStatus.fromJson(json['credentials'] as Map<String, dynamic>) : null,
     );
   }
 }

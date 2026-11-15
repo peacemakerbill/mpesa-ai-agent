@@ -6,6 +6,7 @@ import '../app_state.dart';
 import '../layout/responsive.dart';
 import '../models/business_account.dart';
 import '../theme/app_theme.dart';
+import '../widgets/credential_status_card.dart';
 import '../widgets/ui.dart';
 
 final RegExp _shortcodePattern = RegExp(r'^\d{5,7}$');
@@ -398,10 +399,17 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
     ];
   }
 
-  String? _keptNote(String label, String from, {String? hint}) {
+  /// The helper text under a secret box. When the server sent a masked clue it is shown, so the person can see the
+  /// value was kept, otherwise the older "ends in" hint is used.
+  String? _keptNote(String label, String from, {String? code, String? hint}) {
     final saved = widget.account;
     if (saved == null) return null;
-    if (from == 'OWN') return 'Saved${hint == null || hint.isEmpty ? '' : ', ends in $hint'}. Leave empty to keep it.';
+    final item = code == null ? null : saved.credentials?.item(code);
+    if (item != null && item.needsReentry) return 'Saved, but it cannot be opened with the current vault key. Enter it again to replace it.';
+    if (from == 'OWN') {
+      if (item != null && item.mask.isNotEmpty) return 'Saved: ${item.mask}. Leave empty to keep it.';
+      return 'Saved${hint == null || hint.isEmpty ? '' : ', ends in $hint'}. Leave empty to keep it.';
+    }
     if (_branch && from == 'HEAD') return 'The head office\'s $label is used. Fill this in to use another.';
     return null;
   }
@@ -425,7 +433,7 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
       _SecretField(
         controller: _key,
         label: 'Consumer key',
-        savedNote: _keptNote('key', src?.app ?? 'NONE', hint: saved?.consumerKeyHint),
+        savedNote: _keptNote('key', src?.app ?? 'NONE', code: 'CONSUMER_KEY', hint: saved?.consumerKeyHint),
         minLength: 8,
         extra: (v) => v.isEmpty && _secret.text.trim().isNotEmpty && (src?.app ?? 'NONE') != 'OWN' ? 'Add the consumer key too.' : null,
       ),
@@ -433,7 +441,7 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
       _SecretField(
         controller: _secret,
         label: 'Consumer secret',
-        savedNote: _keptNote('secret', src?.app ?? 'NONE'),
+        savedNote: _keptNote('secret', src?.app ?? 'NONE', code: 'CONSUMER_SECRET'),
         minLength: 8,
         extra: (v) => v.isEmpty && _key.text.trim().isNotEmpty && (src?.app ?? 'NONE') != 'OWN' ? 'Add the consumer secret too.' : null,
       ),
@@ -441,7 +449,7 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
       _SecretField(
         controller: _passkey,
         label: 'STK Push passkey',
-        savedNote: _keptNote('passkey', src?.passkey ?? 'NONE'),
+        savedNote: _keptNote('passkey', src?.passkey ?? 'NONE', code: 'PASSKEY'),
         help: 'Needed for STK Push and STK Push query.',
         minLength: 20,
       ),
@@ -466,7 +474,7 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
       _SecretField(
         controller: _initiatorPassword,
         label: 'Initiator password',
-        savedNote: _keptNote('initiator', src?.initiator ?? 'NONE'),
+        savedNote: _keptNote('initiator', src?.initiator ?? 'NONE', code: 'INITIATOR_PASSWORD'),
         minLength: 6,
         extra: (v) => v.isEmpty && _initiatorName.text.trim().isNotEmpty && (src?.initiator ?? 'NONE') != 'OWN'
             ? 'Add the password for this initiator.'
@@ -486,6 +494,10 @@ class _BusinessAccountFormScreenState extends State<BusinessAccountFormScreen> {
     final text = Theme.of(context).textTheme;
     final outcome = _outcome;
     return [
+      if (account.credentials != null) ...[
+        CredentialStatusCard(status: account.credentials!, isBranch: account.isBranch),
+        const SizedBox(height: 12),
+      ],
       Panel(
         padding: const EdgeInsets.all(14),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -37,9 +38,10 @@ public class ProfileTools {
     public static final String SAVE_EMAIL_RECIPIENTS = "save_email_recipients";
     public static final String REMOVE_EMAIL_RECIPIENT = "remove_email_recipient";
     public static final String SEND_REPORT_EMAIL = "send_report_email";
+    public static final String DOWNLOAD_REPORT = "download_report";
 
     private static final Set<String> NAMES = Set.of(GET_MY_PROFILE, UPDATE_MY_PROFILE, REQUEST_EMAIL_CODE, CONFIRM_EMAIL_CODE,
-            LIST_EMAIL_RECIPIENTS, SAVE_EMAIL_RECIPIENTS, REMOVE_EMAIL_RECIPIENT, SEND_REPORT_EMAIL);
+            LIST_EMAIL_RECIPIENTS, SAVE_EMAIL_RECIPIENTS, REMOVE_EMAIL_RECIPIENT, SEND_REPORT_EMAIL, DOWNLOAD_REPORT);
 
     public static final List<String> SOURCES = List.of("BUSINESS_REQUESTS", "BUSINESS_ACCOUNTS", "PAYMENTS", "TABLE");
     public static final List<String> FORMATS = List.of("pdf", "csv", "xlsx");
@@ -78,6 +80,7 @@ public class ProfileTools {
                 case SAVE_EMAIL_RECIPIENTS -> saveRecipients(ctx, input);
                 case REMOVE_EMAIL_RECIPIENT -> removeRecipient(ctx, input);
                 case SEND_REPORT_EMAIL -> sendReport(ctx, input);
+                case DOWNLOAD_REPORT -> downloadReport(ctx, input);
                 default -> Result.error("Unknown tool " + name);
             };
         } catch (ToolException e) {
@@ -210,6 +213,23 @@ public class ProfileTools {
     // ------------------------------------------------------------ reports
 
     private Result sendReport(ToolContext ctx, JsonNode input) {
+        Map<String, Object> body = reportBody(input, true);
+        Map<String, Object> result = api.sendReport(ctx.phone(), body);
+        List<?> sentTo = result.get("sentTo") instanceof List<?> l ? l : List.of();
+        String where = String.join(", ", sentTo.stream().map(String::valueOf).toList());
+        String file = str(result.get("fileName"));
+        int rows = number(result.get("rows"));
+        if (!Boolean.TRUE.equals(result.get("delivered"))) {
+            return Result.error("The report " + file + " was built for " + where + " but nothing was emailed, because this server is not set up to send email yet. "
+                    + "Tell the customer plainly that it was not sent, and that the administrator must turn email on.");
+        }
+        return Result.ok("Emailed " + file + " (" + str(result.get("format")).toUpperCase(Locale.ENGLISH) + ", " + rows + (rows == 1 ? " row" : " rows")
+                + ") to " + where + ". Tell the customer where it went in one short sentence."
+                + (toOthers(sentTo) ? " The account owner also gets a notice that a report went to other people." : ""));
+    }
+
+    /** What a report is made of, read from the tool input. The addresses and the note matter only when it is going to be emailed. */
+    private Map<String, Object> reportBody(JsonNode input, boolean forEmail) {
         String source = ToolExecutor.text(input, "source", 30).toUpperCase(Locale.ENGLISH);
         if (!SOURCES.contains(source)) {
             throw new ToolException("source must be one of " + String.join(", ", SOURCES) + ".");
@@ -224,19 +244,21 @@ public class ProfileTools {
         put(body, "title", ToolExecutor.text(input, "title", 120));
         body.put("format", format);
 
-        List<String> to = strings(input.get("to"), 50, 254);
-        boolean toMe = input.path("to_me").asBoolean(false);
-        boolean toSaved = input.path("to_saved").asBoolean(false);
-        if (to.isEmpty() && !toMe && !toSaved) {
-            // "send it to my email", or no address given at all, goes to the profile email and never to a guess
-            toMe = true;
+        if (forEmail) {
+            List<String> to = strings(input.get("to"), 50, 254);
+            boolean toMe = input.path("to_me").asBoolean(false);
+            boolean toSaved = input.path("to_saved").asBoolean(false);
+            if (to.isEmpty() && !toMe && !toSaved) {
+                // "send it to my email", or no address given at all, goes to the profile email and never to a guess
+                toMe = true;
+            }
+            if (!to.isEmpty()) {
+                body.put("to", to);
+            }
+            body.put("toMe", toMe);
+            body.put("toSaved", toSaved);
+            put(body, "message", ToolExecutor.text(input, "message", 500));
         }
-        if (!to.isEmpty()) {
-            body.put("to", to);
-        }
-        body.put("toMe", toMe);
-        body.put("toSaved", toSaved);
-        put(body, "message", ToolExecutor.text(input, "message", 500));
 
         if ("TABLE".equals(source)) {
             List<String> columns = strings(input.get("columns"), MAX_COLUMNS, MAX_CELL);
@@ -258,19 +280,36 @@ public class ProfileTools {
                 body.put("limit", Math.max(1, Math.min(input.get("limit").asInt(), 5000)));
             }
         }
+        return body;
+    }
 
-        Map<String, Object> result = api.sendReport(ctx.phone(), body);
-        List<?> sentTo = result.get("sentTo") instanceof List<?> l ? l : List.of();
-        String where = String.join(", ", sentTo.stream().map(String::valueOf).toList());
-        String file = str(result.get("fileName"));
-        int rows = number(result.get("rows"));
-        if (!Boolean.TRUE.equals(result.get("delivered"))) {
-            return Result.error("The report " + file + " was built for " + where + " but nothing was emailed, because this server is not set up to send email yet. "
-                    + "Tell the customer plainly that it was not sent, and that the administrator must turn email on.");
+    /**
+     * Builds the report as a file and puts it in the chat as a document the customer can open or save. Nothing is emailed. The customer
+     * can ask for this alone, or together with the email (the assistant then uses both tools).
+     */
+    private Result downloadReport(ToolContext ctx, JsonNode input) {
+        Map<String, Object> body = reportBody(input, false);
+        Map<String, Object> result = api.reportFile(ctx.phone(), body);
+        String encoded = str(result.get("data"));
+        if (encoded.isEmpty()) {
+            return Result.error("The report could not be made. Nothing was attached.");
         }
-        return Result.ok("Emailed " + file + " (" + str(result.get("format")).toUpperCase(Locale.ENGLISH) + ", " + rows + (rows == 1 ? " row" : " rows")
-                + ") to " + where + ". Tell the customer where it went in one short sentence."
-                + (toOthers(sentTo) ? " The account owner also gets a notice that a report went to other people." : ""));
+        byte[] bytes;
+        try {
+            bytes = Base64.getDecoder().decode(encoded);
+        } catch (IllegalArgumentException e) {
+            return Result.error("The report could not be read back. Nothing was attached.");
+        }
+        String file = str(result.get("fileName"));
+        String type = str(result.get("contentType"));
+        int rows = number(result.get("rows"));
+        String title = str(result.get("title"));
+        String caption = (title.isEmpty() ? file : title) + " (" + rows + (rows == 1 ? " row" : " rows") + ")";
+        String phone = ctx.phone();
+        ctx.defer(s -> s.document(phone, bytes, type.isEmpty() ? "application/octet-stream" : type, file, caption));
+        return Result.ok("The file " + file + " (" + str(result.get("format")).toUpperCase(Locale.ENGLISH) + ", " + rows + (rows == 1 ? " row" : " rows")
+                + ") is attached in this chat and the customer can tap it to open or save it. Tell them that in one short sentence. "
+                + "Do not say it was emailed unless you also emailed it.");
     }
 
     private static boolean toOthers(List<?> sentTo) {
@@ -422,6 +461,11 @@ public class ProfileTools {
         reportProps.put("rows", Map.of("type", "array", "description", "TABLE only: the rows. Each row is a list of texts, one per column, in column order.",
                 "items", Map.of("type", "array", "items", Map.of("type", "string"))));
 
+        Map<String, Object> downloadProps = new LinkedHashMap<>(reportProps);
+        for (String key : List.of("to", "to_me", "to_saved", "message")) {
+            downloadProps.remove(key);
+        }
+
         return List.of(
                 tool(GET_MY_PROFILE,
                         "Show the customer's own profile: name, email and whether it is verified, address, location, picture and email alert switches.",
@@ -453,7 +497,12 @@ public class ProfileTools {
                                 + "or TABLE with the rows when they mean the table you just showed. With no address given it goes to the email on their profile (it must be verified). "
                                 + "If the customer names addresses, send to exactly those. If they say to send it to people but give none and none are saved, ask them. "
                                 + "Never invent an address and never put a secret in a report.",
-                        reportProps, List.of("source")));
+                        reportProps, List.of("source")),
+                tool(DOWNLOAD_REPORT,
+                        "Make a report as a PDF, CSV or Excel file and put it in this chat so the customer can open or save it. Nothing is emailed. Use it when they want to download, "
+                                + "get, save or be given the report here. When they want it emailed too, also call send_report_email with the same details. The details are the same as for "
+                                + "send_report_email, without any addresses.",
+                        downloadProps, List.of("source")));
     }
 
     private static Map<String, Object> tool(String name, String description, Map<String, Object> properties, List<String> required) {

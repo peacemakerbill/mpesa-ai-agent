@@ -3,6 +3,7 @@ package com.darajaagentx.api.service;
 import com.darajaagentx.api.config.MailProperties;
 import com.darajaagentx.api.dto.ReportEmailRequest;
 import com.darajaagentx.api.dto.ReportEmailResult;
+import com.darajaagentx.api.dto.ReportFileResult;
 import com.darajaagentx.api.exception.TooManyRequestsException;
 import com.darajaagentx.api.mail.OutgoingMail;
 import com.darajaagentx.api.report.ReportTables;
@@ -87,6 +88,24 @@ class ReportMailServiceTest {
         ReportEmailResult bare = reports.send(OWNER, request("BUSINESS_REQUESTS", null, null));
         assertThat(bare.sentTo()).containsExactly("me@example.com");
         assertThat(bare.format()).isEqualTo("PDF");
+    }
+
+    @Test
+    void aReportCanBeBuiltAsAFileToDownloadWithoutAnyEmailOrAddress() {
+        ReportFileResult pdf = reports.file(OWNER, request("BUSINESS_REQUESTS", "pdf", null));
+        assertThat(pdf.fileName()).endsWith(".pdf");
+        assertThat(pdf.contentType()).isEqualTo("application/pdf");
+        assertThat(pdf.format()).isEqualTo("PDF");
+        assertThat(pdf.rows()).isEqualTo(3);
+        byte[] bytes = java.util.Base64.getDecoder().decode(pdf.data());
+        assertThat(bytes.length).isEqualTo(pdf.bytes());
+        assertThat(new String(bytes, 0, 5, StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-");
+        assertThat(rig.mailbox.sent).isEmpty();
+
+        assertThat(reports.file(OWNER, request("ACCOUNTS", "excel", null)).fileName()).endsWith(".xlsx");
+        assertThat(reports.file(OWNER, request("PAYMENTS", null, null)).format()).isEqualTo("PDF");
+        assertThatThrownBy(() -> reports.file(OWNER, request("ACCOUNTS", "word", null))).hasMessageContaining("pdf, csv or excel");
+        assertThatThrownBy(() -> reports.file(OWNER, request("SECRETS", "pdf", null))).hasMessageContaining("not one of those");
     }
 
     @Test

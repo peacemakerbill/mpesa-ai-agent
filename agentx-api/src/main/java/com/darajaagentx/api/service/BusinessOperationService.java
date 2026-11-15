@@ -1,6 +1,7 @@
 package com.darajaagentx.api.service;
 
 import com.darajaagentx.api.config.BusinessOpsProperties;
+import com.darajaagentx.api.config.InitiatorCallbackProperties;
 import com.darajaagentx.api.config.StkCallbackProperties;
 import com.darajaagentx.api.config.AgentXProperties;
 import com.darajaagentx.api.dto.BusinessAccountView;
@@ -67,7 +68,7 @@ public class BusinessOperationService {
     private static final Pattern CODE = Pattern.compile("^\\d{5,7}$");
     private static final Pattern RECEIPT = Pattern.compile("^[A-Z0-9]{8,12}$");
     private static final Pattern REFERENCE = Pattern.compile("^[A-Za-z0-9]{1,12}$");
-    private static final DateTimeFormatter PULL_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter PULL_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Set<String> B2C_COMMANDS = Set.of("BusinessPayment", "SalaryPayment", "PromotionPayment");
 
     /** What preparing an operation gave back. [qrCode] is set only for a Dynamic QR and is not stored anywhere. */
@@ -85,6 +86,11 @@ public class BusinessOperationService {
     private final String publicBaseUrl;
     /** Where Safaricom answers an STK Push when that differs from publicBaseUrl (AGENTX_STK_CALLBACK_URL). Empty means the same address. */
     private volatile String stkCallbackBase = "";
+    /** Where Safaricom sends results and queue timeouts (AGENTX_RESULT_URL, AGENTX_TIMEOUT_URL). Blank means the public address, or the tunnel. */
+    private volatile String resultUrl = "";
+    private volatile String timeoutUrl = "";
+    /** The address of the development tunnel while one is open. Used for results and timeouts that have no address of their own. */
+    private volatile String tunnelBase = "";
     private final SlidingWindowLimiter limiter;
     private final Clock clock;
     private final ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
@@ -114,6 +120,46 @@ public class BusinessOperationService {
     @Autowired
     void configureStkCallback(StkCallbackProperties stk) {
         setStkCallbackBase(stk.callbackUrl());
+    }
+
+    @Autowired
+    void configureInitiatorCallbacks(InitiatorCallbackProperties urls) {
+        setInitiatorUrls(urls.resultUrl(), urls.timeoutUrl());
+    }
+
+    /** Sets where results and queue timeouts go. Each is an address or a template with {id} and {token}. Blank goes back to the public address. */
+    public void setInitiatorUrls(String result, String timeout) {
+        this.resultUrl = result == null ? "" : result.strip();
+        this.timeoutUrl = timeout == null ? "" : timeout.strip();
+        report("result", this.resultUrl);
+        report("timeout", this.timeoutUrl);
+    }
+
+    private void report(String what, String configured) {
+        String problem = CallbackUrls.problem(configured);
+        String sample = CallbackUrls.resolve(configured, initiatorFallback(), new UUID(0, 0), "TOKEN", what);
+        if (problem == null) {
+            log.info("Safaricom's {} for B2C, B2B, balance, status and reversals goes to {}", what, sample);
+        } else {
+            log.warn("The {} address for B2C, B2B, balance, status and reversals is not usable: {}. Safaricom would be told {}. Set AGENTX_{}_URL "
+                    + "to a public https address, or leave it empty to use AGENTX_PUBLIC_BASE_URL.", what, problem, sample, what.toUpperCase(java.util.Locale.ROOT));
+        }
+    }
+
+    private String initiatorFallback() {
+        return tunnelBase.isEmpty() ? publicBaseUrl : tunnelBase;
+    }
+
+    /** A development tunnel was opened: STK answers go to it, and so do results and timeouts that have no address of their own. */
+    public void useTunnel(String url) {
+        this.tunnelBase = StkCallback.normalize(url);
+        setStkCallbackBase(url);
+        if (resultUrl.isEmpty()) {
+            report("result", "");
+        }
+        if (timeoutUrl.isEmpty()) {
+            report("timeout", "");
+        }
     }
 
     /** Sends the answers to STK Pushes to this address instead of the public address of the service. Blank goes back to the public address. */
@@ -194,9 +240,11 @@ public class BusinessOperationService {
         op.setSource(blank(source) ? "TEXT" : trim(source.trim().toUpperCase(Locale.ROOT), 12));
         op.setIdempotencyKey(key == null ? "k-" + UUID.randomUUID() : key);
         op.setCallbackToken(newToken());
+        op.addEvent(now, "ASKED", "Asked " + sourceWords(op.getSource()) + ": " + op.getSummary());
         if (approval) {
             op.setStatus(BusinessOperationStatus.PENDING_APPROVAL);
             op.setExpiresAt(now.plus(props.approvalTtl()));
+            op.addEvent(now, "WAITING", "Waiting for your approval in the app. It stays open for about " + props.approvalTtl().toMinutes() + " minutes.");
             return new Prepared(ops.save(op), null);
         }
         op.setStatus(BusinessOperationStatus.SUBMITTED);
@@ -229,6 +277,7 @@ public class BusinessOperationService {
             op.setStatus(BusinessOperationStatus.SUBMITTED);
             op.setApprovedAt(clock.instant());
             op.setApprovalMethod(blank(method) ? "UNKNOWN" : trim(method, 20));
+            note(op, "APPROVED", "You approved it" + (blank(method) || "UNKNOWN".equals(op.getApprovalMethod()) ? "" : " (" + op.getApprovalMethod().toLowerCase(Locale.ROOT).replace('_', ' ') + ")") + ".");
             return run(ops.save(op), true).operation();
         }
     }
@@ -243,6 +292,7 @@ public class BusinessOperationService {
             op.setStatus(BusinessOperationStatus.DECLINED);
             op.setCompletedAt(clock.instant());
             op.setResultText("Declined. Nothing was sent to Safaricom.");
+            note(op, "DECLINED", "You declined it. Nothing was sent to Safaricom.");
             BusinessOperation saved = ops.save(op);
             notifier.text(owner, "You declined this, so nothing was sent:\n\n" + saved.getSummary());
             return saved;
@@ -256,6 +306,7 @@ public class BusinessOperationService {
         try {
             ResolvedCredentials c = accounts.resolve(owner, op.getAccountId());
             DarajaRequests.Call call = build(op, c);
+            note(op, "SENT", "Sent to Safaricom (" + c.environment().name().toLowerCase(Locale.ROOT) + ").");
             Map<String, Object> answer = daraja.post(c.environment(), c.consumerKey(), c.consumerSecret(), call.path(), call.body());
             return afterAnswer(op, answer, tellChat);
         } catch (DarajaRefusedException e) {
@@ -269,6 +320,7 @@ public class BusinessOperationService {
         } catch (DarajaOutcomeUnknownException e) {
             op.setFailure(trim(e.getMessage() + " It may or may not have gone through. Check your M-Pesa statement before trying again.", 500));
             op.setStatus(BusinessOperationStatus.UNKNOWN);
+            note(op, "UNKNOWN", "No clear answer from Safaricom. It may or may not have gone through.");
             BusinessOperation saved = ops.save(op);
             if (tellChat) {
                 notifier.text(owner, "*Not sure if this went through*\n\n" + saved.getSummary() + "\n\n" + saved.getFailure());
@@ -281,8 +333,8 @@ public class BusinessOperationService {
         String owner = op.getOwnerPhone();
         Map<String, String> p = op.getParams();
         String base = publicBaseUrl + "/daraja/business/" + op.getId() + "/" + op.getCallbackToken();
-        String result = base + "/result";
-        String timeout = base + "/timeout";
+        String result = CallbackUrls.resolve(resultUrl, initiatorFallback(), op.getId(), op.getCallbackToken(), "result");
+        String timeout = CallbackUrls.resolve(timeoutUrl, initiatorFallback(), op.getId(), op.getCallbackToken(), "timeout");
         String stkBase = stkCallbackBase.isEmpty() ? base : stkCallbackBase + "/daraja/business/" + op.getId() + "/" + op.getCallbackToken();
         return switch (op.getType()) {
             case STK_PUSH -> {
@@ -299,6 +351,7 @@ public class BusinessOperationService {
             }
             case DYNAMIC_QR -> DarajaRequests.qr(c, p.get("merchantName"), p.get("reference"), op.getAmount());
             case PULL -> DarajaRequests.pull(c, p.get("start"), p.get("end"), Integer.parseInt(p.getOrDefault("offset", "0")));
+            case PULL_REGISTER -> DarajaRequests.pullRegister(c, p.get("phone"), result);
             case B2C -> {
                 op.setOriginatorConversationId(UUID.randomUUID().toString());
                 yield DarajaRequests.b2c(c, accounts.securityCredential(owner, op.getAccountId()), p.get("command"), op.getOriginatorConversationId(),
@@ -341,15 +394,25 @@ public class BusinessOperationService {
             }
             case PULL -> {
                 // Safaricom's docs show 1000 for success, other APIs use 0 or 00. Rows in the answer are success too.
-                boolean ok = code == null || Set.of("0", "00", "1000").contains(code) || !maps(answer.get("Response")).isEmpty();
+                boolean ok = code == null || Set.of("0", "00", "1000").contains(code) || !flatMaps(answer.get("Response")).isEmpty();
                 return new Prepared(finish(op, ok ? BusinessOperationStatus.SUCCEEDED : BusinessOperationStatus.FAILED,
-                        pullText(answer), null, tellChat), null);
+                        ok ? pullText(answer) : firstNonBlank(description, "Safaricom did not return the transactions."), null, tellChat), null);
+            }
+            case PULL_REGISTER -> {
+                boolean ok = code != null && Set.of("0", "00", "1000").contains(code);
+                if (!ok) {
+                    return new Prepared(fail(op, firstNonBlank(str(answer.get("ResponseMessage")), description,
+                            "Safaricom did not accept the registration.") + " Nothing was changed.", tellChat), null);
+                }
+                return new Prepared(finish(op, BusinessOperationStatus.SUCCEEDED, "Registered. " + op.getParams().get("phone")
+                        + " is now the nominated number for pull transactions, so you can list transactions for this shortcode.", null, tellChat), null);
             }
             case STK_PUSH -> {
                 if (!"0".equals(code)) {
                     return new Prepared(fail(op, description == null ? "Safaricom did not accept the STK Push." : description, tellChat), null);
                 }
                 op.setCheckoutRequestId(str(answer.get("CheckoutRequestID")));
+                note(op, "ACCEPTED", "Safaricom accepted it and showed the prompt on the phone." + (blank(op.getCheckoutRequestId()) ? "" : " Checkout id " + op.getCheckoutRequestId() + "."));
                 op.setResultText("The prompt was sent to " + op.getParams().get("phone") + ". Waiting for the customer to enter their PIN.");
                 return new Prepared(ops.save(op), null);
             }
@@ -358,6 +421,7 @@ public class BusinessOperationService {
                     return new Prepared(fail(op, description == null ? "Safaricom did not accept the request." : description, tellChat), null);
                 }
                 op.setConversationId(str(answer.get("ConversationID")));
+                note(op, "ACCEPTED", "Safaricom accepted it for processing." + (blank(op.getConversationId()) ? "" : " Conversation " + op.getConversationId() + ".") + " The result comes later.");
                 op.setResultText("Safaricom accepted the request. The result will arrive in this chat.");
                 return new Prepared(ops.save(op), null);
             }
@@ -376,6 +440,7 @@ public class BusinessOperationService {
                     origin.setStatus(paid ? BusinessOperationStatus.SUCCEEDED : BusinessOperationStatus.FAILED);
                     origin.setResultText(text);
                     origin.setCompletedAt(clock.instant());
+                    note(origin, origin.getStatus().name(), "Confirmed by a check with Safaricom. " + text);
                     ops.save(origin);
                 }
             });
@@ -406,6 +471,7 @@ public class BusinessOperationService {
             }
             if ("timeout".equals(kind)) {
                 op.setStatus(BusinessOperationStatus.UNKNOWN);
+                note(op, "TIMEOUT", "Safaricom said the request waited too long in its queue. The outcome is not known yet, a late result can still arrive.");
                 op.setFailure("Safaricom reported that the request timed out while waiting. Check your M-Pesa statement before trying again.");
                 BusinessOperation saved = ops.save(op);
                 notifier.text(op.getOwnerPhone(), "*No answer from Safaricom*\n\n" + saved.getSummary() + "\n\n" + saved.getFailure());
@@ -465,12 +531,8 @@ public class BusinessOperationService {
         String text;
         switch (op.getType()) {
             case BALANCE -> text = balanceText(values.get("AccountBalance"));
-            case STATUS -> text = values.isEmpty() ? description : values.entrySet().stream().limit(12)
-                    .map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.joining("\n"));
-            default -> {
-                String who = values.get("ReceiverPartyPublicName");
-                text = "Done" + (who == null ? "" : ". Received by " + who) + ".";
-            }
+            case STATUS -> text = statusText(values, description);
+            default -> text = payoutText(values);
         }
         finish(op, BusinessOperationStatus.SUCCEEDED, text, op.getType() == BusinessOperationType.BALANCE || op.getType() == BusinessOperationType.STATUS ? null : receipt, true);
     }
@@ -530,6 +592,7 @@ public class BusinessOperationService {
             }
             if (op.getCreatedAt() != null && op.getCreatedAt().plus(giveUpAfter).isBefore(now)) {
                 op.setStatus(BusinessOperationStatus.UNKNOWN);
+                note(op, "UNKNOWN", "Safaricom never confirmed this payment, even when we asked.");
                 op.setFailure("Safaricom never confirmed this payment. The customer may or may not have paid. Check your M-Pesa statement before asking again.");
                 BusinessOperation saved = ops.save(op);
                 notifier.text(op.getOwnerPhone(), "*No answer from Safaricom*\n\n" + saved.getSummary() + "\n\n" + saved.getFailure());
@@ -549,8 +612,12 @@ public class BusinessOperationService {
         }
         if (status == BusinessOperationStatus.FAILED) {
             op.setFailure(trim(text, 500));
+        } else if (status == BusinessOperationStatus.SUCCEEDED) {
+            op.setFailure(null);   // a late result can follow a timeout, and the earlier worry no longer applies
         }
         op.setCompletedAt(clock.instant());
+        note(op, status.name(), (status == BusinessOperationStatus.SUCCEEDED ? "Done. " : status == BusinessOperationStatus.FAILED ? "Did not go through. " : "")
+                + (text == null ? "" : text) + (receipt == null ? "" : " M-Pesa code " + receipt + "."));
         BusinessOperation saved = ops.save(op);
         if (tellChat) {
             notifier.text(saved.getOwnerPhone(), chatText(saved));
@@ -579,9 +646,24 @@ public class BusinessOperationService {
             op.setStatus(BusinessOperationStatus.EXPIRED);
             op.setCompletedAt(clock.instant());
             op.setResultText("Not approved in time. Nothing was sent to Safaricom.");
+            note(op, "EXPIRED", "Not approved in time. Nothing was sent to Safaricom.");
             return ops.save(op);
         }
         return op;
+    }
+
+    private void note(BusinessOperation op, String code, String text) {
+        op.addEvent(clock.instant(), code, text);
+    }
+
+    private static String sourceWords(String source) {
+        return switch (source == null ? "TEXT" : source) {
+            case "VOICE" -> "by voice";
+            case "IMAGE" -> "from a picture";
+            case "DOCUMENT" -> "from a document";
+            case "CONTACT" -> "from a contact";
+            default -> "in chat";
+        };
     }
 
     private boolean isStale(BusinessOperation op) {
@@ -701,6 +783,11 @@ public class BusinessOperationService {
                 p.put("end", PULL_FORMAT.format(end));
                 p.put("offset", offset.matches("\\d{1,6}") ? offset : "0");
                 return new Plan(0, "Pull transactions from " + p.get("start") + " to " + p.get("end") + on, p);
+            }
+            case PULL_REGISTER -> {
+                String phone = phone(in, "phone");
+                p.put("phone", phone);
+                return new Plan(0, "Register " + phone + " as the nominated number for pull transactions" + on, p);
             }
             case BALANCE -> {
                 return new Plan(0, "Check the account balance" + on, p);
@@ -847,7 +934,7 @@ public class BusinessOperationService {
     // ------------------------------------------------------------------ parsing Safaricom's JSON
 
     private static String pullText(Map<String, Object> answer) {
-        List<Map<String, Object>> rows = maps(answer.get("Response"));
+        List<Map<String, Object>> rows = flatMaps(answer.get("Response"));
         String message = firstNonBlank(str(answer.get("ResponseMessage")), str(answer.get("ResponseDescription")), "");
         if (rows.isEmpty()) {
             return message.isEmpty() ? "No transactions were returned for that period." : message;
@@ -856,6 +943,62 @@ public class BusinessOperationService {
                 + firstNonBlank(str(r.get("amount")), "?") + " on " + firstNonBlank(str(r.get("trxDate")), "?")
                 + (blank(str(r.get("billreference"))) ? "" : " (ref " + str(r.get("billreference")) + ")")).collect(Collectors.joining("\n"));
         return rows.size() + " transaction" + (rows.size() == 1 ? "" : "s") + (rows.size() > 10 ? ", the first 10:" : ":") + "\n" + lines;
+    }
+
+    /** What a finished B2C, Pochi, B2B or reversal says: the amount, who received it and when, when Safaricom sent those details. */
+    static String payoutText(Map<String, String> values) {
+        String amount = firstNonBlank(values.get("TransactionAmount"), values.get("Amount"));
+        String who = firstNonBlank(values.get("ReceiverPartyPublicName"), values.get("CreditPartyName"));
+        String when = firstNonBlank(values.get("TransactionCompletedDateTime"), values.get("TransCompletedTime"), values.get("TransactionDate"));
+        StringBuilder text = new StringBuilder("Done");
+        if (amount != null) {
+            text.append(". KES ").append(amount);
+        }
+        if (who != null) {
+            text.append(amount == null ? ". Received by " : " received by ").append(who);
+        }
+        if (when != null) {
+            text.append(" at ").append(when);
+        }
+        return text.append('.').toString();
+    }
+
+    /**
+     * Reads the answer to a transaction status query into a few plain lines. Safaricom names the fields ReceiptNo, TransactionStatus,
+     * Amount, DebitPartyName, CreditPartyName, FinalisedTime and so on. When none of those are there the first fields are listed as they are.
+     */
+    static String statusText(Map<String, String> values, String description) {
+        if (values.isEmpty()) {
+            return description;
+        }
+        String receipt = values.get("ReceiptNo");
+        String state = values.get("TransactionStatus");
+        String amount = values.get("Amount");
+        String from = values.get("DebitPartyName");
+        String to = values.get("CreditPartyName");
+        String when = firstNonBlank(values.get("FinalisedTime"), values.get("TransactionCompletedTime"));
+        String reason = firstNonBlank(values.get("TransactionReason"), values.get("ReasonType"));
+        if (receipt == null && state == null && amount == null && from == null && to == null) {
+            return values.entrySet().stream().limit(12).map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.joining("\n"));
+        }
+        List<String> lines = new ArrayList<>();
+        lines.add((receipt == null ? "Transaction" : "Transaction " + receipt) + (state == null ? "" : ": " + state));
+        if (amount != null) {
+            lines.add("Amount: KES " + amount);
+        }
+        if (from != null) {
+            lines.add("From: " + from);
+        }
+        if (to != null) {
+            lines.add("To: " + to);
+        }
+        if (when != null) {
+            lines.add("Finished: " + when);
+        }
+        if (reason != null) {
+            lines.add("Reason: " + reason);
+        }
+        return String.join("\n", lines);
     }
 
     /**
@@ -902,6 +1045,23 @@ public class BusinessOperationService {
             return out;
         }
         return List.of();
+    }
+
+    /** Like {@link #maps} but also opens lists inside lists. Pull transactions answers with a list of lists of transactions. */
+    private static List<Map<String, Object>> flatMaps(Object o) {
+        List<Map<String, Object>> out = new ArrayList<>();
+        if (o instanceof List<?> list) {
+            for (Object item : list) {
+                if (item instanceof List<?>) {
+                    out.addAll(flatMaps(item));
+                } else if (item instanceof Map<?, ?>) {
+                    out.add(map(item));
+                }
+            }
+        } else if (o instanceof Map<?, ?>) {
+            out.add(map(o));
+        }
+        return out;
     }
 
     // ------------------------------------------------------------------ small helpers

@@ -126,6 +126,11 @@ agentx:
   # callbacks must go to a different public https address, for example a tunnel to your laptop while testing. Address only.
   stk:
     callback-url: ${AGENTX_STK_CALLBACK_URL:}
+  # Where Safaricom posts the final answer to B2C, B2B, Pay to Pochi, balance, status and reversal requests. Each is an address
+  # (the path and a secret token per request are added) or a template containing {id} and {token}. Blank uses public-base-url.
+  initiator:
+    result-url: ${AGENTX_RESULT_URL:}
+    timeout-url: ${AGENTX_TIMEOUT_URL:}
   # Development only (docs/DEV_TUNNEL.md). When no public address is set for the STK answers, a zrok2 or ngrok tunnel is opened
   # once the service is up, installing the program into your own folder if it is missing. Needs one account token.
   dev-tunnel:

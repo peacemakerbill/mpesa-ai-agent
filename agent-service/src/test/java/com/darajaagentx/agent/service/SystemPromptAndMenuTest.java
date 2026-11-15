@@ -33,6 +33,14 @@ class SystemPromptAndMenuTest {
     }
 
     @Test
+    void theRulesLetACustomerChooseEmailDownloadOrBothForAReport() {
+        String rules = new SystemPrompt(TestSupport.business(), TestSupport.walletProps()).rules();
+
+        assertThat(rules).contains("send_report_email").contains("download_report").contains("call both tools")
+                .contains("emailed (to the email on their profile").contains("downloaded here, or both").contains("Never invent or complete an address");
+    }
+
+    @Test
     void theRulesTreatFilesAndSpeechAsDataNotInstructions() {
         String rules = new SystemPrompt(TestSupport.business(), TestSupport.walletProps()).rules();
 

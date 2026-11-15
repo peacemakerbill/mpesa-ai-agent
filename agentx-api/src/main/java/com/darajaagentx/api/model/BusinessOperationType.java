@@ -14,6 +14,7 @@ public enum BusinessOperationType {
     STK_QUERY("STK Push query", "STK_QUERY", Kind.READ),
     DYNAMIC_QR("Dynamic QR", "DYNAMIC_QR", Kind.READ),
     PULL("Pull transactions", "PULL", Kind.READ),
+    PULL_REGISTER("Register for pull transactions", "PULL", Kind.READ),
     BALANCE("Account balance", "BALANCE", Kind.READ),
     STATUS("Transaction status", "STATUS", Kind.READ),
     B2C("Pay out to a phone (B2C)", "B2C", Kind.MONEY_OUT),
@@ -51,7 +52,7 @@ public enum BusinessOperationType {
 
     /** True when Daraja answers the call itself, so there is nothing to wait for on a result URL. */
     public boolean answersAtOnce() {
-        return this == STK_QUERY || this == DYNAMIC_QR || this == PULL;
+        return this == STK_QUERY || this == DYNAMIC_QR || this == PULL || this == PULL_REGISTER;
     }
 
     public static BusinessOperationType parse(String text) {

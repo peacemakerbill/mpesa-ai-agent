@@ -69,7 +69,7 @@ class DevTunnelStarter {
         try {
             DevTunnel.Open open = dev.open(provider, port);
             tunnel.set(open.running());
-            operations.setStkCallbackBase(open.url());
+            operations.useTunnel(open.url());
             log.info("Dev tunnel ready: {}. Check it with {}/daraja/ping", open.url(), open.url());
         } catch (IOException | RuntimeException e) {
             log.warn("Dev tunnel could not be opened: {}. The service runs without it, and STK results are fetched from Safaricom about every minute instead.", e.getMessage());

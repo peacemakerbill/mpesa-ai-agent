@@ -52,6 +52,24 @@ const headJson = {
   'createdAt': '2026-11-03T06:00:00Z',
 };
 
+/// The head account as a current server describes it, with a masked clue for each saved secret.
+final headWithCredentialsJson = {
+  ...headJson,
+  'credentials': {
+    'vaultConfigured': true,
+    'savedCount': 4,
+    'problems': 1,
+    'updatedAt': '2026-11-03T06:00:00Z',
+    'items': [
+      {'code': 'CONSUMER_KEY', 'label': 'Consumer key', 'saved': true, 'source': 'OWN', 'mask': 'AbC\u2022\u2022\u2022\u20221234', 'readable': true},
+      {'code': 'CONSUMER_SECRET', 'label': 'Consumer secret', 'saved': true, 'source': 'OWN', 'mask': '', 'readable': false, 'note': 'Saved, but it cannot be opened.'},
+      {'code': 'PASSKEY', 'label': 'STK Push passkey', 'saved': false, 'source': 'NONE', 'mask': '', 'readable': true},
+      {'code': 'INITIATOR_NAME', 'label': 'Initiator name', 'saved': true, 'source': 'OWN', 'mask': 'testapi', 'readable': true},
+      {'code': 'INITIATOR_PASSWORD', 'label': 'Initiator password', 'saved': true, 'source': 'OWN', 'mask': '\u2022\u2022\u2022\u2022\u2022\u2022', 'readable': true},
+    ],
+  },
+};
+
 const branchJson = {
   'id': '22222222-2222-2222-2222-222222222222',
   'label': 'Till 1',
@@ -108,6 +126,15 @@ Finder _field(String label) => find.widgetWithText(TextFormField, label);
 
 void main() {
   group('models', () {
+    test('credential status is read when the server sends it and absent when it does not', () {
+      final withStatus = BusinessAccount.fromJson(headWithCredentialsJson);
+      expect(withStatus.credentials!.savedCount, 4);
+      expect(withStatus.credentials!.problems, 1);
+      expect(withStatus.credentials!.item('CONSUMER_SECRET')!.needsReentry, isTrue);
+      expect(withStatus.credentials!.item('PASSKEY')!.saved, isFalse);
+      expect(BusinessAccount.fromJson(headJson).credentials, isNull);
+    });
+
     test('an account is read with its capabilities and a readable headline', () {
       final head = BusinessAccount.fromJson(headJson);
       expect(head.isBranch, isFalse);
@@ -448,6 +475,21 @@ void main() {
 
       expect(_field('Account reference'), findsOneWidget);
       expect(_field('Till number'), findsNothing);
+    });
+
+    testWidgets('the credential card shows what is saved with masked clues', (tester) async {
+      final state = _state((req) async => _json(headWithCredentialsJson));
+      await _openOver(tester, BusinessAccountFormScreen(state: state, account: BusinessAccount.fromJson(headWithCredentialsJson)));
+
+      expect(find.text('Saved credentials'), findsOneWidget);
+      expect(find.text('4 of 5 saved'), findsOneWidget);
+      expect(find.text('AbC\u2022\u2022\u2022\u20221234'), findsOneWidget);
+      expect(find.text('testapi'), findsWidgets);
+      expect(find.text('Cannot be opened'), findsOneWidget);
+      expect(find.text('Not saved'), findsOneWidget);
+      expect(find.textContaining('vault key the server has now'), findsOneWidget);
+      // the clue is also shown under the box, so the person can see the value was kept
+      expect(find.text('Saved: AbC\u2022\u2022\u2022\u20221234. Leave empty to keep it.'), findsOneWidget);
     });
 
     testWidgets('changing an account keeps saved secrets unless new ones are typed', (tester) async {

@@ -179,6 +179,13 @@ class _HeadCard extends StatelessWidget {
   final VoidCallback onAddBranch;
   final VoidCallback onAddStore;
 
+  /// A chip that says at a glance whether the secrets are saved, so an account never looks empty by mistake.
+  static Widget _secretsTag(CredentialStatus c) {
+    if (c.problems > 0 || !c.vaultConfigured) return const StatusTag('Re-enter secrets', tone: Tone.warn);
+    if (c.savedCount == 0) return const StatusTag('No secrets saved');
+    return StatusTag('${c.savedCount} of ${c.items.length} saved', tone: Tone.good);
+  }
+
   static String _childLine(BusinessAccount b) {
     if (b.ownShortcode) {
       final own = b.holdsOwnCredentials ? 'own credentials' : 'head office credentials';
@@ -210,6 +217,7 @@ class _HeadCard extends StatelessWidget {
                 StatusTag(head.environment.label, tone: head.environment == DarajaEnv.production ? Tone.warn : Tone.neutral),
                 StatusTag(head.kind.label),
                 StatusTag('${head.readyCount} of ${head.capabilities.length} ready', tone: head.readyCount == 0 ? Tone.neutral : Tone.info),
+                if (head.credentials != null) _secretsTag(head.credentials!),
                 if (head.verifiedAt != null) const StatusTag('Checked', tone: Tone.good),
               ]),
             ]),

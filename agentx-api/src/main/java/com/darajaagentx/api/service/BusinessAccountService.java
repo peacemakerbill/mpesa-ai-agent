@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -84,7 +85,51 @@ public class BusinessAccountService {
         if (a.isBranch()) {
             head = byId != null ? byId.get(a.getParentId()) : accounts.findByIdAndOwnerPhone(a.getParentId(), a.getOwnerPhone()).orElse(null);
         }
-        return BusinessAccountView.of(a, head);
+        BusinessAccountView v = BusinessAccountView.of(a, head);
+        return v.withCredentials(credentialStatus(a, head, v.credentialSources()));
+    }
+
+    /**
+     * What is saved for this account, with a masked clue for each secret. The masks are made by opening the saved
+     * values for a moment, so this also tells the person when something is saved but can no longer be opened (for
+     * example after the vault key was changed), which looks the same as "not saved" everywhere else.
+     */
+    private BusinessAccountView.CredentialStatus credentialStatus(BusinessAccount a, BusinessAccount head, BusinessAccountView.CredentialSources src) {
+        BusinessAccount app = holder(a, head, src.app());
+        BusinessAccount pk = holder(a, head, src.passkey());
+        BusinessAccount ini = holder(a, head, src.initiator());
+        List<BusinessAccountView.CredentialItem> items = new ArrayList<>();
+        items.add(item("CONSUMER_KEY", "Consumer key", src.app(), app, app == null ? null : app.getConsumerKeyEnc(), "consumerKey", CredentialMasks::key));
+        items.add(item("CONSUMER_SECRET", "Consumer secret", src.app(), app, app == null ? null : app.getConsumerSecretEnc(), "consumerSecret", CredentialMasks::secret));
+        items.add(item("PASSKEY", "STK Push passkey", src.passkey(), pk, pk == null ? null : pk.getPasskeyEnc(), "passkey", CredentialMasks::passkey));
+        String name = ini == null ? null : ini.getInitiatorName();
+        items.add(new BusinessAccountView.CredentialItem("INITIATOR_NAME", "Initiator name", !blank(name), blank(name) ? "NONE" : src.initiator(), blank(name) ? "" : name, true, null));
+        items.add(item("INITIATOR_PASSWORD", "Initiator password", src.initiator(), ini, ini == null ? null : ini.getInitiatorPasswordEnc(), "initiatorPassword", CredentialMasks::password));
+        int saved = (int) items.stream().filter(BusinessAccountView.CredentialItem::saved).count();
+        int problems = (int) items.stream().filter(i -> i.saved() && !i.readable()).count();
+        return new BusinessAccountView.CredentialStatus(vault.configured(), saved, problems, a.getUpdatedAt(), List.copyOf(items));
+    }
+
+    private static BusinessAccount holder(BusinessAccount a, BusinessAccount head, String source) {
+        return "OWN".equals(source) ? a : ("HEAD".equals(source) ? head : null);
+    }
+
+    private BusinessAccountView.CredentialItem item(String code, String label, String source, BusinessAccount holder, String enc, String field,
+                                                    UnaryOperator<String> mask) {
+        if (holder == null || blank(enc)) {
+            return new BusinessAccountView.CredentialItem(code, label, false, "NONE", "", true, null);
+        }
+        if (!vault.configured()) {
+            return new BusinessAccountView.CredentialItem(code, label, true, source, "", false,
+                    "Saved, but the server has no vault key (AGENTX_VAULT_KEY), so it cannot be opened.");
+        }
+        try {
+            String plain = vault.decrypt(enc, ctx(holder.getOwnerPhone(), field));
+            return new BusinessAccountView.CredentialItem(code, label, true, source, mask.apply(plain), true, null);
+        } catch (RuntimeException e) {
+            return new BusinessAccountView.CredentialItem(code, label, true, source, "", false,
+                    "Saved, but it cannot be opened with the vault key the server has now. Enter it again to replace it.");
+        }
     }
 
     // ------------------------------------------------------------------ writing one account

@@ -119,6 +119,7 @@ Locally the code is shown on screen by default (`CODE_SHOW_IN_APP=auto`), so you
 | `AGENTX_TOKEN_SECRET` | 32 or more random characters. Signs sessions |
 | `AGENTX_PUBLIC_BASE_URL` | Public HTTPS address, used in links and the link files |
 | `AGENTX_STK_CALLBACK_URL` | Optional. Public HTTPS address Safaricom posts STK Push answers to. Blank uses `AGENTX_PUBLIC_BASE_URL` |
+| `AGENTX_RESULT_URL`, `AGENTX_TIMEOUT_URL` | Optional. Where Safaricom posts the final result, and the queue timeout notice, of B2C, B2B, Pochi, balance, status and reversal requests. An address, or a template with `{id}` and `{token}`. Blank uses `AGENTX_PUBLIC_BASE_URL`. See `docs/STK_CALLBACK.md` |
 | `ZROK_ENABLE_TOKEN` or `NGROK_AUTHTOKEN`, and `DEV_TUNNEL`, `DEV_TUNNEL_PROVIDER`, `DEV_TUNNEL_INSTALL` | Development only. When no address is set for STK answers, a zrok2 or ngrok tunnel is opened for you on Linux, macOS or Windows. See `docs/DEV_TUNNEL.md` |
 | `APP_ENV` | `development` (default), `staging` (or `uat`) or `production`. Production refuses to start with development only settings, and outside production a business account on Safaricom's production Daraja is refused. See [`docs/ENVIRONMENTS.md`](../docs/ENVIRONMENTS.md) |
 | `AGENTX_ALLOW_LIVE_DARAJA` | `false` (default). `true` lets a copy that is not production call live Daraja |

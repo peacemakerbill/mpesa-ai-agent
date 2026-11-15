@@ -3,6 +3,7 @@ package com.darajaagentx.api.service;
 import com.darajaagentx.api.config.MailProperties;
 import com.darajaagentx.api.dto.ReportEmailRequest;
 import com.darajaagentx.api.dto.ReportEmailResult;
+import com.darajaagentx.api.dto.ReportFileResult;
 import com.darajaagentx.api.exception.InvalidActionRequestException;
 import com.darajaagentx.api.exception.TooManyRequestsException;
 import com.darajaagentx.api.mail.MailTemplates;
@@ -22,6 +23,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -95,6 +97,29 @@ public class ReportMailService {
             mailer.reportSentElsewhere(me, data.title(), others, file.fileName());
         }
         return new ReportEmailResult(outbox.delivers(), to, file.fileName(), format.name(), file.rows(), file.data().length, data.title());
+    }
+
+    /**
+     * Builds the same report as {@link #send} but only as a file, for the customer to download in the chat. Nothing is emailed and no
+     * address is needed. It counts against the same hourly limit and the same size limit as an emailed report.
+     */
+    public ReportFileResult file(String owner, ReportEmailRequest r) {
+        if (r == null) {
+            throw new InvalidActionRequestException("Say what report to make.");
+        }
+        MailProperties.Reports rules = props.reports();
+        ReportFormat format = ReportFormat.parse(r.format());
+        if (!limiter.allow("report:" + owner, Math.max(1, rules.perHour()), HOUR)) {
+            throw new TooManyRequestsException("You have made many reports in the last hour. Please try again later.");
+        }
+        ReportData data = build(owner, r, clock.instant(), rules.maxRows());
+        RenderedReport file = ReportRenderer.render(data, format);
+        if (file.data().length > rules.maxAttachmentBytes()) {
+            throw new InvalidActionRequestException("The " + format.extension().toUpperCase(Locale.ROOT) + " file is " + (file.data().length / 1_048_576)
+                    + " MB, too large to send in the chat. Narrow the report by date, or choose CSV, which is smaller.");
+        }
+        return new ReportFileResult(file.fileName(), file.contentType(), format.name(), data.title(), file.rows(), file.data().length,
+                Base64.getEncoder().encodeToString(file.data()));
     }
 
     // ------------------------------------------------------------------ who
