@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Daraja Agent-X Console</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20512%20512%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%235BC554%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%230B7A38%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%22512%22%20height=%22512%22%20rx=%22116%22%20fill=%22url%28%23g%29%22/%3E%3Cpath%20d=%22M92%20104C150%20372%20362%20372%20420%20104%22%20fill=%22none%22%20stroke=%22%23E4202D%22%20stroke-width=%2246%22/%3E%3Cpath%20d=%22M92%20408C150%20140%20362%20140%20420%20408%22%20fill=%22none%22%20stroke=%22%23fff%22%20stroke-width=%2246%22/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0B7A38">
 <meta name="description" content="Try every API of Daraja Agent-X from one page: a request trace, a chat, a phone and an API explorer.">
 <style>
 /* =====================================================================
@@ -207,9 +209,6 @@ kbd { border: var(--bw) solid var(--line-strong); border-bottom-width: 2px; bord
 .app { min-height: 100vh; display: flex; flex-direction: column; }
 .bar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 18px; padding: 0 20px; height: 52px; background: var(--head-bg); color: var(--head-ink); border-bottom: var(--bw) solid var(--head-line); }
 .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-weight: var(--head-weight); letter-spacing: var(--head-track); font-size: 1rem; white-space: nowrap; }
-.brand svg { width: 22px; height: 22px; flex: none; }
-[data-theme="pwani"] .brand svg path, [data-theme="savanna"] .brand svg path { stroke: var(--head-ink); }
-[data-theme="matatu"] .brand svg path { stroke: #d4002a; }
 .tabs-nav { display: flex; height: 100%; gap: 2px; margin-left: 10px; }
 .tab { position: relative; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: none; border: 0; cursor: pointer; color: inherit; opacity: .68; font-weight: 550; }
 .tab svg { width: 17px; height: 17px; }
@@ -660,13 +659,44 @@ dialog.find-dlg { width: min(620px, calc(100vw - 20px)); }
 @media (max-width: 560px) { .tab:not([aria-current="page"]) span { display: none; } .tab { padding: 0 12px; } }
 #bzMain select[data-bz-method] { width: auto; max-width: 220px; }
 #bzMain summary { cursor: pointer; color: var(--ink-2); font-weight: 600; }
+
+/* ===================================================================== the logo */
+.dm { display: block; flex: none; }
+.dm-a, .dm-f { stroke-dasharray: 560; }
+.dm-still .dm-a, .dm-still .dm-f { stroke-dashoffset: 0; }
+.dm-intro .dm-a, .dm-intro .dm-f { stroke-dashoffset: 560; animation: dm-draw 1.1s cubic-bezier(.65, 0, .35, 1) forwards; }
+.dm-intro .dm-a { animation-delay: .25s; }
+.dm-intro .dm-f { animation-delay: .75s; }
+.dm-intro .dm-t { transform-box: fill-box; transform-origin: center; animation: dm-settle .9s cubic-bezier(.2, .8, .2, 1) both; }
+.dm-loop .dm-a, .dm-loop .dm-f { stroke-dashoffset: 560; animation: dm-loop 3.2s cubic-bezier(.65, 0, .35, 1) infinite; }
+.dm-loop .dm-f { animation-delay: .35s; }
+@keyframes dm-draw { to { stroke-dashoffset: 0; } }
+@keyframes dm-loop { 0% { stroke-dashoffset: 560; } 35%, 65% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -560; } }
+@keyframes dm-settle { from { transform: scale(.86); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .dm *, .dm { animation: none !important; }
+  .dm-a, .dm-f { stroke-dashoffset: 0 !important; }
+  .dm-coin { display: none; }
+}
+.brand .dm { width: 28px; height: 28px; }
+.dm-wait { display: inline-flex; align-items: center; gap: 10px; }
+.dm-wait .dm { width: 26px; height: 26px; }
+.empty .dm-wait { justify-content: center; }
+/* The first screen of a browser session: the logo draws itself, then the console fades in. Any key or click skips it. */
+.boot { position: fixed; inset: 0; z-index: 1000; display: grid; place-content: center; justify-items: center; gap: 18px; background: var(--bg); color: var(--ink); transition: opacity .4s ease, visibility .4s; }
+.boot .dm { width: 112px; height: 112px; filter: drop-shadow(0 10px 24px color-mix(in srgb, #0b7a38 38%, transparent)); }
+.boot b { font-family: var(--font-head); font-weight: var(--head-weight); letter-spacing: var(--head-track); font-size: 1.05rem; opacity: 0; animation: dm-fade .6s 1.1s ease forwards; }
+.boot.out { opacity: 0; visibility: hidden; }
+@keyframes dm-fade { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .boot { display: none; } }
 </style>
 </head>
 <body>
+<div class="boot" id="boot" aria-hidden="true"><span id="bootMark"></span><b>Daraja Agent-X Console</b></div>
+<script>try { if (sessionStorage.getItem('dm.boot')) document.getElementById('boot').remove(); } catch (e) { /* storage is blocked: show it once more */ }</script>
 <div class="app">
   <header class="bar">
     <div class="brand" id="brandMark">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="21" height="21" rx="5" stroke="currentColor" stroke-width="1.6"/><path d="M6 16.5V8l6 6 6-6v8.5" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>Daraja Agent-X Console</span>
     </div>
     <nav class="tabs-nav" id="nav" aria-label="Views"></nav>
@@ -766,6 +796,39 @@ const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const hex = (n) => Array.from(crypto.getRandomValues(new Uint8Array(n)), (b) => b.toString(16).padStart(2, '0')).join('');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* ------------------------------------------------------------------ the logo */
+let dmCount = 0;
+/** The Daraja Agent-X logo as inline SVG. motion is "still", "intro" (draws once, then a coin crosses) or "loop" (for waiting).
+ *  Every copy gets its own ids, because a page that holds several copies must not let them share one mask. */
+function dmMark(motion = 'still') {
+  const i = 'dm' + (++dmCount) + '-';
+  const coin = motion === 'intro'
+    ? `<circle class="dm-coin" r="15" opacity="0" fill="#fff" stroke="#0b7a38" stroke-width="5"><animateMotion dur="1.3s" begin="2s" fill="remove" path="M92 104 C150 372 362 372 420 104" calcMode="spline" keyPoints="0;1" keyTimes="0;1" keySplines=".45 0 .55 1"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.9;1" dur="1.3s" begin="2s"/></circle>`
+    : '';
+  return `<svg class="dm dm-${motion}" viewBox="0 0 512 512" aria-hidden="true" focusable="false"><defs>`
+    + `<linearGradient id="${i}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5BC554"/><stop offset="1" stop-color="#0B7A38"/></linearGradient>`
+    + `<clipPath id="${i}l"><rect width="256" height="512"/></clipPath><clipPath id="${i}r"><rect x="256" width="256" height="512"/></clipPath>`
+    + `<path id="${i}a" d="M92 408 C150 140 362 140 420 408"/><path id="${i}f" d="M92 104 C150 372 362 372 420 104"/>`
+    + `<mask id="${i}mr" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512"><rect width="512" height="512" fill="#fff"/><use class="dm-a" href="#${i}a" clip-path="url(#${i}r)" fill="none" stroke="#000" stroke-width="78"/></mask>`
+    + `<mask id="${i}mw" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512"><rect width="512" height="512" fill="#fff"/><use class="dm-f" href="#${i}f" clip-path="url(#${i}l)" fill="none" stroke="#000" stroke-width="78"/></mask>`
+    + `</defs><rect class="dm-t" width="512" height="512" rx="116" fill="url(#${i}g)"/>`
+    + `<use class="dm-f" href="#${i}f" fill="none" stroke="#E4202D" stroke-width="46" mask="url(#${i}mr)"/>`
+    + `<use class="dm-a" href="#${i}a" fill="none" stroke="#fff" stroke-width="46" mask="url(#${i}mw)"/>${coin}</svg>`;
+}
+/** The logo spinning beside a word, for places that wait for the server. */
+const waitHtml = (label = 'Loading') => `<span class="dm-wait" role="status">${dmMark('loop')}<span>${label}</span></span>`;
+const loadingHtml = (label) => `<div class="empty">${waitHtml(label)}</div>`;
+$('#brandMark').insertAdjacentHTML('afterbegin', dmMark($('#boot') ? 'still' : 'intro'));
+(() => {
+  const boot = $('#boot'); if (!boot) return;
+  $('#bootMark').innerHTML = dmMark('intro');
+  let gone = false;
+  const leave = () => { if (gone) return; gone = true; boot.classList.add('out'); setTimeout(() => boot.remove(), 500); try { sessionStorage.setItem('dm.boot', '1'); } catch (e) { /* storage is blocked */ } };
+  setTimeout(leave, 2300);
+  boot.addEventListener('click', leave);
+  window.addEventListener('keydown', leave, { once: true });
+})();
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem('mpc.' + k)); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem('mpc.' + k, JSON.stringify(v)); } catch (e) { /* private window: keep working without saving */ } },
@@ -1425,7 +1488,7 @@ async function runExplorer(e) {
     if ($('#exQuery')) query = JSON.parse($('#exQuery').value || '{}');
     if ($('#exBody')) { body = $('#exBody').value; if (body.trim()) JSON.parse(body.replace(/\{\{\w+\}\}/g, '0')); else body = undefined; }
   } catch (err) { btn.disabled = false; toast('The JSON is not valid: ' + err.message); return; }
-  $('#exResp').innerHTML = '<div class="empty">Sending</div>';
+  $('#exResp').innerHTML = loadingHtml('Sending');
   const r = await http({ svc: e.svc, method: e.method, path: $('#exPath').value, query, body, auth: $('#exAuth').value, sign: e.sign, headers: e.headers, save: e.save });
   EX.last[e.id] = r;
   $('#exResp').replaceChildren(wrapPb(responseView(r)));
@@ -2803,7 +2866,7 @@ function drawBzAccounts() {
   const box = $('#bzAccounts'); if (!box) return;
   const err = BZ.err ? `<div class="err" role="alert">${esc(BZ.err)}</div>` : '', info = BZ.info ? `<div class="note" role="status">${esc(BZ.info)}</div>` : '';
   let body;
-  if (BZ.loading && !BZ.loaded) body = '<div class="empty">Loading</div>';
+  if (BZ.loading && !BZ.loaded) body = loadingHtml();
   else if (!BZ.accounts.length) body = '<div class="empty">No business accounts yet. Press <b>Add an account</b>, or upload a CSV file below.</div>';
   else body = `<div style="overflow-x:auto"><table><thead><tr><th>Name</th><th>Where</th><th>Shortcode</th><th>Credentials</th><th>What it can do</th><th></th></tr></thead><tbody>${bzOrdered().map(bzRow).join('')}</tbody></table></div>`;
   box.innerHTML = `${err}${info}${body}<div class="callout">Secrets are encrypted on the server (AES-256-GCM) and are never sent back. Money going out always waits for approval, see the requests below.</div>`;
@@ -2994,7 +3057,7 @@ function drawBzOps() {
   const box = $('#bzOps'); if (!box) return;
   const err = BZ.opErr ? `<div class="err" role="alert">${esc(BZ.opErr)}</div>` : '';
   const list = BZ.ops.length ? `<div style="overflow-x:auto"><table><thead><tr><th>Request</th><th>Account</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>${BZ.ops.map(bzOpRow).join('')}</tbody></table></div>`
-    : `<div class="empty">${BZ.opsLoaded ? 'No business requests yet. Ask the assistant in the chat, for example: <i>what is the balance of Main shop</i> or <i>send an STK push of 100 to 0712345678 from Main shop</i>.' : 'Loading'}</div>`;
+    : `<div class="empty">${BZ.opsLoaded ? 'No business requests yet. Ask the assistant in the chat, for example: <i>what is the balance of Main shop</i> or <i>send an STK push of 100 to 0712345678 from Main shop</i>.' : waitHtml()}</div>`;
   box.innerHTML = `${err}<div class="callout"><b>Money going out always waits for you.</b> B2C, Pochi, B2B and reversals are sent to Safaricom only after you approve here (the app asks for your fingerprint, face or phone lock, or for a code sent to your number by text message). A request is sent at most once. If the answer is unclear it is marked <b>unclear</b> and never sent again, so check your M-Pesa statement before trying again. The approval method is only recorded, it is not a Safaricom confirmation.</div>${list}`;
 }
 function bzOpRow(o) {
@@ -3157,7 +3220,7 @@ async function loadPrPicture() {
 function drawPrProfile() {
   const box = $('#prProfile'); if (!box) return;
   const p = PR.profile;
-  if (!p) { box.innerHTML = PR.err ? `<div class="err" role="alert">${esc(PR.err)}</div>` : '<div class="empty">Loading</div>'; return; }
+  if (!p) { box.innerHTML = PR.err ? `<div class="err" role="alert">${esc(PR.err)}</div>` : loadingHtml(); return; }
   const f = PR.form = PR.form || {};
   const val = (k) => (k in f ? f[k] : (p[k] == null ? '' : p[k]));
   const inp = (key, label, o = {}) => `<div class="field"><label for="prf-${key}">${label}</label><input id="prf-${key}" data-pf="${key}" type="${o.type || 'text'}" autocomplete="off" value="${esc(val(key))}" ${o.step ? `step="${o.step}"` : ''}></div>`;
@@ -3216,7 +3279,7 @@ async function prPicture(upload) {
 function drawPrEmail() {
   const box = $('#prEmail'); if (!box) return;
   const p = PR.profile;
-  if (!p) { box.innerHTML = '<div class="empty">Loading</div>'; return; }
+  if (!p) { box.innerHTML = loadingHtml(); return; }
   const state = p.email ? `<b>${esc(p.email)}</b> <span class="tag ${p.emailVerified ? 'good' : 'warn'}">${p.emailVerified ? 'Verified' : 'Not verified'}</span>` : '<span class="muted">No email yet.</span>';
   const pending = p.pendingEmail ? `<div class="callout">Waiting for the code sent to <b>${esc(p.pendingEmail)}</b>. Until it is confirmed, reports and alerts keep going to the verified address.</div>` : '';
   const warn = p.emailDelivers ? '' : '<div class="callout warn"><b>This server is not set up to send email.</b> It only writes emails to its log (<code>agentx.mail.transport: log</code>), so the code will not arrive. Read it in the agentx-api log, or set <code>MAIL_TRANSPORT=smtp</code>.</div>';
@@ -3259,7 +3322,7 @@ function drawPrRec() {
   const box = $('#prRec'); if (!box) return;
   const list = PR.rec.length
     ? `<div style="overflow-x:auto"><table><thead><tr><th>Name</th><th>Email</th><th></th></tr></thead><tbody>${PR.rec.map((x) => `<tr><td>${esc(x.name || '')}</td><td class="mono">${esc(x.email)}</td><td><button type="button" class="btn sm danger" data-pr="rec-del" data-id="${esc(x.id)}">Remove</button></td></tr>`).join('')}</tbody></table></div>`
-    : `<div class="empty">${PR.recLoaded ? 'No addresses yet. Add one, paste a list, or upload a CSV or text file.' : 'Loading'}</div>`;
+    : `<div class="empty">${PR.recLoaded ? 'No addresses yet. Add one, paste a list, or upload a CSV or text file.' : waitHtml()}</div>`;
   box.innerHTML = `${PR.recErr ? `<div class="err" role="alert">${esc(PR.recErr)}</div>` : ''}${PR.recInfo ? `<div class="note" role="status">${esc(PR.recInfo)}</div>` : ''}${list}
     <div class="grid2"><div class="field"><label for="prr-email">Email address</label><input id="prr-email" data-pr-add="email" type="email" autocomplete="off" value="${esc(PR.recAdd.email)}"></div>
     <div class="field"><label for="prr-name">Name (optional)</label><input id="prr-name" data-pr-add="name" type="text" autocomplete="off" value="${esc(PR.recAdd.name)}" placeholder="Accountant"></div></div>
@@ -3345,7 +3408,7 @@ function drawPrLog() {
   const box = $('#prLog'); if (!box) return;
   box.innerHTML = PR.log.length
     ? `<div style="overflow-x:auto"><table><thead><tr><th>When</th><th>What</th><th>To</th><th>Result</th></tr></thead><tbody>${PR.log.map((l) => `<tr><td>${esc(bzWhen(l.at))}</td><td><b>${esc(l.kind)}</b><br><span class="muted small">${esc(l.subject || '')}${l.attachment ? ' &middot; ' + esc(l.attachment) : ''}</span></td><td class="mono small">${esc(l.recipients || '')}</td><td><span class="tag ${LOG_TONE[l.status] || ''}">${esc(l.status)}</span>${l.error ? `<br><span class="muted small">${esc(l.error)}</span>` : ''}</td></tr>`).join('')}</tbody></table></div><p class="muted small">LOGGED means the server only wrote the email to its log and did not send it.</p>`
-    : `<div class="empty">${PR.logLoaded ? 'No emails yet.' : 'Loading'}</div>`;
+    : `<div class="empty">${PR.logLoaded ? 'No emails yet.' : waitHtml()}</div>`;
 }
 
 /* ---------------------------------------------------------------- events */

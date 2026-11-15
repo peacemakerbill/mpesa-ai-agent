@@ -183,13 +183,5 @@ class _Splash extends StatelessWidget {
   const _Splash();
 
   @override
-  Widget build(BuildContext context) => const Scaffold(
-        body: Center(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            BrandMark(size: 56),
-            SizedBox(height: 24),
-            SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2)),
-          ]),
-        ),
-      );
+  Widget build(BuildContext context) => const Scaffold(body: BrandLoader(size: 96));
 }

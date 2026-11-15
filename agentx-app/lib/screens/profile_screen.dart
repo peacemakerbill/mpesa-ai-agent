@@ -285,7 +285,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ? EmptyState(title: 'Could not load your profile', message: _loadError!, children: [
                     FilledButton(onPressed: _load, child: const Text('Try again')),
                   ])
-                : const Center(child: CircularProgressIndicator()))
+                : const BrandLoader())
             : _form(context, p),
       ),
     );

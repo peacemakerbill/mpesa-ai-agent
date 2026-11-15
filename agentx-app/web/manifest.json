@@ -1,11 +1,11 @@
 {
-    "name": "agentx_app",
-    "short_name": "agentx_app",
+    "name": "Daraja Agent-X",
+    "short_name": "Agent-X",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Daraja Agent-X app",
+    "background_color": "#FFFFFF",
+    "theme_color": "#0B7A38",
+    "description": "Chat to pay with M-Pesa and approve on your phone.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

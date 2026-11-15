@@ -18,19 +18,32 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Daraja Agent-X app">
+  <meta name="description" content="Chat with Daraja Agent-X, approve with your fingerprint, face or phone lock, and finish inside M-Pesa.">
+  <meta name="theme-color" content="#0B7A38">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="agentx_app">
+  <meta name="apple-mobile-web-app-title" content="Daraja Agent-X">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>agentx_app</title>
+  <title>Daraja Agent-X</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    /* What shows while the app downloads: the logo drawing itself. Flutter removes it when its first frame is ready. */
+    html, body { height: 100%; margin: 0; background: #ffffff; }
+    @media (prefers-color-scheme: dark) { html, body { background: #0d1410; } }
+    #boot { position: fixed; inset: 0; display: grid; place-items: center; z-index: 0; }
+    #boot .boot-mark { width: 112px; height: 112px; }
+    #boot.gone { display: none; }
+    #boot .arch, #boot .flow {stroke-dasharray:560;stroke-dashoffset:560;animation:loop 3.2s cubic-bezier(.65,0,.35,1) infinite}
+    #boot .flow {animation-delay:.35s}
+    @keyframes loop{0%{stroke-dashoffset:560}35%,65%{stroke-dashoffset:0}100%{stroke-dashoffset:-560}}
+    @media (prefers-reduced-motion:reduce){#boot .arch,#boot .flow{animation:none;stroke-dashoffset:0}}
+  </style>
 </head>
 <body>
   <!--
@@ -41,6 +54,33 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <div id="boot" role="status" aria-label="Loading"><svg class="boot-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Loading Daraja Agent-X">
+    <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5BC554"/>
+      <stop offset="1" stop-color="#0B7A38"/>
+    </linearGradient>
+    <clipPath id="left"><rect x="0" y="0" width="256" height="512"/></clipPath>
+    <clipPath id="right"><rect x="256" y="0" width="256" height="512"/></clipPath>
+    <!-- the bridge: an arch that rises from the left bank and lands on the right -->
+    <path id="arch" d="M92 408 C150 140 362 140 420 408"/>
+    <!-- the payment: its reflection, a curve that dips and comes back up -->
+    <path id="flow" d="M92 104 C150 372 362 372 420 104"/>
+    <mask id="m-red" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <use class="arch" href="#arch" clip-path="url(#right)" fill="none" stroke="#000" stroke-width="78"/>
+    </mask>
+    <mask id="m-white" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <use class="flow" href="#flow" clip-path="url(#left)" fill="none" stroke="#000" stroke-width="78"/>
+    </mask>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#g)"/>
+  <use class="flow" href="#flow" fill="none" stroke="#E4202D" stroke-width="46" mask="url(#m-red)"/>
+  <use class="arch" href="#arch" fill="none" stroke="#fff" stroke-width="46" mask="url(#m-white)"/>
+
+</svg></div>
+  <script>window.addEventListener("flutter-first-frame", function () { var b = document.getElementById("boot"); if (b) b.classList.add("gone"); });</script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

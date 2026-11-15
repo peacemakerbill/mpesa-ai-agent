@@ -274,7 +274,7 @@ class _ActionScreenState extends State<ActionScreen> with WidgetsBindingObserver
       appBar: AppBar(title: Text(a == null ? 'Request' : typeLabel(a.type))),
       body: SafeArea(
         child: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? const BrandLoader()
             : a == null
                 ? _failure()
                 : CenteredList(maxWidth: 640, top: 20, bottom: 32, children: _content(a)),

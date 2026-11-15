@@ -124,7 +124,7 @@ class _Band extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(4, top + 6, 8, compact ? 8 : 16),
           child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
             IconButton(onPressed: onBack, icon: Icon(Icons.arrow_back, color: p.headInk), tooltip: 'Back'),
-            BrandMark(size: compact ? 28 : 36, ink: p.headInk, accent: p.headDark ? p.headInk : p.accent),
+            BrandMark(size: compact ? 30 : 38, ring: true, motion: compact ? BrandMotion.still : BrandMotion.intro),
             const SizedBox(width: 12),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
@@ -170,7 +170,7 @@ class _Panel extends StatelessWidget {
               Row(children: [
                 IconButton(onPressed: onBack, icon: Icon(Icons.arrow_back, color: p.headInk), tooltip: 'Back'),
                 const SizedBox(width: 6),
-                BrandMark(size: 44, ink: p.headInk, accent: p.headDark ? p.headInk : p.accent),
+                const BrandMark(size: 48, ring: true, motion: BrandMotion.intro),
                 const SizedBox(width: 14),
                 Text(title, style: text.headlineSmall?.copyWith(color: p.headInk)),
                 const Spacer(),

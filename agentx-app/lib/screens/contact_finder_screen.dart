@@ -173,7 +173,7 @@ class _ContactFinderScreenState extends State<ContactFinderScreen> {
   Widget _results(BuildContext context) {
     final t = context.tk;
     final text = Theme.of(context).textTheme;
-    if (_c.busy) return const Center(child: CircularProgressIndicator());
+    if (_c.busy) return const BrandLoader();
     final children = <Widget>[];
     if (_c.error != null) {
       children.add(Callout(_c.error!, tone: Tone.bad));

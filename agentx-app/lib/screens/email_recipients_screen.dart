@@ -149,7 +149,7 @@ class _EmailRecipientsScreenState extends State<EmailRecipientsScreen> {
                 ? EmptyState(title: 'Could not load your addresses', message: _error!, children: [
                     FilledButton(onPressed: _load, child: const Text('Try again')),
                   ])
-                : const Center(child: CircularProgressIndicator()))
+                : const BrandLoader())
             : CenteredList(maxWidth: 560, children: [
                 Text(
                   'People you send reports to. Say in the chat, for example, "send this report to my accountant as Excel". '

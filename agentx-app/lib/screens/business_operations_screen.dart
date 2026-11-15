@@ -80,7 +80,7 @@ class _BusinessOperationsScreenState extends State<BusinessOperationsScreen> {
   Widget _body(BuildContext context) {
     final items = _items;
     if (items == null) {
-      if (_loading) return const Center(child: CircularProgressIndicator());
+      if (_loading) return const BrandLoader();
       return CenteredList(maxWidth: 560, top: 20, children: [
         Callout(_error ?? 'Your requests could not be loaded.', tone: Tone.bad),
         const SizedBox(height: 12),

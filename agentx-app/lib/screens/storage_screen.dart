@@ -91,7 +91,7 @@ class _StorageScreenState extends State<StorageScreen> {
       body: SafeArea(
         top: false,
         child: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? const BrandLoader()
             : CenteredList(maxWidth: 560, children: [
                 if (_error != null) Panel(edge: t.p.bad, child: Text(_error!, style: text.bodyMedium)),
                 if (_error == null) ...[

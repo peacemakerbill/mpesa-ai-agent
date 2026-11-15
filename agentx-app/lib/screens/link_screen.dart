@@ -281,7 +281,7 @@ class _BrandBand extends StatelessWidget {
         Padding(
           padding: EdgeInsets.fromLTRB(20, top + 14, 8, compactBand ? 12 : 22),
           child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            BrandMark(size: compactBand ? 30 : 40, ink: p.headInk, accent: p.headDark ? p.headInk : p.accent),
+            BrandMark(size: compactBand ? 32 : 42, ring: true, motion: compactBand ? BrandMotion.still : BrandMotion.intro),
             const SizedBox(width: 12),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
@@ -329,7 +329,7 @@ class _BrandPanel extends StatelessWidget {
             padding: const EdgeInsets.all(40),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                BrandMark(size: 44, ink: p.headInk, accent: p.headDark ? p.headInk : p.accent),
+                const BrandMark(size: 48, ring: true, motion: BrandMotion.intro),
                 const SizedBox(width: 14),
                 Text('Daraja Agent-X', style: text.headlineSmall?.copyWith(color: p.headInk)),
                 const Spacer(),

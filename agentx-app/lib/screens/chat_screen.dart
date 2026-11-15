@@ -601,17 +601,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return AppBar(
       titleSpacing: 16,
       title: Row(children: [
-        Container(
-          width: 38,
-          height: 38,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: inkOnHead.withAlpha(24),
-            border: Border.all(color: inkOnHead.withAlpha(60)),
-            borderRadius: t.square ? null : BorderRadius.circular(t.radius * 0.9),
-          ),
-          child: BrandMark(size: 24, ink: inkOnHead, accent: t.p.headDark ? inkOnHead : t.p.accent),
-        ),
+        const BrandMark(size: 36, ring: true),
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
@@ -675,7 +665,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _messages(BuildContext context) {
-    if (!_chat.loaded) return const Center(child: CircularProgressIndicator());
+    if (!_chat.loaded) return const BrandLoader();
     final list = _chat.messages;
     return Stack(fit: StackFit.expand, children: [
       const Positioned.fill(child: BrandPattern()),
@@ -726,17 +716,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(28),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Container(
-                    width: 76,
-                    height: 76,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: t.p.surface,
-                      border: Border.all(color: t.p.accentLine),
-                      borderRadius: t.square ? null : BorderRadius.circular(t.radius * 1.5),
-                    ),
-                    child: const BrandMark(size: 44),
-                  ),
+                  const BrandMark(size: 84, motion: BrandMotion.intro),
                   const SizedBox(height: 20),
                   Text('Ask in your own words', style: text.titleLarge, textAlign: TextAlign.center),
                   const SizedBox(height: 8),

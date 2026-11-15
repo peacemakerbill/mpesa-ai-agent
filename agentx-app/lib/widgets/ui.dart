@@ -3,6 +3,9 @@ import 'package:flutter/material.dart' hide StepState;
 import '../app_state.dart';
 import '../models/progress.dart';
 import '../theme/app_theme.dart';
+import 'brand.dart';
+
+export 'brand.dart';
 
 /// A bordered surface. With [onTap] it is a button and shows the ripple.
 class Panel extends StatelessWidget {
@@ -299,60 +302,6 @@ class SectionTitle extends StatelessWidget {
       );
 }
 
-/// The small logo: an outlined square with a drawn M. Pass [ink] and [accent] to draw it on a coloured band.
-class BrandMark extends StatelessWidget {
-  const BrandMark({super.key, this.size = 40, this.ink, this.accent});
-
-  final double size;
-  final Color? ink;
-  final Color? accent;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.tk;
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(painter: _MarkPainter(ink: ink ?? t.p.ink, accent: accent ?? t.p.accent, square: t.square)),
-    );
-  }
-}
-
-class _MarkPainter extends CustomPainter {
-  const _MarkPainter({required this.ink, required this.accent, required this.square});
-
-  final Color ink;
-  final Color accent;
-  final bool square;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final u = size.width / 24;
-    final box = Rect.fromLTWH(1.5 * u, 1.5 * u, 21 * u, 21 * u);
-    final outline = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6 * u
-      ..color = ink;
-    canvas.drawRRect(RRect.fromRectAndRadius(box, Radius.circular(square ? 0 : 5 * u)), outline);
-    final m = Path()
-      ..moveTo(6 * u, 16.5 * u)
-      ..lineTo(6 * u, 8 * u)
-      ..lineTo(12 * u, 14 * u)
-      ..lineTo(18 * u, 8 * u)
-      ..lineTo(18 * u, 16.5 * u);
-    final stroke = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2 * u
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..color = accent;
-    canvas.drawPath(m, stroke);
-  }
-
-  @override
-  bool shouldRepaint(covariant _MarkPainter old) => old.ink != ink || old.accent != accent || old.square != square;
-}
-
 /// A quiet repeating pattern of the logo's rounded square, for the background of the chat and the sign-in page.
 /// It paints once and is cached, so it costs nothing while the screen scrolls.
 class BrandPattern extends StatelessWidget {
@@ -532,17 +481,7 @@ class EmptyState extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(28),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Container(
-                    width: 76,
-                    height: 76,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: t.p.accentSoft,
-                      border: Border.all(color: t.p.accentLine),
-                      borderRadius: t.square ? null : BorderRadius.circular(t.radius * 1.5),
-                    ),
-                    child: const BrandMark(size: 44),
-                  ),
+                  const BrandMark(size: 84, motion: BrandMotion.intro),
                   const SizedBox(height: 20),
                   Text(title, style: text.titleLarge, textAlign: TextAlign.center),
                   const SizedBox(height: 8),

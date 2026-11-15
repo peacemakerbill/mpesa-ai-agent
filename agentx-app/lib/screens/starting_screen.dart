@@ -53,7 +53,7 @@ class _StartingScreenState extends State<StartingScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const BrandMark(size: 56),
+                  const BrandMark(size: 88, motion: BrandMotion.loop),
                   const SizedBox(height: 24),
                   Text(
                     failed ? 'Could not start the services' : 'Starting the services',

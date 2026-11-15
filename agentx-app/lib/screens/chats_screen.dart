@@ -223,7 +223,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
         message: 'This server keeps a single chat. Update the Daraja Agent-X API to start new chats and keep the old ones.',
       );
     }
-    if (!_chat.sessionsLoaded) return const Center(child: CircularProgressIndicator());
+    if (!_chat.sessionsLoaded) return const BrandLoader();
     final shown = _shown;
     return LayoutBuilder(
       builder: (context, box) {

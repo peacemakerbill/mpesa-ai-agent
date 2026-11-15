@@ -3,6 +3,10 @@
 
 <div align="center">
 
+<img src="docs/assets/logo-animated.svg" alt="Daraja Agent-X" width="340"/>
+
+<br/><br/>
+
 <img src="docs/assets/hero.svg" alt="Daraja Agent-X: chat, approve, pay inside M-Pesa" width="100%"/>
 
 <br/>

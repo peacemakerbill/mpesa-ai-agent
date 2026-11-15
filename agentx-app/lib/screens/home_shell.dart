@@ -165,7 +165,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           selectedIndex: _tab,
           onDestinationSelected: _select,
           labelType: NavigationRailLabelType.all,
-          leading: const Padding(padding: EdgeInsets.only(top: 14, bottom: 18), child: BrandMark(size: 34)),
+          leading: const Padding(padding: EdgeInsets.only(top: 14, bottom: 18), child: BrandMark(size: 36)),
           destinations: const [
             NavigationRailDestination(icon: Icon(Icons.chat_bubble_outline), selectedIcon: Icon(Icons.chat_bubble), label: Text('Chat')),
             NavigationRailDestination(icon: Icon(Icons.confirmation_number_outlined), selectedIcon: Icon(Icons.confirmation_number), label: Text('Requests')),
@@ -190,7 +190,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           selectedIndex: inSettings ? 1 : 0,
           onDestinationSelected: (i) => _select(i == 0 ? 0 : 2),
           labelType: NavigationRailLabelType.all,
-          leading: const Padding(padding: EdgeInsets.only(top: 14, bottom: 18), child: BrandMark(size: 34)),
+          leading: const Padding(padding: EdgeInsets.only(top: 14, bottom: 18), child: BrandMark(size: 36)),
           destinations: const [
             NavigationRailDestination(icon: Icon(Icons.chat_bubble_outline), selectedIcon: Icon(Icons.chat_bubble), label: Text('Chat')),
             NavigationRailDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: Text('Settings')),

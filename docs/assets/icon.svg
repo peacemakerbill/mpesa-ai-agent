@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="t">
+  <title id="t">Daraja Agent-X</title>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5BC554"/>
+      <stop offset="1" stop-color="#0B7A38"/>
+    </linearGradient>
+    <clipPath id="left"><rect x="0" y="0" width="256" height="512"/></clipPath>
+    <clipPath id="right"><rect x="256" y="0" width="256" height="512"/></clipPath>
+    <!-- the bridge: an arch that rises from the left bank and lands on the right -->
+    <path id="arch" d="M92 408 C150 140 362 140 420 408"/>
+    <!-- the payment: its reflection, a curve that dips and comes back up -->
+    <path id="flow" d="M92 104 C150 372 362 372 420 104"/>
+    <mask id="m-red" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <use href="#arch" clip-path="url(#right)" fill="none" stroke="#000" stroke-width="78"/>
+    </mask>
+    <mask id="m-white" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <use href="#flow" clip-path="url(#left)" fill="none" stroke="#000" stroke-width="78"/>
+    </mask>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#g)"/>
+  <use href="#flow" fill="none" stroke="#E4202D" stroke-width="46" mask="url(#m-red)"/>
+  <use href="#arch" fill="none" stroke="#fff" stroke-width="46" mask="url(#m-white)"/>
+</svg>

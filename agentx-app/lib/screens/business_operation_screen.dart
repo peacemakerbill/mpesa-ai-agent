@@ -216,7 +216,7 @@ class _BusinessOperationScreenState extends State<BusinessOperationScreen> {
   Widget _body(BuildContext context) {
     final op = _op;
     if (op == null) {
-      if (_loading) return const Center(child: CircularProgressIndicator());
+      if (_loading) return const BrandLoader();
       return CenteredList(maxWidth: 560, top: 20, children: [
         Callout(_error ?? 'This request could not be loaded.', tone: Tone.bad),
         const SizedBox(height: 12),
