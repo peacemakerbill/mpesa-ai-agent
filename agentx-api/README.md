@@ -111,6 +111,12 @@ Locally the code is shown on screen by default (`CODE_SHOW_IN_APP=auto`), so you
 | `GET`, `POST`, `DELETE /internal/email/recipients`, `POST /internal/email/recipients/paste` | Saved addresses, for the assistant |
 | `POST /internal/email/report` | Email a report, for the assistant |
 
+## QR codes and Lipa na Bonga
+
+`POST /api/business-operations/qr` (device token) makes a Daraja Dynamic QR code, a picture a customer scans in the My Safaricom or M-PESA app to pay. Body: `account` (a saved business account, whose consumer key and secret sign the call), `amount` (whole shillings), optional `reference`, `merchantName`, and `payTo` of `account` (default, the saved account's own Till or Paybill), `till`, `paybill` or `phone` with `payToNumber`. A Paybill code needs the account number to pay into. The answer is the usual operation view with `qrCode` holding a base64 PNG. The picture is not stored, so make another when you need it. At most 60 codes per hour per customer. The chat assistant does the same through the `DYNAMIC_QR` request type.
+
+Lipa na Bonga has no merchant or Daraja API. It is a customer-side USSD flow (*126#, Till number, amount, Service PIN), 1 Bonga Point worth KES 0.20. The assistant and the app only show those steps for a Buy Goods QR code. They never charge Bonga Points and never ask for a Service PIN.
+
 ## Configuration
 
 | Variable | Meaning |

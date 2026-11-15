@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 final RegExp _uuid = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
 
 /// The id in a link the assistant sent for a business request. Accepted shapes:
@@ -71,6 +74,7 @@ class BusinessOperation {
     required this.expiresAt,
     required this.completedAt,
     this.timeline = const [],
+    this.qrCode = '',
   });
 
   final String id;
@@ -94,6 +98,22 @@ class BusinessOperation {
   /// What happened to it, oldest first.
   final List<OperationStep> timeline;
 
+  /// The QR picture as Base64. The server sends it once, in the answer to the call that made it, and never keeps it.
+  final String qrCode;
+
+  /// The QR picture itself, or null when there is none or it cannot be read.
+  Uint8List? get qrBytes {
+    if (qrCode.isEmpty) return null;
+    try {
+      return base64Decode(qrCode);
+    } on FormatException {
+      return null;
+    }
+  }
+
+  /// The Till a Buy Goods QR code pays, or empty. This is where Lipa na Bonga steps can be shown.
+  String get qrTill => params['trxCode'] == 'BG' ? (params['cpi'] ?? '') : '';
+
   factory BusinessOperation.fromJson(Map<String, dynamic> json) {
     final raw = json['params'];
     return BusinessOperation(
@@ -115,6 +135,7 @@ class BusinessOperation {
       timeline: json['timeline'] is List
           ? (json['timeline'] as List).whereType<Map<String, dynamic>>().map(OperationStep.fromJson).toList()
           : const [],
+      qrCode: json['qrCode'] as String? ?? '',
     );
   }
 
@@ -179,6 +200,7 @@ class BusinessOperation {
       'start': 'From',
       'end': 'To',
       'merchantName': 'Shown on QR',
+      'payTo': 'Pay to',
     };
     final rows = <MapEntry<String, String>>[];
     for (final e in names.entries) {

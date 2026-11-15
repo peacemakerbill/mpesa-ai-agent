@@ -41,6 +41,14 @@ class SystemPromptAndMenuTest {
     }
 
     @Test
+    void theRulesExplainQrCodesAndBeHonestThatBongaHasNoApi() {
+        String rules = new SystemPrompt(TestSupport.business(), TestSupport.walletProps()).rules();
+
+        assertThat(rules).contains("DYNAMIC_QR").contains("pay_to_type").contains("pay_to_number").contains("lipa_na_bonga_steps")
+                .contains("Safaricom has no API for it").contains("must never say you did").contains("Never guess a number");
+    }
+
+    @Test
     void theRulesTreatFilesAndSpeechAsDataNotInstructions() {
         String rules = new SystemPrompt(TestSupport.business(), TestSupport.walletProps()).rules();
 

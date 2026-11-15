@@ -65,6 +65,8 @@ public class BusinessOperationService {
 
     private static final Logger log = LoggerFactory.getLogger(BusinessOperationService.class);
     private static final SecureRandom RANDOM = new SecureRandom();
+    /** A QR code costs a call to Safaricom, so one customer can make this many in an hour. */
+    private static final int QR_PER_HOUR = 60;
     private static final Pattern CODE = Pattern.compile("^\\d{5,7}$");
     private static final Pattern RECEIPT = Pattern.compile("^[A-Z0-9]{8,12}$");
     private static final Pattern REFERENCE = Pattern.compile("^[A-Za-z0-9]{1,12}$");
@@ -227,6 +229,9 @@ public class BusinessOperationService {
         if (type == BusinessOperationType.STK_PUSH && !limiter.allow("biz-stk:" + owner, props.stkPerHour(), Duration.ofHours(1))) {
             throw new TooManyRequestsException("Too many STK Push requests this hour. Please wait a while.");
         }
+        if (type == BusinessOperationType.DYNAMIC_QR && !limiter.allow("biz-qr:" + owner, QR_PER_HOUR, Duration.ofHours(1))) {
+            throw new TooManyRequestsException("Too many QR codes this hour. Please wait a while.");
+        }
         if (approval && ops.findByOwnerPhoneAndStatus(owner, BusinessOperationStatus.PENDING_APPROVAL).stream()
                 .filter(o -> !isStale(o)).count() >= props.maxOpenApprovals()) {
             throw new InvalidActionRequestException("Too many requests are waiting for your approval. Approve or decline some in the app first.");
@@ -348,7 +353,9 @@ public class BusinessOperationService {
                 }
                 yield DarajaRequests.stkQuery(c, p.get("checkoutRequestId"), clock.instant());
             }
-            case DYNAMIC_QR -> DarajaRequests.qr(c, p.get("merchantName"), p.get("reference"), op.getAmount());
+            case DYNAMIC_QR -> blank(p.get("cpi")) || blank(p.get("trxCode"))
+                    ? DarajaRequests.qr(c, p.get("merchantName"), p.get("reference"), op.getAmount())
+                    : DarajaRequests.qr(p.get("trxCode"), p.get("cpi"), p.get("merchantName"), p.get("reference"), op.getAmount());
             case PULL -> DarajaRequests.pull(c, p.get("start"), p.get("end"), Integer.parseInt(p.getOrDefault("offset", "0")));
             case PULL_REGISTER -> DarajaRequests.pullRegister(c, p.get("phone"), result);
             case B2C -> {
@@ -661,6 +668,7 @@ public class BusinessOperationService {
             case "IMAGE" -> "from a picture";
             case "DOCUMENT" -> "from a document";
             case "CONTACT" -> "from a contact";
+            case "APP" -> "in the app";
             default -> "in chat";
         };
     }
@@ -766,10 +774,50 @@ public class BusinessOperationService {
             }
             case DYNAMIC_QR -> {
                 int amount = amount(in, true);
-                String reference = reference(in, account.label());
+                String kind = text(in, "pay_to_type", 12).toLowerCase(Locale.ROOT).replace(' ', '_');
+                String where;
+                String reference;
+                if (kind.isEmpty() || kind.equals("account") || kind.equals("saved") || kind.equals("my_account")) {
+                    // The saved account itself: its till for Buy Goods, its shortcode for a Paybill
+                    boolean buyGoods = account.shortcodeType() == com.darajaagentx.api.model.ShortcodeType.BUY_GOODS;
+                    String till = account.tillNumber() == null ? "" : account.tillNumber();
+                    p.put("trxCode", buyGoods ? "BG" : "PB");
+                    p.put("cpi", buyGoods && !till.isBlank() ? till : account.shortcode());
+                    where = account.label();
+                    // A saved Paybill pays into its own saved account number when none is given
+                    String saved = account.accountReference() == null ? "" : account.accountReference().strip();
+                    reference = reference(in, !buyGoods && REFERENCE.matcher(saved).matches() ? saved : account.label());
+                } else if (kind.equals("till") || kind.equals("buy_goods")) {
+                    String number = codeNumber(in, "Till");
+                    p.put("trxCode", "BG");
+                    p.put("cpi", number);
+                    where = "Till " + number;
+                    reference = reference(in, account.label());
+                } else if (kind.equals("paybill") || kind.equals("pay_bill")) {
+                    String number = codeNumber(in, "Paybill");
+                    reference = text(in, "reference", 20);
+                    if (reference.isEmpty()) {
+                        throw new InvalidActionRequestException("A Paybill QR code needs the account number to pay into.");
+                    }
+                    if (!REFERENCE.matcher(reference).matches()) {
+                        throw new InvalidActionRequestException("The account number can only have letters and numbers, up to 12 characters.");
+                    }
+                    p.put("trxCode", "PB");
+                    p.put("cpi", number);
+                    where = "Paybill " + number + ", account " + reference;
+                } else if (kind.equals("phone") || kind.equals("send_money")) {
+                    String number = phone(in, "pay_to_number");
+                    p.put("trxCode", "SM");
+                    p.put("cpi", number);
+                    where = "phone " + Phones.mask(number);
+                    reference = reference(in, account.label());
+                } else {
+                    throw new InvalidActionRequestException("A QR code can pay the saved account, a Till, a Paybill or a phone number.");
+                }
                 p.put("reference", reference);
+                p.put("payTo", where);
                 p.put("merchantName", trim(orElse(text(in, "merchant_name", 26), account.label()), 26));
-                return new Plan(amount, "QR code for " + money(amount) + " (reference " + reference + ")" + on, p);
+                return new Plan(amount, "QR code for " + money(amount) + " to " + where + " (reference " + reference + ")" + on, p);
             }
             case PULL -> {
                 LocalDateTime start = date(in, "start_date", false);
@@ -871,6 +919,15 @@ public class BusinessOperationService {
             throw new InvalidActionRequestException("The amount is above the limit of " + money(props.maxAmount()) + " for one request.");
         }
         return value;
+    }
+
+    /** A Till or Paybill number typed for a QR code: 5 to 7 digits. */
+    private static String codeNumber(Map<String, String> in, String what) {
+        String number = text(in, "pay_to_number", 12).replaceAll("\\D", "");
+        if (!CODE.matcher(number).matches()) {
+            throw new InvalidActionRequestException("Give the " + what + " number to pay, 5 to 7 digits.");
+        }
+        return number;
     }
 
     private static String phone(Map<String, String> in, String key) {

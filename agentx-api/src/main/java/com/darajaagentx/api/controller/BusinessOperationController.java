@@ -5,6 +5,7 @@ import com.darajaagentx.api.config.DevicePrincipal;
 import com.darajaagentx.api.dto.ApprovalCodeResponse;
 import com.darajaagentx.api.dto.ApproveRequest;
 import com.darajaagentx.api.dto.BusinessOperationView;
+import com.darajaagentx.api.dto.QrCodeRequest;
 import com.darajaagentx.api.model.BusinessOperation;
 import com.darajaagentx.api.service.ApprovalCodeService;
 import com.darajaagentx.api.service.BusinessOperationService;
@@ -17,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -39,6 +42,30 @@ public class BusinessOperationController {
     @GetMapping
     public List<BusinessOperationView> list(@RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
         return service.list(who.phone()).stream().map(this::view).toList();
+    }
+
+    /**
+     * Makes a Dynamic QR code from the app, for a saved account or for a Till, Paybill or phone number. Safaricom answers at
+     * once. The picture comes back in this answer only and is not stored: ask again for a new one.
+     */
+    @PostMapping("/qr")
+    public BusinessOperationView qr(@RequestBody QrCodeRequest request, @RequestAttribute(DeviceAuthFilter.PRINCIPAL) DevicePrincipal who) {
+        Map<String, String> params = new LinkedHashMap<>();
+        if (request.amount() != null) {
+            params.put("amount", String.valueOf(request.amount()));
+        }
+        put(params, "reference", request.reference());
+        put(params, "merchant_name", request.merchantName());
+        put(params, "pay_to_type", request.payTo());
+        put(params, "pay_to_number", request.payToNumber());
+        BusinessOperationService.Prepared prepared = service.prepare(who.phone(), request.account(), "DYNAMIC_QR", params, "APP", null);
+        return BusinessOperationView.of(prepared.operation(), service.approvalRequired(prepared.operation()), prepared.qrCode());
+    }
+
+    private static void put(Map<String, String> params, String key, String value) {
+        if (value != null && !value.isBlank()) {
+            params.put(key, value.strip());
+        }
     }
 
     @GetMapping("/{id}")

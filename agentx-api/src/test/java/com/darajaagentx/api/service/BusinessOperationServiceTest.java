@@ -490,6 +490,65 @@ class BusinessOperationServiceTest {
         assertThat(still.getResultText()).contains("not finished");
     }
 
+    private void qrWorks() {
+        daraja.answer = Map.of("ResponseCode", "00", "QRCode", "BASE64PNG");
+    }
+
+    @Test
+    void aQrCodeForASavedBuyGoodsAccountPaysItsTill() {
+        qrWorks();
+        BusinessOperationService.Prepared p = prepare("Counter two", "DYNAMIC_QR", params("amount", "300", "reference", "TBL5"), "qr-till");
+        assertThat(daraja.lastBody()).containsEntry("TrxCode", "BG").containsEntry("CPI", "9876543").containsEntry("RefNo", "TBL5").containsEntry("Amount", 300);
+        assertThat(p.operation().getParams()).containsEntry("trxCode", "BG").containsEntry("cpi", "9876543").containsEntry("payTo", "Counter two");
+        assertThat(p.operation().getSummary()).contains("KES 300").contains("Counter two");
+        assertThat(prepare("Main shop", "DYNAMIC_QR", params("amount", "50"), "qr-shop").operation().getParams()).containsEntry("cpi", "174379");
+    }
+
+    @Test
+    void aQrCodeForASavedPaybillPaysItsShortcodeWithTheReferenceAsTheAccount() {
+        qrWorks();
+        prepare("Bare", "DYNAMIC_QR", params("amount", "1200", "reference", "FLAT12"), "qr-pb");
+        assertThat(daraja.lastBody()).containsEntry("TrxCode", "PB").containsEntry("CPI", "600111").containsEntry("RefNo", "FLAT12");
+        prepare("Bare", "DYNAMIC_QR", params("amount", "1200"), "qr-pb2");
+        assertThat(daraja.lastBody()).containsEntry("RefNo", "Bare");
+    }
+
+    @Test
+    void aQrCodeCanPayAnyTillPaybillOrPhoneUsingASavedAccountForTheCall() {
+        qrWorks();
+        BusinessOperation till = prepare("Main shop", "DYNAMIC_QR", params("amount", "200", "pay_to_type", "Till", "pay_to_number", "123 456"), "qr-t").operation();
+        assertThat(daraja.lastBody()).containsEntry("TrxCode", "BG").containsEntry("CPI", "123456");
+        assertThat(till.getSummary()).contains("Till 123456");
+
+        BusinessOperation bill = prepare("Main shop", "DYNAMIC_QR", params("amount", "900", "pay_to_type", "paybill", "pay_to_number", "888880", "reference", "ACC77"), "qr-p").operation();
+        assertThat(daraja.lastBody()).containsEntry("TrxCode", "PB").containsEntry("CPI", "888880").containsEntry("RefNo", "ACC77");
+        assertThat(bill.getSummary()).contains("Paybill 888880").contains("account ACC77");
+
+        BusinessOperation phone = prepare("Main shop", "DYNAMIC_QR", params("amount", "75", "pay_to_type", "phone", "pay_to_number", "0712345678"), "qr-m").operation();
+        assertThat(daraja.lastBody()).containsEntry("TrxCode", "SM").containsEntry("CPI", "254712345678");
+        assertThat(phone.getSummary()).contains("254712***678").doesNotContain("254712345678");
+    }
+
+    @Test
+    void aQrCodeForSomewhereElseNeedsAProperNumber() {
+        qrWorks();
+        assertThatThrownBy(() -> prepare("Main shop", "DYNAMIC_QR", params("amount", "10", "pay_to_type", "till", "pay_to_number", "12"), null)).hasMessageContaining("5 to 7 digits");
+        assertThatThrownBy(() -> prepare("Main shop", "DYNAMIC_QR", params("amount", "10", "pay_to_type", "till"), null)).hasMessageContaining("Till number");
+        assertThatThrownBy(() -> prepare("Main shop", "DYNAMIC_QR", params("amount", "10", "pay_to_type", "paybill", "pay_to_number", "888880"), null)).hasMessageContaining("account number");
+        assertThatThrownBy(() -> prepare("Main shop", "DYNAMIC_QR", params("amount", "10", "pay_to_type", "phone", "pay_to_number", "123"), null)).isInstanceOf(InvalidActionRequestException.class);
+        assertThatThrownBy(() -> prepare("Main shop", "DYNAMIC_QR", params("amount", "10", "pay_to_type", "bank"), null)).hasMessageContaining("saved account, a Till, a Paybill or a phone");
+        assertThatThrownBy(() -> prepare("Main shop", "DYNAMIC_QR", params("pay_to_type", "till", "pay_to_number", "123456"), null)).hasMessageContaining("amount");
+    }
+
+    @Test
+    void qrCodesAreLimitedPerHour() {
+        qrWorks();
+        for (int i = 0; i < 60; i++) {
+            prepare("Main shop", "DYNAMIC_QR", params("amount", "5"), "lim" + i);
+        }
+        assertThatThrownBy(() -> prepare("Main shop", "DYNAMIC_QR", params("amount", "5"), "lim60")).isInstanceOf(TooManyRequestsException.class);
+    }
+
     @Test
     void aQrCodeIsReturnedOnceAndNotKept() {
         daraja.answer = Map.of("ResponseCode", "00", "QRCode", "BASE64PNG");

@@ -69,6 +69,22 @@ public final class DarajaRequests {
         return new Call("/mpesa/qrcode/v1/generate", body);
     }
 
+    /**
+     * A QR code for any destination. Safaricom's codes: BG pays a Till, PB pays a Paybill (RefNo is the account number),
+     * SM sends money to a phone (254XXXXXXXXX). The customer scans it in the My Safaricom or M-PESA app. Needs only the
+     * consumer key and secret, no initiator.
+     */
+    public static Call qr(String trxCode, String cpi, String merchantName, String reference, int amount) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("MerchantName", merchantName);
+        body.put("RefNo", reference);
+        body.put("Amount", amount);
+        body.put("TrxCode", trxCode);
+        body.put("CPI", cpi);
+        body.put("Size", "300");
+        return new Call("/mpesa/qrcode/v1/generate", body);
+    }
+
     public static Call b2c(ResolvedCredentials c, String securityCredential, String command, String conversationId, String phone,
                            int amount, String remarks, String occasion, String resultUrl, String timeoutUrl) {
         Map<String, Object> body = new LinkedHashMap<>();

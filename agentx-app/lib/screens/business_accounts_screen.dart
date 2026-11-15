@@ -9,6 +9,7 @@ import '../widgets/ui.dart';
 import 'business_account_form_screen.dart';
 import 'business_operations_screen.dart';
 import 'csv_import_screen.dart';
+import 'qr_code_screen.dart';
 
 /// Puts every head account first, each followed by its branches.
 List<({BusinessAccount head, List<BusinessAccount> branches})> groupAccounts(List<BusinessAccount> all) {
@@ -102,6 +103,9 @@ class _BusinessAccountsScreenState extends State<BusinessAccountsScreen> {
 
   void _import() => _open(CsvImportScreen(state: widget.state), doneMessage: 'Accounts imported.');
 
+  void _qr({BusinessAccount? account}) => Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => QrCodeScreen(state: widget.state, accounts: _items ?? const [], initialAccountId: account?.id)));
+
   void _openRequests() => Navigator.of(context).push<void>(MaterialPageRoute<void>(builder: (_) => BusinessOperationsScreen(state: widget.state)));
 
   @override
@@ -110,6 +114,7 @@ class _BusinessAccountsScreenState extends State<BusinessAccountsScreen> {
       appBar: AppBar(
         title: const Text('Business accounts'),
         actions: [
+          IconButton(onPressed: _items == null ? null : _qr, icon: const Icon(Icons.qr_code_2), tooltip: 'Make a QR code to pay'),
           IconButton(onPressed: _openRequests, icon: const Icon(Icons.history), tooltip: 'Business requests'),
           IconButton(onPressed: _import, icon: const Icon(Icons.upload_file_outlined), tooltip: 'Upload a CSV file'),
           IconButton(onPressed: _loading ? null : _load, icon: const Icon(Icons.refresh), tooltip: 'Refresh'),
@@ -161,6 +166,7 @@ class _BusinessAccountsScreenState extends State<BusinessAccountsScreen> {
               onOpen: _edit,
               onAddBranch: () => _addBranch(g.head),
               onAddStore: () => _addStore(g.head),
+              onQr: () => _qr(account: g.head),
             ),
             const SizedBox(height: 12),
           ],
@@ -171,13 +177,14 @@ class _BusinessAccountsScreenState extends State<BusinessAccountsScreen> {
 }
 
 class _HeadCard extends StatelessWidget {
-  const _HeadCard({required this.head, required this.branches, required this.onOpen, required this.onAddBranch, required this.onAddStore});
+  const _HeadCard({required this.head, required this.branches, required this.onOpen, required this.onAddBranch, required this.onAddStore, required this.onQr});
 
   final BusinessAccount head;
   final List<BusinessAccount> branches;
   final void Function(BusinessAccount) onOpen;
   final VoidCallback onAddBranch;
   final VoidCallback onAddStore;
+  final VoidCallback onQr;
 
   /// A chip that says at a glance whether the secrets are saved, so an account never looks empty by mistake.
   static Widget _secretsTag(CredentialStatus c) {
@@ -245,6 +252,8 @@ class _HeadCard extends StatelessWidget {
         ],
         Divider(height: 1, color: t.p.line),
         Wrap(alignment: WrapAlignment.center, children: [
+          if (canMakeQr(head))
+            TextButton.icon(onPressed: onQr, icon: const Icon(Icons.qr_code_2, size: 18), label: const Text('QR code')),
           TextButton.icon(
             onPressed: onAddBranch,
             icon: const Icon(Icons.add, size: 18),

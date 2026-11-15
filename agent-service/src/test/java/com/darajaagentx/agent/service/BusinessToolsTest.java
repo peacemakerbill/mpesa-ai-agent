@@ -130,7 +130,8 @@ class BusinessToolsTest {
     @Test
     void theToolsAreDefinedAndRecognised() {
         assertThat(BusinessTools.definitions()).extracting(d -> d.get("name"))
-                .containsExactly("list_business_accounts", "prepare_business_request", "list_business_requests", "cancel_business_request");
+                .containsExactly("list_business_accounts", "prepare_business_request", "list_business_requests", "lipa_na_bonga_steps", "cancel_business_request");
+        assertThat(tools.handles("lipa_na_bonga_steps")).isTrue();
         assertThat(tools.handles("prepare_business_request")).isTrue();
         assertThat(tools.handles("prepare_send_money")).isFalse();
     }
@@ -193,12 +194,61 @@ class BusinessToolsTest {
 
     @Test
     void aQrCodeIsSentAsAPicture() {
-        api.next = Map.of("id", ID, "status", "SUCCEEDED", "summary", "QR", "accountLabel", "Main shop", "qrCode", Base64.getEncoder().encodeToString(new byte[]{1, 2, 3}));
+        api.next = Map.of("id", ID, "status", "SUCCEEDED", "summary", "QR code for KES 300 to Main shop", "accountLabel", "Main shop", "qrCode", Base64.getEncoder().encodeToString(new byte[]{1, 2, 3}));
         ToolContext c = ctx("TEXT");
         Result r = tools.execute(c, "prepare_business_request", json("{\"type\":\"DYNAMIC_QR\",\"amount\":300}"));
         assertThat(r.content()).contains("QR code is being sent");
         flush(c);
         verify(sender).image(eq(PHONE), org.mockito.ArgumentMatchers.any(byte[].class), eq("image/png"), contains("Main shop"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void aQrCodeCanBeMadeForAnyTillPaybillOrPhoneAndTheCaptionSaysWhoIsPaid() {
+        api.next = Map.of("id", ID, "status", "SUCCEEDED", "summary", "QR code for KES 200 to Till 123456 (reference Main)", "accountLabel", "Main shop",
+                "params", Map.of("trxCode", "BG", "cpi", "123456"), "qrCode", Base64.getEncoder().encodeToString(new byte[]{1, 2, 3}));
+        ToolContext c = ctx("TEXT");
+        Result r = tools.execute(c, "prepare_business_request", json("{\"type\":\"DYNAMIC_QR\",\"amount\":200,\"pay_to_type\":\"till\",\"pay_to_number\":\"123456\"}"));
+        Map<String, Object> params = (Map<String, Object>) api.lastBody.get("params");
+        assertThat(params).containsEntry("pay_to_type", "till").containsEntry("pay_to_number", "123456").containsEntry("amount", "200");
+        assertThat(r.content()).contains("Till 123456").contains("lipa_na_bonga_steps").contains("not kept");
+        flush(c);
+        verify(sender).image(eq(PHONE), org.mockito.ArgumentMatchers.any(byte[].class), eq("image/png"), contains("Till 123456"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void aQrCodeToTheCustomersOwnPhoneUsesTheRealNumberAndAMaskedOneIsRefused() {
+        api.next = Map.of("id", ID, "status", "FAILED", "summary", "x", "failure", "stop here");
+        tools.execute(ctx("TEXT"), "prepare_business_request", json("{\"type\":\"DYNAMIC_QR\",\"amount\":50,\"pay_to_type\":\"phone\",\"use_my_number\":true}"));
+        assertThat(((Map<String, Object>) api.lastBody.get("params")).get("pay_to_number")).isEqualTo(PHONE);
+
+        api.lastBody = null;
+        Result masked = tools.execute(ctx("TEXT"), "prepare_business_request", json("{\"type\":\"DYNAMIC_QR\",\"amount\":50,\"pay_to_type\":\"phone\",\"pay_to_number\":\"254723***340\"}"));
+        assertThat(masked.error()).isTrue();
+        assertThat(masked.content()).contains("only partly shown");
+        assertThat(api.lastBody).isNull();
+    }
+
+    @Test
+    void lipaNaBongaStepsAreGivenForATillAndNeverPretendToChargeBongaPoints() {
+        Result r = tools.execute(ctx("TEXT"), "lipa_na_bonga_steps", json("{\"till\":\"123 456\",\"amount\":200}"));
+        assertThat(r.error()).isFalse();
+        assertThat(r.content()).contains("*126#").contains("Lipa na Bonga").contains("123456").contains("1000 Bonga Points")
+                .contains("no way for this assistant to charge Bonga Points").contains("never type that PIN in this chat");
+        assertThat(api.lastBody).isNull();
+    }
+
+    @Test
+    void lipaNaBongaFindsTheTillOfASavedBuyGoodsAccountAndWarnsAboutAPaybill() {
+        api.accounts = List.of(
+                Map.of("label", "Main shop", "shortcodeType", "BUY_GOODS", "shortcode", "174379", "tillNumber", "9876543"),
+                Map.of("label", "Rent", "shortcodeType", "PAYBILL", "shortcode", "600111"));
+        assertThat(tools.execute(ctx("TEXT"), "lipa_na_bonga_steps", json("{\"account\":\"@Main shop\"}")).content()).contains("9876543").contains("(Main shop)");
+        assertThat(tools.execute(ctx("TEXT"), "lipa_na_bonga_steps", json("{\"account\":\"Rent\"}")).content()).contains("is a Paybill").contains("do not promise");
+        Result none = tools.execute(ctx("TEXT"), "lipa_na_bonga_steps", json("{\"till\":\"12\"}"));
+        assertThat(none.error()).isTrue();
+        assertThat(none.content()).contains("Which Till");
     }
 
     @Test

@@ -93,6 +93,13 @@ public class SystemPrompt {
             - You only ever see the person's own number masked. When they say to use their own phone number, as the account number in prepare_pay_bill or as the phone in prepare_business_request, set use_my_number to true and never ask them to type it. \
             Their name, email and address are not in the chat: read them with get_my_profile.
 
+            QR CODES AND LIPA NA BONGA
+            - "Generate a QR code", "make a QR for 500", "QR to pay this" means prepare_business_request with type DYNAMIC_QR and the amount. The payer scans it with the My Safaricom or M-PESA app and pays by M-PESA. The picture arrives in the chat. It is not kept, so make a new one when they ask again.
+            - For one of THEIR saved accounts ("QR for Main shop, 500") use that account and leave pay_to_type out: a Buy Goods account pays its Till and a Paybill account pays its Paybill. A Paybill code needs the account number in reference, and a saved Paybill uses its own saved reference when they give none.
+            - For anybody else's Till, Paybill or phone number ("QR for till 123456, 200", "QR to send money to 0712345678") set pay_to_type to till, paybill or phone and give the number in pay_to_number. For a Paybill ask for the account number if they did not give it. A saved account is still named in account, because it makes the call to Safaricom: if they have exactly one, use it, and if they have none, tell them a QR code needs one saved business account with its consumer key and secret.
+            - When they say "this payment" or "for that", take the amount, the Till, Paybill or phone and the reference from what was said earlier in the conversation. If anything is missing, ask for that one thing. Never guess a number.
+            - Lipa na Bonga means the payer spends Bonga Points at a Till. The payer does it on their own phone with *126#. Safaricom has no API for it, so you cannot charge Bonga Points, send a Bonga prompt or make a Bonga QR code, and you must never say you did. When they ask, or when they would rather pay a Till with Bonga Points, use lipa_na_bonga_steps and give the steps. A Bonga Service PIN is secret: never ask for it.
+
             """;
 
     private static final String PROFILE_AND_EMAIL = """

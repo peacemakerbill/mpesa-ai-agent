@@ -251,6 +251,25 @@ class ApiClient {
       'POST', '/api/business-operations/${Uri.encodeComponent(id)}/approve',
       body: {'method': 'OTP', 'code': code}));
 
+  /// Makes a Dynamic QR code. [payTo] is account (the saved account itself), till, paybill or phone. The picture is in the answer
+  /// only: the server does not keep it, so make a new one when it is needed again.
+  Future<BusinessOperation> createQrCode({
+    required String account,
+    required int amount,
+    String reference = '',
+    String merchantName = '',
+    String payTo = 'account',
+    String payToNumber = '',
+  }) async =>
+      BusinessOperation.fromJson(await _send('POST', '/api/business-operations/qr', body: {
+        'account': account,
+        'amount': amount,
+        if (reference.trim().isNotEmpty) 'reference': reference.trim(),
+        if (merchantName.trim().isNotEmpty) 'merchantName': merchantName.trim(),
+        'payTo': payTo,
+        if (payToNumber.trim().isNotEmpty) 'payToNumber': payToNumber.trim(),
+      }));
+
   Future<BusinessOperation> declineBusinessOperation(String id) async =>
       BusinessOperation.fromJson(await _send('POST', '/api/business-operations/${Uri.encodeComponent(id)}/decline'));
 

@@ -40,15 +40,17 @@ public class BusinessTools {
     public static final String PREPARE_BUSINESS_REQUEST = "prepare_business_request";
     public static final String LIST_BUSINESS_REQUESTS = "list_business_requests";
     public static final String CANCEL_BUSINESS_REQUEST = "cancel_business_request";
+    public static final String LIPA_NA_BONGA_STEPS = "lipa_na_bonga_steps";
 
-    private static final Set<String> NAMES = Set.of(LIST_BUSINESS_ACCOUNTS, PREPARE_BUSINESS_REQUEST, LIST_BUSINESS_REQUESTS, CANCEL_BUSINESS_REQUEST);
+    private static final Set<String> NAMES = Set.of(LIST_BUSINESS_ACCOUNTS, PREPARE_BUSINESS_REQUEST, LIST_BUSINESS_REQUESTS, CANCEL_BUSINESS_REQUEST,
+            LIPA_NA_BONGA_STEPS);
 
     public static final List<String> TYPES = List.of("STK_PUSH", "STK_QUERY", "DYNAMIC_QR", "PULL_REGISTER", "PULL", "BALANCE", "STATUS", "B2C", "B2POCHI", "B2B", "REVERSAL");
 
     /** The details a request can carry. Each is passed on as text and agentx-api checks it. */
     public static final List<String> DETAIL_KEYS = List.of("amount", "phone", "reference", "description", "remarks", "occasion", "command",
             "receiver", "target_type", "account_reference", "receipt", "operation", "checkout_request_id", "start_date", "end_date",
-            "offset", "merchant_name");
+            "offset", "merchant_name", "pay_to_type", "pay_to_number");
 
     private final BusinessApi api;
 
@@ -67,6 +69,7 @@ public class BusinessTools {
                 case PREPARE_BUSINESS_REQUEST -> prepare(ctx, input);
                 case LIST_BUSINESS_REQUESTS -> listRequests(ctx, input);
                 case CANCEL_BUSINESS_REQUEST -> cancel(ctx, input);
+                case LIPA_NA_BONGA_STEPS -> bongaSteps(ctx, input);
                 default -> Result.error("Unknown tool " + name);
             };
         } catch (ToolException e) {
@@ -142,6 +145,17 @@ public class BusinessTools {
             throw new ToolException("That number is only partly shown, so it cannot be used. Ask the customer to type the full number, "
                     + "or set use_my_number to true if they mean their own phone.");
         }
+        String payTo = params.get("pay_to_number");
+        if (payTo != null && "phone".equalsIgnoreCase(params.getOrDefault("pay_to_type", ""))) {
+            if (input.path("use_my_number").asBoolean(false) || WalletTools.isOwnNumberWords(payTo)) {
+                params.put("pay_to_number", ctx.phone());
+            } else if (payTo.contains("*")) {
+                throw new ToolException("That number is only partly shown, so it cannot be used. Ask the customer to type the full number, "
+                        + "or set use_my_number to true if they mean their own phone.");
+            }
+        } else if (payTo == null && "phone".equalsIgnoreCase(params.getOrDefault("pay_to_type", "")) && input.path("use_my_number").asBoolean(false)) {
+            params.put("pay_to_number", ctx.phone());
+        }
         String source = WalletTools.riskier(ctx.source(), ToolExecutor.text(input, "details_from", 12));
 
         Map<String, Object> body = new LinkedHashMap<>();
@@ -176,9 +190,13 @@ public class BusinessTools {
                 String qr = str(view.get("qrCode"));
                 if (!qr.isEmpty()) {
                     byte[] png = Base64.getDecoder().decode(qr);
-                    String caption = "Scan with M-Pesa to pay " + str(view.get("accountLabel"));
+                    String what = str(view.get("summary")).isEmpty() ? str(view.get("accountLabel")) : str(view.get("summary"));
+                    String caption = "Scan with the My Safaricom or M-PESA app to pay. " + what;
                     ctx.defer(s -> s.image(phone, png, "image/png", caption));
-                    return Result.ok("A QR code is being sent as a picture. Tell them to open M-Pesa, choose Scan QR and scan it.");
+                    String trx = view.get("params") instanceof Map<?, ?> m ? str(m.get("trxCode")) : "";
+                    return Result.ok("A QR code is being sent as a picture (" + what + "). Tell them in one short sentence to open the M-PESA or My Safaricom app, "
+                            + "choose Scan QR and scan it. The picture is not kept: they can ask again for a new one."
+                            + (trx.equals("BG") ? " If they would rather pay a Till with Bonga Points, use lipa_na_bonga_steps." : ""));
                 }
                 return Result.ok(summary + "\n" + str(view.get("resultText")));
             }
@@ -191,6 +209,48 @@ public class BusinessTools {
                 return Result.error((why.isEmpty() ? "The request did not go through." : why) + " Nothing was sent.");
             }
         }
+    }
+
+    // ------------------------------------------------------------ Lipa na Bonga
+
+    /** One Bonga Point is worth KES 0.20 (Safaricom's Lipa na Bonga terms), so a shilling costs five points. */
+    static final int POINTS_PER_SHILLING = 5;
+
+    private Result bongaSteps(ToolContext ctx, JsonNode input) {
+        String till = ToolExecutor.text(input, "till", 20).replaceAll("\\D", "");
+        String account = ToolExecutor.text(input, "account", 80).replaceFirst("^@", "").strip();
+        String named = "";
+        if (till.isEmpty() && !account.isEmpty()) {
+            for (Map<String, Object> a : api.accounts(ctx.phone())) {
+                if (str(a.get("label")).equalsIgnoreCase(account) || str(a.get("tillNumber")).equals(account) || str(a.get("shortcode")).equals(account)) {
+                    boolean buyGoods = "BUY_GOODS".equalsIgnoreCase(str(a.get("shortcodeType")));
+                    if (!buyGoods) {
+                        return Result.ok(str(a.get("label")) + " is a Paybill, not a Till. Lipa na Bonga is written for Till numbers, so do not promise it works for a Paybill. "
+                                + "Suggest a QR code or an STK Push instead.");
+                    }
+                    till = str(a.get("tillNumber")).isEmpty() ? str(a.get("shortcode")) : str(a.get("tillNumber"));
+                    named = str(a.get("label"));
+                    break;
+                }
+            }
+        }
+        if (!till.matches("\\d{5,7}")) {
+            throw new ToolException("Which Till is being paid? Give the Till number (5 to 7 digits), or the name of a saved Buy Goods account.");
+        }
+        int amount = input.path("amount").isNumber() ? input.path("amount").asInt() : 0;
+        StringBuilder sb = new StringBuilder("How to pay Till ").append(till).append(named.isEmpty() ? "" : " (" + named + ")").append(" with Lipa na Bonga. ")
+                .append("The payer does this on their own Safaricom phone, nobody else can do it for them:\n")
+                .append("1. Dial *126# and choose Lipa na Bonga.\n")
+                .append("2. Enter the Till number ").append(till).append(".\n")
+                .append("3. Enter the amount in shillings");
+        if (amount > 0) {
+            sb.append(": ").append(amount).append(" (about ").append((long) amount * POINTS_PER_SHILLING).append(" Bonga Points, as one point is worth 20 cents)");
+        }
+        sb.append(".\n4. Enter their *126# Service PIN and confirm. They must never type that PIN in this chat or tell it to anyone.\n")
+                .append("The shop gets a confirmation message with the same transaction code. If they pay too much they can ask for a reversal by calling 234. ")
+                .append("Redeemed points are generally not given back. The points rate can change, and the payer needs enough points.\n")
+                .append("Say clearly that this is done by the payer on their phone: Safaricom has no way for this assistant to charge Bonga Points or send a Bonga prompt or QR code.");
+        return Result.ok(sb.toString());
     }
 
     // ------------------------------------------------------------ read and cancel
@@ -358,7 +418,7 @@ public class BusinessTools {
         prepareProps.put("account", string("Which business account, by its name, till number or shortcode. The customer may write it as @Name. "
                 + "Leave out only when they have exactly one."));
         prepareProps.put("type", enumString("What to do. STK_PUSH asks a customer to pay (a PIN prompt on their phone). STK_QUERY checks an earlier STK Push. "
-                + "DYNAMIC_QR makes a QR code for an amount. PULL_REGISTER is the one time step that lets a shortcode use PULL (needs a phone number to nominate). PULL lists transactions in a period, and needs PULL_REGISTER to have been done once. BALANCE checks the account balance. STATUS looks up one transaction by its code. "
+                + "DYNAMIC_QR makes a QR code a payer scans to pay an amount, to a saved account or to any Till, Paybill or phone number. PULL_REGISTER is the one time step that lets a shortcode use PULL (needs a phone number to nominate). PULL lists transactions in a period, and needs PULL_REGISTER to have been done once. BALANCE checks the account balance. STATUS looks up one transaction by its code. "
                 + "B2C pays money to a phone number. B2POCHI pays a Pochi la Biashara. B2B pays a Paybill or Till. REVERSAL reverses a customer payment.", TYPES));
         prepareProps.put("amount", integer("Amount in whole Kenyan shillings"));
         prepareProps.put("phone", string("Kenyan phone number: who to charge for STK_PUSH, who to pay for B2C and B2POCHI, the nominated number for PULL_REGISTER"));
@@ -379,6 +439,10 @@ public class BusinessTools {
         prepareProps.put("end_date", string("PULL: end of the period"));
         prepareProps.put("offset", string("PULL: how many results to skip, for the next page. Default 0."));
         prepareProps.put("merchant_name", string("DYNAMIC_QR: name shown on the QR code. Optional."));
+        prepareProps.put("pay_to_type", enumString("DYNAMIC_QR: who the QR code pays. account (default) is the saved business account itself. till, paybill or phone make a code for "
+                + "any Till, Paybill or phone number, and the saved account named in account only makes the call to Safaricom.", List.of("account", "till", "paybill", "phone")));
+        prepareProps.put("pay_to_number", string("DYNAMIC_QR with pay_to_type till, paybill or phone: the Till or Paybill number (5 to 7 digits) or the phone number. "
+                + "For a Paybill, put the account number to pay into in reference."));
         prepareProps.put("details_from", enumString("Where the numbers came from if not typed: VOICE, IMAGE, DOCUMENT or CONTACT. Optional.", List.of("TEXT", "VOICE", "IMAGE", "DOCUMENT", "CONTACT")));
 
         return List.of(
@@ -395,6 +459,13 @@ public class BusinessTools {
                         "Show recent business requests and what happened to each. With request_id it shows one in full, with a step by step account of what happened: "
                                 + "asked, approved, sent, accepted, timed out, done or failed. Use it whenever they ask what happened to a payment or request. request_id can also be the M-Pesa code of a request made here.",
                         Map.of("limit", integer("How many, 1 to 10. Default 5."), "request_id", string("Id of one request. Optional.")), List.of()),
+                tool(LIPA_NA_BONGA_STEPS,
+                        "Give the steps for paying a Till with Lipa na Bonga (Bonga Points). It is done by the payer on their own phone with *126#. Safaricom has no API to charge "
+                                + "Bonga Points or to send a Bonga prompt or QR code, so you can only explain the steps. Pass the till, or the saved account whose till is being paid. "
+                                + "Use it when someone asks about paying with Bonga Points, or after a QR code for a Till if they prefer Bonga.",
+                        Map.of("till", string("The Till number being paid, 5 to 7 digits. Optional when account is given."),
+                                "account", string("A saved business account whose till is being paid. Optional."),
+                                "amount", integer("Amount in whole shillings, to work out the points. Optional.")), List.of()),
                 tool(CANCEL_BUSINESS_REQUEST,
                         "Cancel a business request that is still waiting for the owner's approval. Without request_id it cancels the newest waiting one.",
                         Map.of("request_id", string("Id of the request. Optional.")), List.of()));
