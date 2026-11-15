@@ -234,6 +234,9 @@ List<RichSpan> parseRich(String text) {
   return out;
 }
 
+/// The assistant's text without its markup, as it should land on the clipboard: *bold* and `code` lose their marks, links stay.
+String plainFromRich(String text) => parseRich(text).map((s) => s.text).join();
+
 /// "Mama Wanjiku 0712345678" splits into the name and the number, the number being the last word.
 ({String name, String phone}) splitContactSummary(String summary) {
   final s = summary.trim();

@@ -40,8 +40,39 @@ class BubbleActions {
 
 String clock(DateTime t) => '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
+/// What "Copy" puts on the clipboard for a message: the words without markup, or for a card the lines it shows.
+/// Null when the message has nothing to copy, such as a voice note.
+String? copyTextOf(ChatMessage m) {
+  String plain(String? s) => s == null ? '' : plainFromRich(s).trim();
+  if (m.kind == 'AUDIO') return null;
+  final parts = <String>[];
+  switch (m.kind) {
+    case 'IMAGE':
+    case 'VIDEO':
+    case 'DOCUMENT':
+      parts.add(plain(m.caption));
+    case 'LOCATION':
+      parts.add(m.locationLabel ?? '');
+      if (m.latitude != null && m.longitude != null) parts.add('${m.latitude!.toStringAsFixed(5)}, ${m.longitude!.toStringAsFixed(5)}');
+    case 'CONTACTS':
+      parts.add((m.contactsSummary ?? m.text ?? '').trim());
+    case 'BUTTON_REPLY':
+    case 'LIST_REPLY':
+      parts.add(plain(m.actionTitle ?? m.text));
+    default:
+      parts.add(plain(m.shownText));
+      parts.add(plain(m.footer));
+  }
+  final out = parts.where((p) => p.isNotEmpty).join('\n\n');
+  return out.isEmpty ? null : out;
+}
+
 /// One message, on the right when the customer wrote it and on the left when the assistant did.
 /// [live] is true when buttons and menus under it can still be used, that is, nothing was said after it.
+///
+/// The looks that read like a chat app (see [Tokens.modern]) draw the assistant's reply flat on the page, beside the logo,
+/// and the customer's words in a bubble filled with the accent colour. The boxed looks draw both sides as bordered bubbles.
+/// Every message carries a Copy button, and its words can be selected with the mouse or a long press.
 class MessageBubble extends StatelessWidget {
   const MessageBubble({super.key, required this.message, required this.live, required this.actions, this.startsGroup = true});
 
@@ -52,42 +83,93 @@ class MessageBubble extends StatelessWidget {
   /// False when the message before this one came from the same side, so the two sit closer together.
   final bool startsGroup;
 
+  /// Kinds that are only words. The others hold pictures, players or buttons, which need a light bubble to stay readable.
+  bool get _wordsOnly => !const {'BUTTONS', 'LIST', 'IMAGE', 'AUDIO', 'VIDEO', 'DOCUMENT', 'LOCATION', 'CONTACTS', 'CONTACT_LOOKUP'}.contains(message.kind);
+
   @override
   Widget build(BuildContext context) {
     final t = context.tk;
-    final mine = message.mine;
-    final r = t.radius.clamp(0, 18).toDouble();
-    final small = t.square ? 0.0 : 4.0;
-    final shape = BorderRadius.only(
-      topLeft: Radius.circular(r),
-      topRight: Radius.circular(r),
-      bottomLeft: Radius.circular(mine ? r : small),
-      bottomRight: Radius.circular(mine ? small : r),
-    );
-    // A bubble is at most 84 percent of the pane it sits in, and never wider than 560 points, so lines stay easy to read on a big screen.
-    return LayoutBuilder(
-      builder: (context, box) => Align(
-        alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          margin: EdgeInsets.fromLTRB(mine ? 40 : 0, startsGroup ? 8 : 2, mine ? 0 : 40, 0),
-          constraints: BoxConstraints(maxWidth: math.min(box.maxWidth * 0.84, 560.0)),
-          padding: const EdgeInsets.fromLTRB(12, 9, 12, 6),
-          decoration: BoxDecoration(
-            color: mine ? t.p.accentSoft : t.p.surface,
-            border: Border.all(color: mine ? t.p.accentLine : t.p.line),
-            borderRadius: shape,
-          ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-            _content(context),
-            const SizedBox(height: 3),
-            Align(alignment: Alignment.centerRight, child: Text(clock(message.at), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: t.p.ink3))),
+    if (t.modern && !message.mine) return _flat(context, t);
+    return _boxed(context, t);
+  }
+
+  /// The assistant's reply on a modern look: no box, the logo at the first line of a run, the words at reading size.
+  Widget _flat(BuildContext context, Tokens t) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: EdgeInsets.only(top: startsGroup ? 16 : 2, right: 12),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 34 + 660),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            SizedBox(width: 34, child: startsGroup ? const Padding(padding: EdgeInsets.only(top: 2), child: BrandMark(size: 26)) : null),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                _content(context),
+                _footer(context, t, t.p.ink3, left: true),
+              ]),
+            ),
           ]),
         ),
       ),
     );
   }
 
-  Widget _content(BuildContext context) {
+  Widget _boxed(BuildContext context, Tokens t) {
+    final mine = message.mine;
+    final filled = t.modern && mine && _wordsOnly;
+    final r = (t.modern ? 20 : t.radius.clamp(0, 18)).toDouble();
+    final small = t.square ? 0.0 : (t.modern ? 6.0 : 4.0);
+    final shape = BorderRadius.only(
+      topLeft: Radius.circular(r),
+      topRight: Radius.circular(r),
+      bottomLeft: Radius.circular(mine ? r : small),
+      bottomRight: Radius.circular(mine ? small : r),
+    );
+    final footerInk = filled ? t.p.accentInk.withAlpha(235) : t.p.ink3;
+    // A bubble is at most 84 percent of the pane it sits in, and never wider than 560 points, so lines stay easy to read on a big screen.
+    return LayoutBuilder(
+      builder: (context, box) => Align(
+        alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          margin: EdgeInsets.fromLTRB(mine ? 40 : 0, startsGroup ? (t.modern ? 12 : 8) : 2, mine ? 0 : 40, 0),
+          constraints: BoxConstraints(maxWidth: math.min(box.maxWidth * 0.84, 560.0)),
+          padding: EdgeInsets.fromLTRB(t.modern ? 14 : 12, t.modern ? 10 : 9, t.modern ? 14 : 12, 6),
+          decoration: BoxDecoration(
+            color: filled ? t.p.accent : (mine ? t.p.accentSoft : t.p.surface),
+            border: filled ? null : Border.all(color: mine ? t.p.accentLine : t.p.line),
+            borderRadius: shape,
+            boxShadow: filled || (t.modern && !mine) ? t.shadow : null,
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+            _content(context, onAccent: filled),
+            _footer(context, t, footerInk, left: false),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  /// The Copy button and the time, outside the selectable text.
+  Widget _footer(BuildContext context, Tokens t, Color ink, {required bool left}) {
+    final copy = copyTextOf(message);
+    final time = Text(clock(message.at), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: ink));
+    return SelectionContainer.disabled(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: left ? MainAxisAlignment.start : MainAxisAlignment.end,
+          children: [
+            if (copy != null) ...[CopyButton(text: copy, color: ink), const SizedBox(width: 6)],
+            time,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _content(BuildContext context, {bool onAccent = false}) {
     final m = message;
     final text = Theme.of(context).textTheme;
     switch (m.kind) {
@@ -97,11 +179,15 @@ class MessageBubble extends StatelessWidget {
           if (m.footer != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(m.footer!, style: text.bodySmall)),
           _openRequest(context),
           const SizedBox(height: 8),
-          for (final b in m.buttons)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: SizedBox(width: double.infinity, child: OutlinedButton(onPressed: live ? () => actions.onButton(b) : null, child: Text(b.title))),
-            ),
+          SelectionContainer.disabled(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              for (final b in m.buttons)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: SizedBox(width: double.infinity, child: OutlinedButton(onPressed: live ? () => actions.onButton(b) : null, child: Text(b.title))),
+                ),
+            ]),
+          ),
         ]);
       case 'LIST':
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -109,12 +195,14 @@ class MessageBubble extends StatelessWidget {
           if (m.footer != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(m.footer!, style: text.bodySmall)),
           _openRequest(context),
           const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: live ? () => _showRows(context) : null,
-              icon: const Icon(Icons.list),
-              label: Text(m.listTitle ?? 'Choose'),
+          SelectionContainer.disabled(
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: live ? () => _showRows(context) : null,
+                icon: const Icon(Icons.list),
+                label: Text(m.listTitle ?? 'Choose'),
+              ),
             ),
           ),
         ]);
@@ -139,27 +227,29 @@ class MessageBubble extends StatelessWidget {
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           _words(context, m.text ?? 'I need a phone number for ${m.query ?? 'this person'}.'),
           const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: live ? () => actions.onFindContact(m.query ?? '') : null,
-              icon: const Icon(Icons.person_search_outlined),
-              label: const Text('Find in contacts'),
+          SelectionContainer.disabled(
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: live ? () => actions.onFindContact(m.query ?? '') : null,
+                icon: const Icon(Icons.person_search_outlined),
+                label: const Text('Find in contacts'),
+              ),
             ),
           ),
         ]);
       case 'BUTTON_REPLY':
       case 'LIST_REPLY':
-        return _words(context, m.actionTitle ?? m.text ?? '');
+        return _words(context, m.actionTitle ?? m.text ?? '', onAccent: onAccent);
       default:
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _words(context, m.shownText ?? ''),
+          _words(context, m.shownText ?? '', onAccent: onAccent),
           _openRequest(context),
         ]);
     }
   }
 
-  Widget _words(BuildContext context, String text) => RichMessageText(text: text, onLink: actions.onLink);
+  Widget _words(BuildContext context, String text, {bool onAccent = false}) => RichMessageText(text: text, onLink: actions.onLink, onAccent: onAccent);
 
   Widget _openRequest(BuildContext context) {
     final id = message.requestId;
@@ -167,19 +257,21 @@ class MessageBubble extends StatelessWidget {
     if (id == null && businessId == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 8),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        FilledButton.icon(
-          onPressed: () => id != null ? actions.onOpenRequest(id) : actions.onOpenBusiness(businessId!),
-          icon: const Icon(Icons.fact_check_outlined),
-          label: const Text('Open request'),
-        ),
-        const SizedBox(height: 6),
-        OutlinedButton.icon(
-          onPressed: () => actions.onApproveWithOtp(id ?? businessId!, business: id == null),
-          icon: const Icon(Icons.sms_outlined),
-          label: const Text('Approve with OTP'),
-        ),
-      ]),
+      child: SelectionContainer.disabled(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          FilledButton.icon(
+            onPressed: () => id != null ? actions.onOpenRequest(id) : actions.onOpenBusiness(businessId!),
+            icon: const Icon(Icons.fact_check_outlined),
+            label: const Text('Open request'),
+          ),
+          const SizedBox(height: 6),
+          OutlinedButton.icon(
+            onPressed: () => actions.onApproveWithOtp(id ?? businessId!, business: id == null),
+            icon: const Icon(Icons.sms_outlined),
+            label: const Text('Approve with OTP'),
+          ),
+        ]),
+      ),
     );
   }
 
@@ -216,10 +308,13 @@ class MessageBubble extends StatelessWidget {
 
 /// Text with the assistant's light markup: *bold*, _italic_, `code` and links that open when tapped.
 class RichMessageText extends StatefulWidget {
-  const RichMessageText({super.key, required this.text, required this.onLink});
+  const RichMessageText({super.key, required this.text, required this.onLink, this.onAccent = false});
 
   final String text;
   final void Function(String url) onLink;
+
+  /// True on a bubble filled with the accent colour, where the words and links use the colour made for that fill.
+  final bool onAccent;
 
   @override
   State<RichMessageText> createState() => _RichMessageTextState();
@@ -245,7 +340,9 @@ class _RichMessageTextState extends State<RichMessageText> {
   Widget build(BuildContext context) {
     _clear();
     final t = context.tk;
-    final base = Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
+    final theme = Theme.of(context).textTheme;
+    var base = (t.modern ? theme.bodyLarge : theme.bodyMedium) ?? const TextStyle();
+    if (widget.onAccent) base = base.copyWith(color: t.p.accentInk);
     final spans = <InlineSpan>[];
     for (final s in parseRich(widget.text)) {
       TapGestureRecognizer? tap;
@@ -261,8 +358,9 @@ class _RichMessageTextState extends State<RichMessageText> {
           fontWeight: s.bold ? FontWeight.w700 : null,
           fontStyle: s.italic ? FontStyle.italic : null,
           fontFamily: s.code ? 'monospace' : null,
-          backgroundColor: s.code ? t.p.surface2 : null,
-          color: s.link != null ? t.p.accent : null,
+          fontSize: s.code ? (base.fontSize ?? 15) * 0.92 : null,
+          backgroundColor: s.code ? (widget.onAccent ? t.p.accentInk.withAlpha(36) : t.p.surface2) : null,
+          color: s.link != null && !widget.onAccent ? t.p.accent : null,
           decoration: s.link != null ? TextDecoration.underline : null,
         ),
       ));
@@ -525,30 +623,40 @@ class _TypingBubbleState extends State<TypingBubble> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final t = context.tk;
+    final dots = AnimatedBuilder(
+      animation: _c,
+      builder: (_, __) => Row(mainAxisSize: MainAxisSize.min, children: [
+        for (var i = 0; i < 3; i++)
+          Container(
+            width: 7,
+            height: 7,
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            decoration: BoxDecoration(
+              color: t.p.ink3.withAlpha(_alpha(i)),
+              shape: t.square ? BoxShape.rectangle : BoxShape.circle,
+            ),
+          ),
+      ]),
+    );
     return Align(
       alignment: Alignment.centerLeft,
       child: Semantics(
         label: 'The assistant is typing',
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 3),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(color: t.p.surface, border: Border.all(color: t.p.line), borderRadius: BorderRadius.circular(t.radius.clamp(0, 18).toDouble())),
-          child: AnimatedBuilder(
-            animation: _c,
-            builder: (_, __) => Row(mainAxisSize: MainAxisSize.min, children: [
-              for (var i = 0; i < 3; i++)
-                Container(
-                  width: 7,
-                  height: 7,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  decoration: BoxDecoration(
-                    color: t.p.ink3.withAlpha(_alpha(i)),
-                    shape: t.square ? BoxShape.rectangle : BoxShape.circle,
-                  ),
-                ),
-            ]),
-          ),
-        ),
+        child: t.modern
+            // On a modern look the dots sit beside the logo, where the reply will appear.
+            ? Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  const SizedBox(width: 34, child: Align(alignment: Alignment.topLeft, child: BrandMark(size: 26))),
+                  Padding(padding: const EdgeInsets.symmetric(vertical: 9), child: dots),
+                ]),
+              )
+            : Container(
+                margin: const EdgeInsets.symmetric(vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(color: t.p.surface, border: Border.all(color: t.p.line), borderRadius: BorderRadius.circular(t.radius.clamp(0, 18).toDouble())),
+                child: dots,
+              ),
       ),
     );
   }

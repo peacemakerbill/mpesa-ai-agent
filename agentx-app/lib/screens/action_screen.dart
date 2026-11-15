@@ -272,12 +272,15 @@ class _ActionScreenState extends State<ActionScreen> with WidgetsBindingObserver
     final a = _action;
     return Scaffold(
       appBar: AppBar(title: Text(a == null ? 'Request' : typeLabel(a.type))),
-      body: SafeArea(
-        child: _loading
-            ? const BrandLoader()
-            : a == null
-                ? _failure()
-                : CenteredList(maxWidth: 640, top: 20, bottom: 32, children: _content(a)),
+      // SelectionArea: a code, a number or a note on the request can be selected and copied.
+      body: SelectionArea(
+        child: SafeArea(
+          child: _loading
+              ? const BrandLoader()
+              : a == null
+                  ? _failure()
+                  : CenteredList(maxWidth: 640, top: 20, bottom: 32, children: _content(a)),
+        ),
       ),
     );
   }

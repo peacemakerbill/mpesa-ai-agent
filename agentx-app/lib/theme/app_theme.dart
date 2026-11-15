@@ -102,45 +102,45 @@ class Palette {
   bool get headDark => headBg.computeLuminance() < 0.4;
 
   static const daylight = Palette(
-    bg: Color(0xFFF3F4F7),
+    bg: Color(0xFFF5F6FA),
     surface: Color(0xFFFFFFFF),
-    surface2: Color(0xFFF0F2F6),
-    line: Color(0xFFE1E4EA),
-    lineStrong: Color(0xFFC9CED8),
-    ink: Color(0xFF11151B),
-    ink2: Color(0xFF4A5362),
-    ink3: Color(0xFF646E7F),
+    surface2: Color(0xFFEEF1F6),
+    line: Color(0xFFE3E6ED),
+    lineStrong: Color(0xFFCBD1DC),
+    ink: Color(0xFF0F1419),
+    ink2: Color(0xFF444D5C),
+    ink3: Color(0xFF5B6676),
     accent: Color(0xFF2457D6),
     accentInk: Color(0xFFFFFFFF),
-    accentSoft: Color(0xFFE7EDFC),
-    accentLine: Color(0xFFB6C8F4),
+    accentSoft: Color(0xFFE9EFFD),
+    accentLine: Color(0xFFBFCFF5),
     good: Color(0xFF137A4A),
     warn: Color(0xFF9A5D00),
     bad: Color(0xFFC42B3A),
     headBg: Color(0xFFFFFFFF),
-    headInk: Color(0xFF11151B),
-    headLine: Color(0xFFE1E4EA),
+    headInk: Color(0xFF0F1419),
+    headLine: Color(0xFFE3E6ED),
   );
 
   static const graphite = Palette(
-    bg: Color(0xFF0D0F12),
-    surface: Color(0xFF14171C),
-    surface2: Color(0xFF1A1E24),
-    line: Color(0xFF242932),
-    lineStrong: Color(0xFF343B46),
-    ink: Color(0xFFE7E9EE),
-    ink2: Color(0xFFA0A8B5),
-    ink3: Color(0xFF808895),
+    bg: Color(0xFF0E1013),
+    surface: Color(0xFF16191E),
+    surface2: Color(0xFF1E2229),
+    line: Color(0xFF272C35),
+    lineStrong: Color(0xFF3B424E),
+    ink: Color(0xFFECEEF2),
+    ink2: Color(0xFFA6AEBB),
+    ink3: Color(0xFF8790A0),
     accent: Color(0xFFF0A63A),
     accentInk: Color(0xFF1B1304),
-    accentSoft: Color(0xFF2A2110),
+    accentSoft: Color(0xFF2B2213),
     accentLine: Color(0xFF5A4318),
     good: Color(0xFF52C68F),
     warn: Color(0xFFF0A63A),
     bad: Color(0xFFF07272),
-    headBg: Color(0xFF101317),
-    headInk: Color(0xFFE7E9EE),
-    headLine: Color(0xFF242932),
+    headBg: Color(0xFF12151A),
+    headInk: Color(0xFFECEEF2),
+    headLine: Color(0xFF272C35),
   );
 
   static const pwani = Palette(
@@ -356,12 +356,28 @@ class Tokens extends ThemeExtension<Tokens> {
   final String? headFont;
   final List<String> headFallback;
 
-  /// Only the Receipt look sets a body typeface, the others use the phone's own.
+  /// Every look reads in Inter, which is bundled with the app. Receipt sets its own typewriter face.
   final String? bodyFont;
   final List<String> bodyFallback;
 
   bool get square => radius == 0;
   BorderRadius get corners => BorderRadius.circular(radius);
+
+  /// The six everyday and M-Pesa looks that read like a current chat app: assistant replies sit on the page without a box,
+  /// panels float on a soft shadow, and the customer's messages are filled with the accent colour. Mono, Matatu, Blueprint and
+  /// Receipt keep their drawn, boxed character.
+  bool get modern => const {ThemeKey.daylight, ThemeKey.graphite, ThemeKey.pwani, ThemeKey.kahawa, ThemeKey.savanna, ThemeKey.lipa}.contains(key);
+
+  /// A lighter shadow for the many small panels on a list screen.
+  List<BoxShadow> get cardShadow => !modern ? const [] : [BoxShadow(color: Color.fromARGB(p.dark ? 80 : 12, 0, 0, 0), blurRadius: 10, offset: const Offset(0, 2))];
+
+  /// A soft shadow for cards and the message box. Empty on the boxed looks, which use lines instead.
+  List<BoxShadow> get shadow => !modern
+      ? const []
+      : [
+          BoxShadow(color: Color.fromARGB(p.dark ? 90 : 14, 0, 0, 0), blurRadius: 18, offset: const Offset(0, 6)),
+          BoxShadow(color: Color.fromARGB(p.dark ? 60 : 10, 0, 0, 0), blurRadius: 3, offset: const Offset(0, 1)),
+        ];
 
   /// A soft tint of [c] on the card colour, for tags and callouts.
   Color tint(Color c) => Color.alphaBlend(c.withAlpha(p.dark ? 40 : 28), p.surface);
@@ -383,27 +399,28 @@ class Tokens extends ThemeExtension<Tokens> {
         fontFeatures: const [FontFeature.tabularFigures()],
       );
 
+  static const _sans = ['Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'];
+  static const _serif = ['Times New Roman', 'Noto Serif', 'serif'];
+
   static Tokens of(ThemeKey key) {
     final p = Palette.of(key);
     switch (key) {
       case ThemeKey.daylight:
-        return Tokens(key: key, p: p, radius: 12);
       case ThemeKey.graphite:
-        return Tokens(key: key, p: p, radius: 12);
       case ThemeKey.pwani:
-        return Tokens(key: key, p: p, radius: 12);
+        return Tokens(key: key, p: p, radius: 14, headFont: 'Inter', headFallback: _sans, bodyFont: 'Inter', bodyFallback: _sans);
       case ThemeKey.mono:
-        return Tokens(key: key, p: p, radius: 0, headFont: 'Georgia', headFallback: const ['Times New Roman', 'Noto Serif', 'serif']);
+        return Tokens(key: key, p: p, radius: 0, headFont: 'Georgia', headFallback: _serif, bodyFont: 'Inter', bodyFallback: _sans);
       case ThemeKey.matatu:
-        return Tokens(key: key, p: p, radius: 5, headFont: 'Arial Black', headFallback: const ['Roboto Black', 'Impact', 'sans-serif']);
+        return Tokens(key: key, p: p, radius: 5, headFont: 'Arial Black', headFallback: const ['Roboto Black', 'Impact', 'sans-serif'], bodyFont: 'Inter', bodyFallback: _sans);
       case ThemeKey.kahawa:
-        return Tokens(key: key, p: p, radius: 12, headFont: 'Georgia', headFallback: const ['Times New Roman', 'Noto Serif', 'serif']);
+        return Tokens(key: key, p: p, radius: 14, headFont: 'Georgia', headFallback: _serif, bodyFont: 'Inter', bodyFallback: _sans);
       case ThemeKey.blueprint:
-        return Tokens(key: key, p: p, radius: 3, headFont: 'Menlo', headFallback: const ['Roboto Mono', 'Courier New', 'monospace']);
+        return Tokens(key: key, p: p, radius: 3, headFont: 'Menlo', headFallback: const ['Roboto Mono', 'Courier New', 'monospace'], bodyFont: 'Inter', bodyFallback: _sans);
       case ThemeKey.savanna:
-        return Tokens(key: key, p: p, radius: 16);
+        return Tokens(key: key, p: p, radius: 18, headFont: 'Inter', headFallback: _sans, bodyFont: 'Inter', bodyFallback: _sans);
       case ThemeKey.lipa:
-        return Tokens(key: key, p: p, radius: 10);
+        return Tokens(key: key, p: p, radius: 12, headFont: 'Inter', headFallback: _sans, bodyFont: 'Inter', bodyFallback: _sans);
       case ThemeKey.receipt:
         const mono = ['Courier New', 'Liberation Mono', 'Noto Sans Mono', 'monospace'];
         return Tokens(key: key, p: p, radius: 0, headFont: 'Courier', headFallback: mono, bodyFont: 'Courier', bodyFallback: mono);
@@ -489,23 +506,24 @@ class AppTheme {
           height: 1.2,
         );
 
+    // Inter is drawn for screens: tight at large sizes, a little open at small ones. The scale steps by about a fifth each time.
     final text = TextTheme(
-      headlineLarge: head(34, spacing: -0.8),
-      headlineMedium: head(28, spacing: -0.5),
-      headlineSmall: head(22, spacing: -0.3),
-      titleLarge: head(19, weight: FontWeight.w700, spacing: -0.2),
-      titleMedium: body(16, weight: FontWeight.w600),
+      headlineLarge: head(34, spacing: -0.9),
+      headlineMedium: head(28, spacing: -0.6),
+      headlineSmall: head(22, spacing: -0.4),
+      titleLarge: head(19, weight: FontWeight.w700, spacing: -0.25),
+      titleMedium: body(16, weight: FontWeight.w600).copyWith(letterSpacing: -0.1),
       titleSmall: body(14, weight: FontWeight.w600),
-      bodyLarge: body(16, height: 1.45),
-      bodyMedium: body(14, height: 1.45),
-      bodySmall: body(12, color: p.ink2),
+      bodyLarge: body(16, height: 1.5),
+      bodyMedium: body(14.5, height: 1.5),
+      bodySmall: body(12.5, color: p.ink2, height: 1.4),
       labelLarge: body(14, weight: FontWeight.w600),
-      labelMedium: body(12, weight: FontWeight.w600, color: p.ink2),
-      labelSmall: body(11, weight: FontWeight.w600, color: p.ink2),
+      labelMedium: body(12, weight: FontWeight.w600, color: p.ink2).copyWith(letterSpacing: 0.1),
+      labelSmall: body(11, weight: FontWeight.w600, color: p.ink2).copyWith(letterSpacing: 0.2),
     );
 
     final buttonShape = RoundedRectangleBorder(borderRadius: r);
-    const minSize = Size(64, 52);
+    final minSize = Size(64, tk.modern ? 50 : 52);
 
     return ThemeData(
       useMaterial3: true,
@@ -551,6 +569,28 @@ class AppTheme {
         actionsIconTheme: IconThemeData(color: p.headInk),
         shape: Border(bottom: BorderSide(color: p.headLine)),
         systemOverlayStyle: p.headDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: p.accent,
+        selectionColor: p.accent.withAlpha(p.dark ? 80 : 70),
+        selectionHandleColor: p.accent,
+      ),
+      scrollbarTheme: ScrollbarThemeData(
+        thumbColor: WidgetStatePropertyAll<Color>(p.lineStrong),
+        radius: Radius.circular(tk.square ? 0 : 8),
+        thickness: const WidgetStatePropertyAll<double>(6),
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(color: p.ink, borderRadius: BorderRadius.circular(tk.radius * 0.5)),
+        textStyle: body(12, weight: FontWeight.w500, color: p.bg),
+        waitDuration: const Duration(milliseconds: 500),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: p.surface,
+        selectedColor: p.accentSoft,
+        side: BorderSide(color: p.line),
+        labelStyle: body(13, weight: FontWeight.w500),
+        shape: tk.shape(outline: false, scale: 0.7),
       ),
       dividerTheme: DividerThemeData(color: p.line, space: 1, thickness: 1),
       progressIndicatorTheme: ProgressIndicatorThemeData(color: p.accent, linearTrackColor: p.surface2),

@@ -94,6 +94,39 @@ void main() {
     }
   });
 
+  test('six looks are modern (flat replies, soft shadows), four keep their boxed character', () {
+    const modern = {ThemeKey.daylight, ThemeKey.graphite, ThemeKey.pwani, ThemeKey.kahawa, ThemeKey.savanna, ThemeKey.lipa};
+    for (final k in ThemeKey.values) {
+      final t = Tokens.of(k);
+      expect(t.modern, modern.contains(k), reason: k.name);
+      expect(t.shadow.isNotEmpty, modern.contains(k), reason: '${k.name} shadow');
+      expect(t.cardShadow.isNotEmpty, modern.contains(k), reason: '${k.name} card shadow');
+    }
+  });
+
+  test('every look reads in Inter, which is bundled, except Receipt with its typewriter face', () {
+    for (final k in ThemeKey.values) {
+      final t = Tokens.of(k);
+      expect(t.bodyFont, k == ThemeKey.receipt ? 'Courier' : 'Inter', reason: k.name);
+      expect(AppTheme.build(k).textTheme.bodyLarge?.fontFamily, t.bodyFont, reason: k.name);
+    }
+  });
+
+  test('the small print on the customer\'s filled bubble and selected text stay readable', () {
+    for (final k in ThemeKey.values) {
+      final p = Palette.of(k);
+      // The time and the copy icon are drawn at 235 of 255 over the accent colour.
+      final small = Color.alphaBlend(p.accentInk.withAlpha(235), p.accent);
+      expect(contrast(small, p.accent), greaterThanOrEqualTo(4.5), reason: '${k.name}: time on a filled bubble');
+
+      final selection = AppTheme.build(k).textSelectionTheme.selectionColor;
+      expect(selection, isNotNull, reason: '${k.name} has a selection colour');
+      for (final base in [p.bg, p.surface, p.accentSoft]) {
+        expect(contrast(p.ink, Color.alphaBlend(selection!, base)), greaterThanOrEqualTo(4.5), reason: '${k.name}: selected text');
+      }
+    }
+  });
+
   testWidgets('the shared widgets draw in every look without errors', (tester) async {
     for (final k in ThemeKey.values) {
       await tester.pumpWidget(MaterialApp(

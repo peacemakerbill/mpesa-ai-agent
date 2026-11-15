@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart' hide StepState;
+import 'package:flutter/services.dart';
 
 import '../app_state.dart';
 import '../models/progress.dart';
@@ -31,12 +34,15 @@ class Panel extends StatelessWidget {
         ]),
       );
     }
-    return Material(
+    final panel = Material(
       color: color ?? t.p.surface,
       shape: t.shape(),
       clipBehavior: Clip.antiAlias,
       child: onTap == null ? content : InkWell(onTap: onTap, child: content),
     );
+    // The modern looks lift the panel off the page with a soft shadow. The boxed looks rely on the line alone.
+    if (t.cardShadow.isEmpty) return panel;
+    return DecoratedBox(decoration: BoxDecoration(borderRadius: t.corners, boxShadow: t.cardShadow), child: panel);
   }
 }
 
@@ -88,7 +94,7 @@ class StatusTag extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: t.square ? t.p.surface : t.tint(c),
-        borderRadius: BorderRadius.circular(t.radius * 0.4),
+        borderRadius: BorderRadius.circular(t.modern ? 20 : t.radius * 0.4),
         border: Border.all(color: t.square ? t.p.line : Color.alphaBlend(c.withAlpha(90), t.p.surface)),
       ),
       child: Text(text, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: t.square ? t.p.ink : c, height: 1.1)),
@@ -262,9 +268,12 @@ class _Dot extends StatelessWidget {
 
 /// A two column list of label and value, like a receipt.
 class KeyValueList extends StatelessWidget {
-  const KeyValueList(this.rows, {super.key});
+  const KeyValueList(this.rows, {super.key, this.copyLabels = const {'M-Pesa code'}});
 
   final List<MapEntry<String, String>> rows;
+
+  /// Rows with one of these labels get a Copy button. The values of every row can be selected where the screen allows it.
+  final Set<String> copyLabels;
 
   @override
   Widget build(BuildContext context) {
@@ -281,6 +290,10 @@ class KeyValueList extends StatelessWidget {
               Expanded(flex: 4, child: Text(rows[i].key, style: text.bodyMedium?.copyWith(color: t.p.ink2))),
               const SizedBox(width: 12),
               Expanded(flex: 5, child: Text(rows[i].value, textAlign: TextAlign.right, style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w600))),
+              if (copyLabels.contains(rows[i].key) && rows[i].value.isNotEmpty) ...[
+                const SizedBox(width: 4),
+                SelectionContainer.disabled(child: CopyButton(text: rows[i].value, label: 'Copy ${rows[i].key.toLowerCase()}')),
+              ],
             ]),
           ),
         ],
@@ -661,6 +674,53 @@ class _ThemeRow extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// A small Copy icon. It puts [text] on the clipboard and shows a tick for a moment, so the person knows it worked.
+class CopyButton extends StatefulWidget {
+  const CopyButton({super.key, required this.text, this.color, this.label = 'Copy message'});
+
+  final String text;
+  final Color? color;
+  final String label;
+
+  @override
+  State<CopyButton> createState() => _CopyButtonState();
+}
+
+class _CopyButtonState extends State<CopyButton> {
+  bool _done = false;
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _copy() async {
+    await Clipboard.setData(ClipboardData(text: widget.text));
+    if (!mounted) return;
+    setState(() => _done = true);
+    _timer?.cancel();
+    _timer = Timer(const Duration(milliseconds: 1600), () {
+      if (mounted) setState(() => _done = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: _copy,
+      tooltip: _done ? 'Copied' : widget.label,
+      iconSize: 16,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints.tightFor(width: 28, height: 28),
+      style: IconButton.styleFrom(minimumSize: const Size(28, 28), tapTargetSize: MaterialTapTargetSize.shrinkWrap, padding: EdgeInsets.zero),
+      color: widget.color ?? context.tk.p.ink3,
+      icon: Icon(_done ? Icons.check : Icons.content_copy_outlined),
     );
   }
 }

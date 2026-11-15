@@ -209,7 +209,7 @@ class _BusinessOperationScreenState extends State<BusinessOperationScreen> {
         title: Text(op == null || op.typeLabel.isEmpty ? 'Business request' : op.typeLabel),
         actions: [IconButton(onPressed: _busy ? null : _load, icon: const Icon(Icons.refresh), tooltip: 'Refresh')],
       ),
-      body: SafeArea(top: false, child: _body(context)),
+      body: SelectionArea(child: SafeArea(top: false, child: _body(context))),
     );
   }
 

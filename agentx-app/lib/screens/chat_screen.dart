@@ -701,17 +701,20 @@ class _ChatScreenState extends State<ChatScreen> {
     return LayoutBuilder(
       builder: (context, box) {
         final side = sidePad(box.maxWidth, maxWidth: _columnWidth);
-        return ListView.builder(
-          reverse: true,
-          padding: EdgeInsets.fromLTRB(side, 10, side, 10),
-          itemCount: entries.length,
-          itemBuilder: (context, i) {
-            final e = entries[i];
-            if (e.day != null) return _DayChip(_dayLabel(e.day!));
-            final m = e.message;
-            if (m == null) return const TypingBubble();
-            return MessageBubble(key: ValueKey(m.id), message: m, live: m.id > lastMine, actions: _actions, startsGroup: e.startsGroup);
-          },
+        // SelectionArea lets the words be selected and copied, with the mouse or a long press, across messages.
+        return SelectionArea(
+          child: ListView.builder(
+            reverse: true,
+            padding: EdgeInsets.fromLTRB(side, 10, side, 14),
+            itemCount: entries.length,
+            itemBuilder: (context, i) {
+              final e = entries[i];
+              if (e.day != null) return _DayChip(_dayLabel(e.day!));
+              final m = e.message;
+              if (m == null) return const TypingBubble();
+              return MessageBubble(key: ValueKey(m.id), message: m, live: m.id > lastMine, actions: _actions, startsGroup: e.startsGroup);
+            },
+          ),
         );
       },
     );
@@ -721,9 +724,9 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = Theme.of(context).textTheme;
     final t = context.tk;
     const ideas = [
-      (Icons.send_outlined, 'Send 500 to Mama'),
-      (Icons.storefront_outlined, 'Pay till 123456'),
-      (Icons.help_outline, 'What can you do?'),
+      (Icons.send_outlined, 'Send 500 to Mama', 'Pay a person from your contacts'),
+      (Icons.storefront_outlined, 'Pay till 123456', 'Buy goods or pay a paybill'),
+      (Icons.help_outline, 'What can you do?', 'See what Agent-X can handle for you'),
     ];
     return LayoutBuilder(
       builder: (context, box) => SingleChildScrollView(
@@ -731,35 +734,49 @@ class _ChatScreenState extends State<ChatScreen> {
           constraints: BoxConstraints(minHeight: box.maxHeight),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 460),
+              constraints: const BoxConstraints(maxWidth: 480),
               child: Padding(
-                padding: const EdgeInsets.all(28),
+                padding: const EdgeInsets.all(24),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   const BrandMark(size: 84, motion: BrandMotion.intro),
-                  const SizedBox(height: 20),
-                  Text('Ask in your own words', style: text.titleLarge, textAlign: TextAlign.center),
+                  const SizedBox(height: 22),
+                  Text('How can I help with M-Pesa?', style: text.headlineSmall, textAlign: TextAlign.center),
                   const SizedBox(height: 8),
                   Text(
                     'Type, send a photo of a till or paybill, or record a voice note. Nothing moves until you approve it.',
                     textAlign: TextAlign.center,
                     style: text.bodyMedium?.copyWith(color: t.p.ink2),
                   ),
-                  const SizedBox(height: 20),
-                  Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
-                    for (final idea in ideas)
-                      ActionChip(
-                        avatar: Icon(idea.$1, size: 18, color: t.p.ink),
-                        label: Text(idea.$2),
-                        backgroundColor: t.p.surface,
-                        side: BorderSide(color: t.p.line),
-                        shape: t.shape(outline: false, scale: 0.7),
-                        onPressed: () {
+                  const SizedBox(height: 24),
+                  for (final idea in ideas)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Panel(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        onTap: () {
                           _text.text = idea.$2;
                           _text.selection = TextSelection.collapsed(offset: idea.$2.length);
                           _focus.requestFocus();
                         },
+                        child: Row(children: [
+                          Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(color: t.p.accentSoft, borderRadius: BorderRadius.circular(t.square ? 0 : 10)),
+                            child: Icon(idea.$1, size: 20, color: t.square ? t.p.ink : t.p.accent),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text(idea.$2, style: text.titleSmall),
+                              const SizedBox(height: 2),
+                              Text(idea.$3, style: text.bodySmall),
+                            ]),
+                          ),
+                          Icon(Icons.north_west, size: 16, color: t.p.ink3),
+                        ]),
                       ),
-                  ]),
+                    ),
                 ]),
               ),
             ),
@@ -796,7 +813,8 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _composer(BuildContext context) {
     final t = context.tk;
     final bar = t.square ? BorderRadius.zero : BorderRadius.circular(28);
-    final decoration = BoxDecoration(color: t.p.surface, border: Border.all(color: t.p.lineStrong), borderRadius: bar);
+    // The round send and record buttons of the modern looks. The boxed looks keep the rounded square of their theme.
+    final round = t.modern ? IconButton.styleFrom(shape: const CircleBorder(), minimumSize: const Size(44, 44), fixedSize: const Size(44, 44)) : null;
     final Widget content;
     if (_recording) {
       content = Row(children: [
@@ -804,7 +822,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Icon(Icons.fiber_manual_record, size: 14, color: t.p.bad),
         const SizedBox(width: 8),
         Expanded(child: Text('Recording  ${_elapsed()}', style: t.numeric(16, weight: FontWeight.w600))),
-        IconButton.filled(onPressed: _sendVoice, icon: const Icon(Icons.send), tooltip: 'Send voice note'),
+        IconButton.filled(onPressed: _sendVoice, style: round, icon: const Icon(Icons.send), tooltip: 'Send voice note'),
         const SizedBox(width: 4),
       ]);
     } else {
@@ -834,13 +852,32 @@ class _ChatScreenState extends State<ChatScreen> {
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 150),
           child: hasWords
-              ? IconButton.filled(key: const ValueKey('send'), onPressed: _chat.sending ? null : _send, icon: const Icon(Icons.send), tooltip: 'Send')
-              : IconButton.filled(key: const ValueKey('mic'), onPressed: _startVoice, icon: const Icon(Icons.mic), tooltip: 'Record a voice note'),
+              ? IconButton.filled(key: const ValueKey('send'), onPressed: _chat.sending ? null : _send, style: round, icon: Icon(t.modern ? Icons.arrow_upward_rounded : Icons.send), tooltip: 'Send')
+              : IconButton.filled(key: const ValueKey('mic'), onPressed: _startVoice, style: round, icon: const Icon(Icons.mic), tooltip: 'Record a voice note'),
         ),
-        const SizedBox(width: 4),
+        SizedBox(width: t.modern ? 6 : 4),
       ]);
     }
-    return _padded(Container(decoration: decoration, child: content), top: 6, bottom: 8);
+    // The border turns to the accent colour while the box has the keyboard, so it is clear where typing will go.
+    return _padded(
+      ListenableBuilder(
+        listenable: _focus,
+        builder: (context, child) => AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          padding: EdgeInsets.symmetric(vertical: t.modern ? 3 : 0),
+          decoration: BoxDecoration(
+            color: t.p.surface,
+            border: Border.all(color: _focus.hasFocus ? t.p.accent : t.p.lineStrong, width: 1.5),
+            borderRadius: bar,
+            boxShadow: t.shadow,
+          ),
+          child: child,
+        ),
+        child: content,
+      ),
+      top: 6,
+      bottom: 10,
+    );
   }
 }
 
