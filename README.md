@@ -26,8 +26,8 @@
 Customers chat with an assistant in the app or on the web, in English or Swahili, by text, voice note, photo, video, file, shared contact or shared location. The assistant understands requests such as "send 500 to Mama", "pay Paybill 888880 account 1234" or "buy 50 airtime", and **prepares** them. The customer then approves on their own phone and finishes inside M-Pesa, using the system that already works.
 
 > [!NOTE]
-> **About the name.** *AgentX* is Sheng for money. Daraja Agent-X is an assistant that helps people use their own M-Pesa, in a chat they already know how to use.
-> M-Pesa and Daraja are Safaricom's names. This project uses them only to say what it works with.
+> **About the name.** *Daraja* is Swahili for bridge, and the logo is a bridge: the assistant sits between a customer's chat and their own M-Pesa. *Agent-X* is the assistant, and the X is where the two curves of the logo cross.
+> Daraja is also the name of Safaricom's API platform, and M-Pesa is Safaricom's service. This project uses those names only to say what it works with. It is an independent project, not made or endorsed by Safaricom.
 
 <div align="center">
 <img src="docs/assets/flow.svg" alt="Request flow: ask, prepare, approve, hand off, record" width="100%"/>
