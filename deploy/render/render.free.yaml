@@ -3,10 +3,10 @@
 # The step by step guide is docs/DEPLOY_RENDER_FREE.md.
 #
 # What it creates, all free:
-#   agentx-api-free     web service     the phone app, the console and the chat links talk to this one
-#   agent-service-free  web service     the chat and the model. Free services cannot be reached on Render's private network,
+#   agentx-api-free-graham218     web service     the phone app, the console and the chat links talk to this one
+#   agent-service-free-graham218  web service     the chat and the model. Free services cannot be reached on Render's private network,
 #                                       so agentx-api calls it by its public https address and proves who it is with INTERNAL_KEY
-#   agentx-redis-free   Render Key Value  the chat history (in memory only)
+#   agentx-redis-free-graham218   Render Key Value  the chat history (in memory only)
 #
 # Not created here, because Render does not host them (both have free plans):
 #   MongoDB        MongoDB Atlas, the free M0 cluster. Paste its connection string when the Blueprint asks.
@@ -41,14 +41,14 @@ envVarGroups:
 
 services:
   - type: keyvalue
-    name: agentx-redis-free
+    name: agentx-redis-free-graham218
     region: frankfurt
     plan: free               # in memory only: a restart clears the chat history, which is kept 24 hours anyway
     maxmemoryPolicy: allkeys-lru
     ipAllowList: []          # private network only, which is all a free web service needs to send to it
 
   - type: web
-    name: agentx-api-free
+    name: agentx-api-free-graham218
     runtime: docker
     region: frankfurt
     plan: free
@@ -115,7 +115,7 @@ services:
         sync: false
 
   - type: web
-    name: agent-service-free
+    name: agent-service-free-graham218
     runtime: docker
     region: frankfurt
     plan: free
@@ -141,12 +141,12 @@ services:
       - key: REDIS_HOST
         fromService:
           type: keyvalue
-          name: agentx-redis-free
+          name: agentx-redis-free-graham218
           property: host
       - key: REDIS_PORT
         fromService:
           type: keyvalue
-          name: agentx-redis-free
+          name: agentx-redis-free-graham218
           property: port
 
       - key: SPRING_RABBITMQ_ADDRESSES
