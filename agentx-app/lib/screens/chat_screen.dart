@@ -18,6 +18,7 @@ import '../profile/profile_avatar.dart';
 import '../theme/app_theme.dart';
 import '../widgets/chat_bubbles.dart';
 import '../widgets/enter_to_send.dart';
+import '../widgets/location_entry.dart';
 import '../widgets/mention_panel.dart';
 import '../widgets/otp_approval.dart';
 import '../widgets/ui.dart';
@@ -390,6 +391,11 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final p = await widget.device.location();
       if (p != null && mounted) setState(() => _tray.add(_Pending.point(p)));
+    } on LocationUnavailable catch (e) {
+      // This device cannot tell where it is (no GPS, blocked, or no location service): let the person type the place.
+      if (!mounted) return;
+      final typed = await askForCoordinates(context, reason: e.message);
+      if (typed != null && mounted) setState(() => _tray.add(_Pending.point(typed)));
     } on ChatDeviceException catch (e) {
       _toast(e.message);
     } on Exception catch (e) {
@@ -575,6 +581,10 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Column(children: [
             Expanded(child: _messages(context)),
             if (_chat.error != null) _padded(Callout(_chat.error!, tone: Tone.bad), top: 4),
+            ValueListenableBuilder<String?>(
+              valueListenable: widget.device.working,
+              builder: (context, message, _) => message == null ? const SizedBox.shrink() : _padded(_workingLine(context, message), top: 4, bottom: 4),
+            ),
             if (_tray.isNotEmpty) _trayView(context),
             _mentionPanel(context),
             _composer(context),
@@ -582,6 +592,15 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ),
     );
+  }
+
+  /// "Making the video smaller...", shown while a photo or video is being prepared.
+  Widget _workingLine(BuildContext context, String message) {
+    return Row(children: [
+      const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+      const SizedBox(width: 10),
+      Expanded(child: Text(message, style: Theme.of(context).textTheme.bodySmall)),
+    ]);
   }
 
   /// Keeps what sits under the message list at the same width as the messages.

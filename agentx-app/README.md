@@ -100,7 +100,7 @@ No screen hard-codes a colour. Everything reads the palette through `context.tk`
 | `lib/main.dart` | Start up and deep links (`https://host/a/ID` and `agentx://a/ID`) |
 | `lib/app_state.dart` | Signed in or not, hand-off settings, pending link, the contact and chat services |
 | `lib/api/api_client.dart` | agentx-api calls. The phone number is sent when asking for a code, after that the server reads it from the token |
-| `lib/chat/` | `ChatController` (reads new messages every 1.5 seconds while open, sends text, buttons, files, contacts, locations) and `ChatDevice` (camera, microphone, files, location, sound) |
+| `lib/chat/` | `ChatController` (reads new messages every 1.5 seconds while open, sends text, buttons, files, contacts, locations) and `ChatDevice` (camera, microphone, files, location, sound), `CameraCaptureScreen` (the in-app camera for the web and computers), `MediaCompressor` (smaller photos and videos) |
 | `lib/contacts/` | Contact search: this phone, Google (People API), Microsoft (Graph), vCard and CSV files |
 | `lib/models/handoff.dart` | Builds the dial code and the steps. Only digits, `*` and `#` are ever dialled |
 | `lib/models/mpesa_sms.dart`, `sms_match.dart` | Picks apart M-Pesa messages and finds the one for a request (patterns unverified) |
@@ -130,7 +130,8 @@ No screen hard-codes a colour. Everything reads the palette through `context.tk`
 
 - **USSD codes and M-Pesa app identifiers are not hard-coded.** They come from the server (`/api/config`) and start empty, so the app shows guided steps until you set verified values.
 - **Contacts** are searched on the phone. The Google and Microsoft sign-ins give the app a short-lived token that stays in memory, and nothing from the address book goes to your servers. Only a contact the customer chooses to share is sent, in the chat. You need your own OAuth client ids, see [`docs/CONTACTS.md`](docs/CONTACTS.md).
-- **Voice notes** are recorded as AAC in an `.m4a` file (`audio/mp4`). Check that your speech to text service accepts it.
+- **Voice notes** are recorded as AAC (`audio/mp4`) where the device can, otherwise as Opus (`audio/webm` or `audio/ogg`) or WAV. Check that your speech to text service accepts them. The one in `agent-service` does.
+- **Camera, video, files and location** work on the phone, the web, Linux, Windows and macOS. Where there is no system camera picker (the web and computers) the app has its own camera screen. Photos and videos are made smaller before they are sent, set in **Settings, Photo and video size**. See [`docs/ATTACHMENTS.md`](docs/ATTACHMENTS.md).
 - **Sign-in codes** arrive by SMS only when the server has `CODE_DELIVERY=sms`. On development and staging servers (`CODE_SHOW_IN_APP`) the server also returns the code, and the app shows it under the code box, then fills it in and signs in by itself a moment later. A production server never does. On Android the app also reads the code from the text message and signs in by itself, with no SMS permission (Google's SMS Retriever, see [`docs/SMS.md`](docs/SMS.md)). On iPhone the keyboard offers the code from the message and the sixth digit signs in.
 - **Device lock is not M-Pesa authentication.** It protects our approval step. M-Pesa still asks for its own PIN.
 - **Terms.** Check Safaricom's terms and any app store rules about a third party app that hands over to M-Pesa before you publish.
@@ -158,6 +159,7 @@ The sign in screen has **Create an account**, in the same look as sign in. Three
 | Document | What is in it |
 |---|---|
 | [`docs/PLATFORM_SETUP.md`](docs/PLATFORM_SETUP.md) | Settings for each platform, signing, app links |
+| [`docs/ATTACHMENTS.md`](docs/ATTACHMENTS.md) | Camera, video, files, location and file size on each platform, and what to do when one does not open |
 | [`docs/CONTACTS.md`](docs/CONTACTS.md) | Contact search and the Google and Microsoft sign-ins |
 | [`docs/SMS.md`](docs/SMS.md) | The M-Pesa message check |
 

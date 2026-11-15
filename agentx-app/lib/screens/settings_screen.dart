@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
+import '../chat/media_compressor.dart';
 import '../layout/responsive.dart';
 import '../theme/app_theme.dart';
+import '../widgets/compression_sheet.dart';
 import '../widgets/ui.dart';
 import '../chat/media_cache.dart';
 import '../profile/profile_avatar.dart';
@@ -90,6 +92,13 @@ class SettingsScreen extends StatelessWidget {
               title: 'Appearance',
               subtitle: state.theme.label,
               onTap: () => showThemeSheet(context, state),
+            ),
+            const SizedBox(height: 8),
+            _Row(
+              icon: Icons.photo_size_select_large_outlined,
+              title: 'Photo and video size',
+              subtitle: '${state.compression.label}. Photos and videos are made smaller before they are sent.',
+              onTap: () => showCompressionSheet(context, state),
             ),
             const SizedBox(height: 20),
             const SectionTitle('This device'),

@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
@@ -8,6 +9,8 @@ import 'package:path_provider/path_provider.dart';
 
 import '../api/api_client.dart';
 import '../app_state.dart';
+import '../chat/device_files.dart';
+import '../chat/file_dialog.dart';
 import '../layout/responsive.dart';
 import '../models/business_account.dart';
 import '../theme/app_theme.dart';
@@ -25,14 +28,17 @@ typedef TemplateOpener = Future<void> Function(String csv);
 const int maxCsvBytes = 1024 * 1024;
 
 Future<PickedCsv?> pickCsvFile() async {
-  final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: const ['csv', 'txt'], withData: true);
-  final file = result?.files.firstOrNull;
-  final bytes = file?.bytes;
-  if (file == null || bytes == null) return null;
-  return (name: file.name, bytes: bytes);
+  final file = await chooseFile(extensions: const ['csv', 'txt'], label: 'CSV or text');
+  if (file == null) return null;
+  return (name: file.name, bytes: file.bytes);
 }
 
 Future<void> openTemplateFile(String csv) async {
+  if (kIsWeb) {
+    // A browser has no temporary folder or "open with": the file is downloaded instead.
+    await DeviceFiles.open(Uint8List.fromList(utf8.encode(csv)), 'agentx-business-accounts-template.csv');
+    return;
+  }
   final dir = await getTemporaryDirectory();
   final file = File('${dir.path}/agentx-business-accounts-template.csv');
   await file.writeAsString(csv, flush: true);

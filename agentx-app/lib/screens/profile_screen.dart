@@ -9,6 +9,7 @@ import '../models/profile.dart';
 import '../profile/profile_avatar.dart';
 import '../profile/signup_flow.dart';
 import '../theme/app_theme.dart';
+import '../widgets/location_entry.dart';
 import '../widgets/ui.dart';
 import 'email_recipients_screen.dart';
 
@@ -145,6 +146,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _latitude = point.latitude;
         _longitude = point.longitude;
+        _clearLocation = false;
+      });
+      _say('Location added. Press Save to keep it.');
+    } on LocationUnavailable catch (e) {
+      // No GPS, or the browser or system said no: let the person type the place.
+      if (!mounted) return;
+      final typed = await askForCoordinates(context, reason: e.message);
+      if (typed == null || !mounted) return;
+      setState(() {
+        _latitude = typed.latitude;
+        _longitude = typed.longitude;
         _clearLocation = false;
       });
       _say('Location added. Press Save to keep it.');

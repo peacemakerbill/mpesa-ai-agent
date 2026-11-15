@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../chat/file_dialog.dart';
 import '../../config.dart';
 import '../contact_errors.dart';
 import '../contact_models.dart';
@@ -46,12 +46,10 @@ class PlatformAddressBook implements AddressBook {
 class PlatformContactFileReader implements ContactFileReader {
   @override
   Future<({String name, String text})?> pick() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: const ['vcf', 'vcard', 'csv'], withData: true);
-    final file = result?.files.firstOrNull;
-    final bytes = file?.bytes;
-    if (file == null || bytes == null) return null;
-    if (bytes.length > 20 * 1024 * 1024) throw const ContactSourceException('That file is larger than 20 MB.');
-    return (name: file.name, text: utf8.decode(bytes, allowMalformed: true));
+    final file = await chooseFile(extensions: const ['vcf', 'vcard', 'csv'], label: 'Contacts');
+    if (file == null) return null;
+    if (file.bytes.length > 20 * 1024 * 1024) throw const ContactSourceException('That file is larger than 20 MB.');
+    return (name: file.name, text: utf8.decode(file.bytes, allowMalformed: true));
   }
 }
 

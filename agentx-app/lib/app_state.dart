@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show GlobalKey, NavigatorState;
 
 import 'api/api_client.dart';
 import 'chat/chat_device.dart';
@@ -16,6 +17,7 @@ import 'services/launcher.dart';
 import 'services/secure_store.dart';
 import 'services/sms_reader.dart';
 import 'services/waker.dart';
+import 'chat/media_compressor.dart';
 import 'theme/app_theme.dart';
 
 /// Holds what every screen shares: whether this phone is signed in, the hand-off settings, and a link waiting to be opened.
@@ -26,11 +28,17 @@ class AppState extends ChangeNotifier {
     this.approval = approval ?? Approval();
     this.launcher = launcher ?? const Launcher();
     this.contacts = contacts ?? createPlatformContactServices();
-    this.chatDevice = chatDevice ?? PlatformChatDevice();
+    this.chatDevice = chatDevice ?? PlatformChatDevice(navigatorKey: navigatorKey, compressor: compressor);
     this.sms = sms ?? DeviceSmsReader();
     this.waker = waker ?? Waker(() => this.api.wake());
     this.codeReader = codeReader ?? DeviceCodeReader();
   }
+
+  /// The app's one navigator. The in-app camera screen is opened on it by the chat device, which has no screen of its own.
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  /// Makes photos and videos smaller before they are sent. Its level is [compression].
+  final MediaCompressor compressor = MediaCompressor();
 
   late final SecureStore store;
   late final ApiClient api;
@@ -61,10 +69,14 @@ class AppState extends ChangeNotifier {
   /// The look the customer picked. Kept across unlinking, it is not tied to the account.
   ThemeKey theme = ThemeKey.daylight;
 
+  /// How much photos and videos are squeezed before they are sent. Not tied to the account either.
+  CompressionLevel get compression => compressor.level;
+
   /// A request id from a link, opened as soon as the phone is linked.
   String? pendingActionId;
 
   Future<void> start() async {
+    unawaited(_loadCompression());
     theme = ThemeKeyX.parse(await store.theme());
     linked = await store.token() != null;
     phone = linked ? await store.phone() : null;
@@ -121,6 +133,31 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     try {
       await store.setTheme(key.name);
+    } catch (_) {
+      // the choice still applies until the app closes
+    }
+  }
+
+  bool _compressionChosen = false;
+
+  /// Reads the saved photo and video size. It runs beside start-up and never holds it up: a setting that cannot be read
+  /// leaves Balanced, and a choice made in the meantime is kept.
+  Future<void> _loadCompression() async {
+    try {
+      final saved = CompressionLevelX.parse(await store.compression());
+      if (!_compressionChosen) compressor.level = saved;
+    } catch (_) {
+      // not saved or unreadable: keep Balanced
+    }
+  }
+
+  Future<void> setCompression(CompressionLevel level) async {
+    _compressionChosen = true;
+    if (level == compressor.level) return;
+    compressor.level = level;
+    notifyListeners();
+    try {
+      await store.setCompression(level.name);
     } catch (_) {
       // the choice still applies until the app closes
     }

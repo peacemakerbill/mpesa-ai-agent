@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
@@ -7,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../api/api_client.dart';
 import '../app_state.dart';
+import '../chat/device_files.dart';
 import '../layout/responsive.dart';
 import '../models/bonga.dart';
 import '../models/business_account.dart';
@@ -17,6 +19,11 @@ import '../widgets/ui.dart';
 typedef QrSaver = Future<void> Function(List<int> png, String name);
 
 Future<void> saveAndOpenQr(List<int> png, String name) async {
+  if (kIsWeb) {
+    // A browser has no documents folder or "open with": the picture is downloaded instead.
+    await DeviceFiles.open(Uint8List.fromList(png), '$name.png');
+    return;
+  }
   final dir = await getApplicationDocumentsDirectory();
   final file = File('${dir.path}/$name.png');
   await file.writeAsBytes(png, flush: true);

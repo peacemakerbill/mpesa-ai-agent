@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
+
 import 'chat_controller.dart';
 
 /// Something the phone could not do for the chat, with a sentence that can be shown as it is.
@@ -12,6 +14,11 @@ class ChatDeviceException implements Exception {
   String toString() => message;
 }
 
+/// The position could not be read. The chat then offers to type the place instead, so a computer without GPS still works.
+class LocationUnavailable extends ChatDeviceException {
+  const LocationUnavailable(super.message);
+}
+
 class GeoPoint {
   const GeoPoint(this.latitude, this.longitude);
 
@@ -19,9 +26,29 @@ class GeoPoint {
   final double longitude;
 }
 
+final RegExp _mapsPin = RegExp(r'!3d(-?\d{1,3}(?:\.\d+)?)!4d(-?\d{1,3}(?:\.\d+)?)');
+final RegExp _decimals = RegExp(r'(-?\d{1,3}\.\d+)[\s,;]+(-?\d{1,3}\.\d+)');
+final RegExp _commaSeparated = RegExp(r'(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)');
+
+/// Reads a place typed or pasted by the person: "-1.286389, 36.817223", "-1.286389 36.817223", or a Google Maps link that
+/// carries the position (@lat,lng or !3dlat!4dlng). Returns null when no valid latitude and longitude can be found.
+GeoPoint? parseCoordinates(String text) {
+  final match = _mapsPin.firstMatch(text) ?? _decimals.firstMatch(text) ?? _commaSeparated.firstMatch(text);
+  if (match == null) return null;
+  final latitude = double.tryParse(match.group(1)!);
+  final longitude = double.tryParse(match.group(2)!);
+  if (latitude == null || longitude == null) return null;
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+  return GeoPoint(latitude, longitude);
+}
+
 /// Everything the chat needs from the phone itself: the gallery, the camera, files, the microphone, the
 /// position and sound playback. The real one is in platform_chat_device.dart, tests use a fake.
 abstract class ChatDevice {
+  /// A short sentence while the device is busy with something slow, such as making a video smaller, otherwise null.
+  /// The chat shows it above the message box.
+  ValueListenable<String?> get working => _idle;
+
   Future<ChatAttachment?> photoFromGallery();
 
   Future<ChatAttachment?> photoFromCamera();
@@ -50,6 +77,8 @@ abstract class ChatDevice {
   /// Saves a received file where the phone can open it, then opens it.
   Future<void> open(Uint8List bytes, String fileName);
 }
+
+final ValueNotifier<String?> _idle = ValueNotifier<String?>(null);
 
 /// Largest file the app reads into memory for a chat message.
 const int maxChatFileBytes = 30 * 1024 * 1024;

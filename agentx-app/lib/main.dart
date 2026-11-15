@@ -58,7 +58,8 @@ class AgentXApp extends StatefulWidget {
 
 class _AgentXAppState extends State<AgentXApp> with WidgetsBindingObserver {
   final AppState state = AppState();
-  final GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
+  // The key lives in the app state, so the chat device can open the camera screen on this navigator.
+  GlobalKey<NavigatorState> get navigator => state.navigatorKey;
   StreamSubscription<Uri>? _links;
 
   /// A business request id from a link, opened as soon as the phone is linked.

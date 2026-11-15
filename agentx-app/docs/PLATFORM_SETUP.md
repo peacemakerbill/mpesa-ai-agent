@@ -24,7 +24,7 @@ In Android Studio: File, New, New Flutter Project, then:
 | Project type | Application |
 | Android language | Kotlin |
 | iOS language | Swift |
-| Platforms | Android, iOS, Linux, macOS, Windows. Leave Web off. |
+| Platforms | Android, iOS, Linux, macOS, Windows, and Web if you want to run it in a browser. |
 
 Then bring in the code and check it:
 
@@ -180,10 +180,14 @@ You need a Mac. The macOS app runs in a sandbox, so it needs permission for each
 
 ```xml
 <key>com.apple.security.network.client</key><true/>
+<key>com.apple.security.device.camera</key><true/>
 <key>com.apple.security.device.audio-input</key><true/>
+<key>com.apple.security.personal-information.location</key><true/>
 <key>com.apple.security.personal-information.addressbook</key><true/>
 <key>com.apple.security.files.user-selected.read-only</key><true/>
 ```
+
+`device.camera` is for the in-app camera, and `personal-information.location` is for "share my location".
 
 Without `network.client` the app cannot reach the internet. Copy the usage strings from the iOS `Info.plist` section (Contacts, Microphone, Camera, Location) into `macos/Runner/Info.plist`. If secure storage fails to save the sign-in token, turn on the Keychain Sharing capability in Xcode. The entitlements and the keychain step were not verified.
 
@@ -197,7 +201,13 @@ sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev lib
 flutter run -d linux
 ```
 
-`libsecret` is for the secure token store, and the GStreamer packages are for voice note playback.
+`libsecret` is for the secure token store. The GStreamer packages are for the camera (photo and video) and for voice note playback. To use the features at run time, also install:
+
+```bash
+sudo apt install pulseaudio-utils ffmpeg geoclue-2.0 zenity
+```
+
+`pulseaudio-utils` and `ffmpeg` record voice notes, `geoclue-2.0` gives the location, and `zenity` is for the contact file picker. If a camera does not open, check `ls /dev/video*` and that your user is in the `video` group. Details in [`ATTACHMENTS.md`](ATTACHMENTS.md).
 
 ## 5. Windows
 
@@ -207,7 +217,15 @@ Build on a Windows PC with Visual Studio 2022 and the "Desktop development with 
 flutter run -d windows
 ```
 
-## 6. Run settings in Android Studio
+Windows asks for camera, microphone and location access in Settings, Privacy and security. Turn on "Let desktop apps access your camera" (and the microphone and location) or the camera screen stays black.
+
+## 6. Web
+
+`flutter run -d chrome --web-port 8000 --dart-define=API_BASE_URL=http://localhost:8084`, or `flutter build web`. A browser only opens the camera, the microphone and location on an `https://` address or on `localhost`, so a copy served from a plain `http://` address on your network will refuse them. The chat, attach menu, camera, video recording, voice notes, file picking, location and file download are built to work in a browser. These are phone features and are not expected to work there: reading the M-Pesa SMS, the phone address book, fingerprint or face approval (use the code instead) and Microsoft sign in. Files you open from the chat are downloaded, because a browser has no "open with".
+
+A browser also blocks calls to another address unless the API allows it. For development start agentx-api with `CORS_ALLOWED_ORIGINS=http://localhost:8000`. The API refuses that setting in production on purpose (see `EnvironmentGuard`), so a web build for real users must be served from the same address as the API, for example behind one reverse proxy that serves the app and forwards `/api`.
+
+## 7. Run settings in Android Studio
 
 Run, Edit Configurations, select `main.dart`, then fill in Additional run args:
 
@@ -233,6 +251,8 @@ The server address needs no setting on your own computer. The default is picked 
 | Reading the M-Pesa SMS | On request, with permission, see [`SMS.md`](SMS.md) | Not possible. The customer sends it in the chat. | Not possible. The customer sends it in the chat. |
 | Searching contacts | This phone (with permission, or its own chooser), Google, Microsoft, a .vcf or .csv file | Same, see [`CONTACTS.md`](CONTACTS.md) | Google, Microsoft and files. The phone address book is not available. |
 | Approval | Fingerprint, face or phone lock | Face ID, Touch ID or passcode | Not available |
+| Camera and Record video | The phone's camera app | The phone's camera app | The in-app camera screen. In a browser it needs `https://` or `localhost`. |
+| Making files smaller | Photos and videos | Photos and videos | Photos. Videos are recorded small by the in-app camera, a video from disk is sent as it is. |
 
 ## Not done on purpose
 - The app never reads SMS in the background and never dials automatically. The customer presses call and types the PIN in M-Pesa.

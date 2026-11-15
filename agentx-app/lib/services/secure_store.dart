@@ -16,6 +16,7 @@ class SecureStore {
   static const _device = 'deviceId';
   static const _smsConsent = 'smsConsent';
   static const _theme = 'theme';
+  static const _compression = 'compression';
 
   Future<String> deviceId() async {
     final existing = await _storage.read(key: _device);
@@ -53,6 +54,11 @@ class SecureStore {
   Future<String?> theme() => _storage.read(key: _theme);
 
   Future<void> setTheme(String name) => _storage.write(key: _theme, value: name);
+
+  /// How hard photos and videos are made smaller before sending (a CompressionLevel name). Not a secret either.
+  Future<String?> compression() => _storage.read(key: _compression);
+
+  Future<void> setCompression(String name) => _storage.write(key: _compression, value: name);
 
   Future<void> clearSession() async {
     await _storage.delete(key: _token);
